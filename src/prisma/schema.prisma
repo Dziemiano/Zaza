@@ -1,0 +1,415 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @db.VarChar(255)
+  created_at  DateTime     @default(now())
+  created_by  String
+  users       User         @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Roles_ibfk_1")
+  permissions Permission[] @relation("PermissionToRole")
+
+  @@index([created_by], map: "created_by")
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  firstname             String?
+  lastname              String?
+  username              String?                @unique
+  email                 String?                @unique
+  emailVerified         DateTime?
+  password              String?
+  phone_number          String?
+  role                  UserRole               @default(USER)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  isTwoFactorEnabled    Boolean                @default(false)
+  Account               Account?
+  branches_salesman     CompanyBranch[]
+  customers_created     Customer[]             @relation("created_by")
+  customers_salesman    Customer[]             @relation("salesman")
+  Orders                Order[]
+  Permissions           Permission[]
+  Products              Product[]
+  Roles                 Role[]
+  twoFactorConfirmation TwoFactorConfirmation?
+  WZ                    Wz[]
+  logs                  Log[]
+}
+
+model Customer {
+  id                  String              @id @default(cuid())
+  nip                 String              @unique
+  symbol              String
+  name                String              @db.VarChar(255)
+  primary_email       String?             @db.VarChar(255)
+  documents_email     String?
+  phone_number        String?
+  street              String
+  building            String
+  premises            String?
+  city                String
+  postal_city         String?
+  postal_code         String
+  country             String
+  payment_type        PaymentType         @default(PREPAID)
+  payment_deadline    String?             @default("14")
+  customer_type       String?
+  payment_punctuality PaymentPunctuality?
+  salesman_id         String?
+  credit_limit        String?
+  max_discount        String?
+  send_email_invoice  Boolean             @default(false)
+  invoice_name        String?
+  invoice_nip         String?
+  invoice_street      String?
+  invoice_building    String?
+  invoice_premises    String?
+  invoice_city        String?
+  invoice_postal_code String?
+  invoice_country     String?
+  created_at          DateTime            @default(now())
+  created_by_id       String
+  comments            Comment[]
+  branch              CompanyBranch[]
+  ContactPerson       ContactPerson[]
+  created_by          User                @relation("created_by", fields: [created_by_id], references: [id])
+  salesman            User?               @relation("salesman", fields: [salesman_id], references: [id])
+  DeliveryAdress      DeliveryAdress[]
+  Orders              Order[]
+
+  @@index([nip], map: "nip")
+  @@index([symbol], map: "symbol")
+  @@index([created_by_id], map: "Customer_created_by_id_fkey")
+  @@index([salesman_id], map: "Customer_salesman_id_fkey")
+}
+
+model CompanyBranch {
+  id           String   @id @default(cuid())
+  name         String
+  customer_id  String
+  salesman_id  String?
+  street       String
+  building     String
+  premises     String?
+  city         String
+  postal_code  String
+  country      String
+  phone_number String?
+  email        String?
+  customer     Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  salesman     User?    @relation(fields: [salesman_id], references: [id])
+
+  @@index([customer_id], map: "CompanyBranch_customer_id_fkey")
+  @@index([salesman_id], map: "CompanyBranch_salesman_id_fkey")
+}
+
+model ContactPerson {
+  id           String   @id @default(cuid())
+  firstname    String
+  lastname     String
+  phone_number String
+  email        String
+  customer_id  String
+  customer     Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id], map: "ContactPerson_customer_id_fkey")
+}
+
+model DeliveryAdress {
+  id                   String   @id @default(cuid())
+  is_construction_site Boolean  @default(false)
+  street               String
+  building             String
+  premises             String?
+  city                 String
+  postal_code          String
+  country              String
+  customer_id          String
+  customer             Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id], map: "DeliveryAdress_customer_id_fkey")
+}
+
+model Order {
+  id                      String     @id
+  foreign_id              String
+  customer_id             String
+  status                  String     @db.VarChar(255)
+  is_proforma             Boolean
+  is_paid                 Boolean
+  proforma_payment_date   DateTime?
+  wz_type                 WzType?
+  wz                      Wz[]
+  personal_collect        Boolean?
+  production_date         DateTime?
+  payment_deadline        DateTime
+  delivery_place_id       String?
+  delivery_city           String?
+  delivery_street         String?
+  delivery_building       String?
+  delivery_premises       String?
+  delivery_zipcode        String?
+  delivery_contact_number String?
+  delivery_date           DateTime
+  deliver_time            DateTime?
+  delivery_contact        String?
+  change_warehouse        Boolean?
+  warehouse_to_transport  String?
+  transport_cost          Int
+  order_history           String?
+  email_content           String?    @db.Text
+  document_path           String?
+  created_by              String?
+  created_at              DateTime   @default(now())
+  comments                Comment[]
+  lineItems               LineItem[]
+  user                    User?      @relation(fields: [created_by], references: [id])
+  customer                Customer   @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  proforma                Proforma?
+
+  @@index([customer_id], map: "customer_id")
+  @@index([created_by], map: "Order_created_by_fkey")
+}
+
+model LineItem {
+  id              String   @id @unique @default(cuid())
+  ordinal_number  Int?
+  order_id        String
+  wz_id           String?
+  product_id      String
+  product_name    String
+  quantity        String
+  quant_unit      String
+  helper_quantity String?
+  help_quant_unit String?
+  discount        String?
+  netto_cost      String?
+  brutto_cost     String?
+  vat_percentage  String?
+  vat_cost        String?
+  included_in_wz  Boolean?
+  is_used         Boolean?
+  order           Order    @relation(fields: [order_id], references: [id], onDelete: NoAction)
+  product         Product  @relation(fields: [product_id], references: [id], onDelete: NoAction)
+  wz              Wz?      @relation(fields: [wz_id], references: [id], onDelete: NoAction)
+
+  @@unique([id, order_id])
+  @@index([order_id], map: "LineItem_order_id_fkey")
+  @@index([product_id], map: "LineItem_product_id_fkey")
+}
+
+model Proforma {
+  id       String @id @default(cuid())
+  href     String
+  order_id String @unique
+  Order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+}
+
+model Wz {
+  id              String      @id @default(uuid())
+  doc_number      String?
+  type            WzType
+  unit_type       WzUnitType?
+  status          String
+  created_by      String?
+  created_at      DateTime    @default(now())
+  out_date        DateTime
+  issue_date      DateTime?
+  order_id        String
+  driver          String?
+  car             String?
+  cargo_person    String?
+  additional_info String?
+  pallet_type     String?
+  pallet_count    Int?
+  User            User?       @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  Order           Order       @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  line_items      LineItem[]
+
+  @@index([created_by], map: "Wz_created_by_fkey")
+  @@index([order_id], map: "Wz_order_id_fkey")
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  type        String
+  body        String    @db.Text
+  order_id    String?
+  product_id  String?
+  customer_id String?
+  Customer    Customer? @relation(fields: [customer_id], references: [id])
+  Order       Order?    @relation(fields: [order_id], references: [id])
+  Product     Product?  @relation(fields: [product_id], references: [id])
+
+  @@index([customer_id], map: "Comment_customer_id_fkey")
+  @@index([order_id], map: "Comment_order_id_fkey")
+  @@index([product_id], map: "Comment_product_id_fkey")
+}
+
+model Product {
+  id                             String     @id @default(cuid())
+  name                           String     @unique @db.VarChar(255)
+  description                    String?    @db.VarChar(255)
+  category                       String?
+  subcategory                    String?
+  sku                            String?
+  length                         String?
+  width                          String?
+  height                         String?
+  quantity_in_package            String?
+  actual_volume                  String?
+  quantity_needed_for_production String?
+  sales_volume                   String?
+  technological_volume           String?
+  eps_type                       String?
+  ean                            String?
+  weight                         String?
+  seasoning_time                 String?
+  manufacturer                   String?
+  primary_unit                   String?
+  first_helper_unit              String?
+  first_helper_unit_value        String?
+  second_helper_unit             String?
+  second_helper_unit_value       String?
+  is_sold                        Boolean?   @default(false)
+  is_produced                    Boolean?   @default(false)
+  is_internal                    Boolean?   @default(false)
+  is_one_time                    Boolean?   @default(false)
+  is_entrusted                   Boolean?   @default(false)
+  production_description         String?
+  image_path                     String?
+  raw_material_type              String?
+  raw_material_granulation       String?
+  packaging_weight               String?
+  packaging_type                 String?
+  price                          String?
+  auto_price_translate           Boolean?
+  min_price                      String?
+  vat                            String?
+  price_tolerance                String?
+  created_at                     DateTime   @default(now())
+  created_by                     String?
+  comments                       Comment[]
+  lineItems                      LineItem[]
+  users                          User?      @relation(fields: [created_by], references: [id])
+
+  @@index([id, name])
+  @@index([created_by], map: "Product_created_by_fkey")
+}
+
+model Permission {
+  id         String   @id @default(uuid())
+  name       String   @db.VarChar(255)
+  created_at DateTime @default(now())
+  created_by String
+  users      User     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Permissions_ibfk_1")
+  roles      Role[]   @relation("PermissionToRole")
+
+  @@index([created_by], map: "created_by")
+}
+
+model Account {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?  @db.Text
+  access_token             String?  @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?  @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  user                     User     @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Log {
+  id          String   @id @default(uuid())
+  user_id     String?
+  entity      String
+  entity_id   String
+  entity_name String?
+  eventType   String
+  changedData Json?
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  SALESMAN
+}
+
+enum PaymentType {
+  PREPAID
+  WIRE
+  CASH
+}
+
+enum PaymentPunctuality {
+  ON_TIME
+  OK
+  WARNING
+  LATE
+}
+
+enum WzType {
+  WZN
+  WZS
+  WZU
+}
+
+enum WzUnitType {
+  main
+  helper
+  both
+}
