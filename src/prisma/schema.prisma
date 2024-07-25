@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  name       String   @db.VarChar(255)
+  email      String   @db.VarChar(255)
+  username   String?  @db.VarChar(255)
+  password   String?  @db.VarChar(255)
+  created_at DateTime @default(now())
+  created_by String
+  users      User     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Customers_ibfk_1")
+  Order      Order[]
+
+  @@index([created_by], map: "created_by")
+}
+
+enum WzType {
+  WZN
+  WZS
+  WZU
+}
+
+model Order {
+  id                      String     @id @default(cuid())
+  foreign_id              String
+  customer_id             String
+  status                  String     @db.VarChar(255)
+  is_proforma             Boolean
+  proforma                Proforma?
+  is_paid                 Boolean
+  proforma_payment_date   DateTime
+  wz_type                 WzType
+  wz                      Wz[]
+  personal_collect        Boolean
+  production_date         DateTime?
+  payment_deadline        DateTime
+  delivery_place_id       String?
+  delivery_city           String?
+  delivery_street         String?
+  delivery_building       String?
+  delivery_zipcode        String?
+  delivery_contact_number String?
+  delivery_date           DateTime
+  deliver_time            DateTime?
+  transport_cost          Int
+  comments                Comment[]
+  order_history           String?
+  created_by              String
+  created_at              DateTime   @default(now())
+  document_path           String?
+  LineItem                LineItem[]
+
+  user User @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Order_ibfk_2")
+
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Order_ibfk_3")
+
+  @@index([customer_id], map: "customer_id")
+}
+
+model LineItem {
+  id              String @id @default(cuid())
+  order_id        String
+  product_id      String
+  quantity        Int
+  quant_unit      String
+  helper_quantity Int
+  help_quant_unit String
+  comment         String
+  discount        Int
+  netto_cost      Int
+  brutto_cost     Int
+  vat_percentage  Int
+  vat_cost        Int
+
+  order   Order   @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model Proforma {
+  id       String @id @default(cuid())
+  href     String
+  order_id String
+  Order    Order? @relation(fields: [order_id], references: [id])
+
+  @@unique([order_id])
+}
+
+model Wz {
+  id         String   @id @default(cuid())
+  status     String
+  created_at DateTime
+  out_date   DateTime
+  order_id   String
+  foreig_id  String
+  car        String
+  Order      Order    @relation(fields: [order_id], references: [id])
+}
+
+model Comment {
+  id       String  @id @default(cuid())
+  type     String
+  body     String
+  Order    Order?  @relation(fields: [order_id], references: [id])
+  order_id String?
+}
+
+model Permission {
+  id         String   @id @default(uuid())
+  name       String   @db.VarChar(255)
+  created_at DateTime @default(now())
+  created_by String
+  users      User     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Permissions_ibfk_1")
+  roles      Role[]
+
+  @@index([created_by], map: "created_by")
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String     @db.VarChar(255)
+  description String     @db.VarChar(255)
+  price       Int
+  category    String     @db.VarChar(255)
+  created_at  DateTime   @default(now())
+  created_by  String
+  users       User       @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Products_ibfk_1")
+  LineItem    LineItem[]
+
+  @@index([created_by], map: "created_by")
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @db.VarChar(255)
+  created_at  DateTime     @default(now())
+  created_by  String
+  users       User         @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Roles_ibfk_1")
+  permissions Permission[]
+
+  @@index([created_by], map: "created_by")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  name                  String?
+  username              String?                @unique
+  email                 String?                @unique
+  emailVerified         DateTime?
+  password              String?
+  Account               Account?
+  role                  UserRole               @default(USER)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  isTwoFactorEnabled    Boolean                @default(true)
+  twoFactorConfirmation TwoFactorConfirmation?
+  Customers             Customer[]
+  Orders                Order[]
+  Permissions           Permission[]
+  Products              Product[]
+  Roles                 Role[]
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String  @unique
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

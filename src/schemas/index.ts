@@ -1,0 +1,54 @@
+import * as z from "zod";
+
+export const NewPasswordSchema = z.object({
+  password: z.string().min(6, { message: "Minimum 6 characters" }),
+});
+
+export const ResetSchema = z.object({
+  email: z.string().email({ message: "Email is required" }),
+});
+
+export const LoginSchema = z.object({
+  email: z.string().email({ message: "Invalid email" }).min(4),
+  password: z.string().min(1, { message: "Password is required" }),
+  code: z.optional(z.string().min(6, { message: "Minimum 6 characters" })),
+});
+
+export const RegisterSchema = z.object({
+  email: z.string().email({ message: "Invalid email" }).min(4),
+  password: z.string().min(6, { message: "Minimum 6 characters" }),
+  name: z.string().min(3, { message: "Name is required" }),
+});
+
+export const TwoFactorSchema = z.object({
+  code: z.string().min(6, { message: "Minimum 6 characters" }),
+});
+
+export const OrderSchema = z.object({
+  id: z.string().optional(),
+  foreign_id: z.string().optional(),
+  customer_id: z.string().optional(),
+  status: z.string().optional(), // TODO: enum for statuses
+  is_proforma: z.boolean().optional(),
+  proforma_payment_date: z.date().optional(),
+  wz_type: z.string().optional(),
+  personal_collect: z.boolean().optional(),
+  delivery_date: z.date().optional(),
+  production_date: z.date().optional(),
+  payment_deadline: z.date().optional(),
+  delivery_place_id: z.string().optional(),
+  delivery_city: z.string().optional(),
+  delivery_street: z.string().optional(),
+  delivery_building: z.string().optional(),
+  delivery_zipcode: z.string().optional(),
+  delivery_contact_number: z.string().optional(),
+  deliver_time: z.date().optional(),
+  transport_cost: z.string().optional(),
+  order_history: z.string().optional(),
+  created_at: z.date().optional(),
+  created_by: z.string().optional(),
+  is_paid: z.boolean().optional(),
+  document_path: z.any(),
+  file: z.instanceof(File).optional(),
+  nip: z.string().optional(),
+});

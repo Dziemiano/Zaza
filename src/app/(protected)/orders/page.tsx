@@ -1,0 +1,64 @@
+import { auth } from "@/auth";
+import { OrdersTable } from "@/components/orders/ordersTable";
+
+import { Button } from "@/components/ui/button";
+import { addData } from "@/actions/orders";
+import { AddBut } from "./addBut";
+import { getAllOrders } from "@/data/orders";
+import { Suspense } from "react";
+import { OrderView } from "@/components/orders/orderView";
+import { useState } from "react";
+import { OrderForm } from "@/components/orders/ordersForm";
+import { getAllCustomers } from "@/data/customers";
+
+const OrderPage = async () => {
+  // const [open, setOpen] = useState(false);
+  // const [orderId, setOrderId] = useState<string | null>(null);
+
+  const session = await auth();
+
+  const userId = session.user?.id;
+
+  const orders = await getAllOrders();
+
+  const customers = await getAllCustomers();
+
+  return (
+    <div className="m-5">
+      <div className="flex flex-col justify-center">
+        <div className="flex gap-4 items-center text-black">
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/6940c2d742c79e36db9201da6abbfd61adfd7423d7f2812f27c9da290dda59cf?"
+            className="shrink-0 self-stretch my-auto aspect-square w-[25px]"
+          />
+          <div className="self-stretch text-3xl font-bold">Zamówienia</div>
+        </div>
+        <div className="flex gap-1 mt-4 text-xs text-neutral-400">
+          <div>Pulpit</div>
+          <div>/</div>
+          <div>Zamówienia</div>
+        </div>
+      </div>
+      <div className="mt-4 mb-4 flex flex-row">
+        <div className="min-w-[24%] mr-4">
+          <OrderForm customers={customers || []} userId={userId} />
+        </div>
+        <Button variant={"zaza"} className="w-max min-w-[24%] mr-4 font-normal">
+          Drukuj zamówienie
+        </Button>
+        <Button variant={"zaza"} className="w-max min-w-[24%] mr-4 font-normal">
+          Drukuj proformę do zamówienia
+        </Button>
+        <Button variant={"zaza"} className="w-max min-w-[24%] font-normal">
+          Przekaż zamówienie do produkcji
+        </Button>
+      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <OrdersTable orders={orders || []} />
+      </Suspense>
+    </div>
+  );
+};
+
+export default OrderPage;
