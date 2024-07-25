@@ -302,7 +302,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                     key={column.id}
                     className="flex items-center space-x-2 mr-2 p-2 rounded-xl"
                   >
-                    <Label>{names[column.id]} </Label>
+                    <Label key={column.id}>{names[column.id]} </Label>
                     <Switch
                       key={column.id}
                       className="capitalize"
@@ -331,8 +331,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                   customer: "Klient",
                 };
                 return (
-                  <div className="flex flex-col">
-                    <Label htmlFor="id-filter" className="text-sm mb-1">
+                  <div key={column.id} className="flex flex-col">
+                    <Label
+                      key={column.id}
+                      htmlFor="id-filter"
+                      className="text-sm mb-1"
+                    >
                       {names[column.id]}
                     </Label>
 

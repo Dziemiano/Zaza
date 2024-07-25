@@ -77,6 +77,7 @@ export const CustomerCombo = () => {
                   }}
                 >
                   <Check
+                    key={framework.value}
                     className={cn(
                       "mr-2 h-4 w-4",
                       value === framework.value ? "opacity-100" : "opacity-0"

@@ -232,6 +232,7 @@ export const OrderForm = ({ customers, userId }) => {
                                           }}
                                         >
                                           <Check
+                                            key={language.value}
                                             className={cn(
                                               "mr-2 h-4 w-4",
                                               language.value === field.value
