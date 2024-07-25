@@ -254,6 +254,16 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       columnOrder,
     },
   });
+  const names: { [key: string]: string } = {
+    id: "Numer zamówienia",
+    status: "Status",
+    created_at: "Data utworzenia",
+    total: "Suma",
+    payment_status: "Status płatnosci",
+    payment_method: "Metoda płatnosci",
+    wz_type: "Typ WZ",
+    customer: "Klient",
+  };
 
   return (
     <div className="w-full">
@@ -287,16 +297,6 @@ export function OrdersTable({ orders }: OrdersTableProps) {
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-                const names = {
-                  id: "Numer zamówienia",
-                  status: "Status",
-                  created_at: "Data utworzenia",
-                  total: "Suma",
-                  payment_status: "Status płatnosci",
-                  payment_method: "Metoda płatnosci",
-                  wz_type: "Typ WZ",
-                  customer: "Klient",
-                };
                 return (
                   <div
                     key={column.id}
@@ -320,16 +320,6 @@ export function OrdersTable({ orders }: OrdersTableProps) {
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-                const names = {
-                  id: "Numer zamówienia",
-                  status: "Status",
-                  created_at: "Data utworzenia",
-                  total: "Suma",
-                  payment_status: "Status płatnosci",
-                  payment_method: "Metoda płatnosci",
-                  wz_type: "Typ WZ",
-                  customer: "Klient",
-                };
                 return (
                   <div key={column.id} className="flex flex-col">
                     <Label

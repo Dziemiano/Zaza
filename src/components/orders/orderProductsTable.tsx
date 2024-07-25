@@ -196,7 +196,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const order = row.original;
+      const order: any = row.original;
 
       return (
         <DropdownMenu>

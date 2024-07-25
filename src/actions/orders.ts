@@ -6,7 +6,23 @@ import fs from "fs/promises";
 import { OrderSchema } from "@/schemas";
 import { revalidatePath } from "next/cache";
 
-export const createOrder = async (data, fileF) => {
+export const createOrder = async (
+  data: {
+    transport_cost: string;
+    foreign_id: any;
+    customer_id: any;
+    status: any;
+    is_proforma: any;
+    proforma_payment_date: any;
+    wz_type: any;
+    personal_collect: any;
+    payment_deadline: any;
+    delivery_date: any;
+    created_by: any;
+    is_paid: any;
+  },
+  fileF: any[] | FormData
+) => {
   const result = OrderSchema.safeParse(Object.fromEntries(fileF.entries()));
   const file = result.data.file as File;
 
@@ -42,7 +58,55 @@ export const createOrder = async (data, fileF) => {
   };
 };
 
-export const addData = async (data) => {
+export const addData = async (data: {
+  productData: any;
+  orderData?: {
+    foreign_id: string;
+    customer_id: string;
+    status: string;
+    is_proforma: boolean;
+    proforma_payment_date: string;
+    wz_type: string;
+    personal_collect: boolean;
+    delivey_date: string;
+    production_date: string;
+    payment_deadline: string;
+    delivery_place_id: string;
+    delivery_city: string;
+    delivery_street: string;
+    delivery_building: string;
+    delivery_zipcode: string;
+    delivery_contact_number: string;
+    delivery_date: string;
+    deliver_time: string;
+    transport_cost: number;
+    order_history: string;
+    created_by: string;
+    is_paid: boolean;
+  };
+  lineItems: any;
+  foreign_id?: any;
+  customer_id?: any;
+  status?: any;
+  is_proforma?: any;
+  proforma_payment_date?: any;
+  wz_type?: any;
+  personal_collect?: any;
+  production_date?: any;
+  payment_deadline?: any;
+  delivery_place_id?: any;
+  delivery_city?: any;
+  delivery_street?: any;
+  delivery_building?: any;
+  delivery_zipcode?: any;
+  delivery_contact_number?: any;
+  delivery_date?: any;
+  deliver_time?: any;
+  transport_cost?: any;
+  order_history?: any;
+  created_by?: any;
+  is_paid?: any;
+}) => {
   // Create a new Product
   const product = await db.product.create({
     data: {
@@ -82,7 +146,7 @@ export const addData = async (data) => {
   });
 
   // Create LineItems for the Order
-  const lineItemsData = data.lineItems.map((item) => ({
+  const lineItemsData = data.lineItems.map((item: any) => ({
     ...item,
     order_id: order.id,
     product_id: product.id,

@@ -88,7 +88,14 @@ export type OrderViewProps = {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const OrderForm = ({ customers, userId }) => {
+export const OrderForm = ({
+  customers,
+  userId,
+}: {
+  customers: any[];
+  userId: string;
+}) => {
+  // Rest of the code...
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
