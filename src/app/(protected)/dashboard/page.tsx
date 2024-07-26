@@ -225,7 +225,7 @@ const DashboardPage = async () => {
           />
           <div>Strona główna</div>
         </div>
-        <div className="grid grid-cols-4 gap-5 grid-rows-4 max-h-screen">
+        <div className="grid grid-cols-4 gap-5 grid-rows-4 max-h-screen mt-5">
           <div className="row-span-4">
             <DashboardCard
               headerNumber="01"

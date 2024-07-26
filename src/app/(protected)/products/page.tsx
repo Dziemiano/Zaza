@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 
-import { OrdersTable } from "@/components/customers/ordersTable";
+import { ProductsTable } from "@/components/products/productsTable";
 
 import { Button } from "@/components/ui/button";
 import { addData } from "@/actions/orders";
@@ -42,7 +42,7 @@ const ProductsPage = async () => {
         </div>
       </div>
       <Suspense fallback={<div>Loading...</div>}>
-        <OrdersTable orders={orders || []} />
+        <ProductsTable orders={orders || []} />
       </Suspense>
     </div>
   );

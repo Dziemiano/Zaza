@@ -133,7 +133,7 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
   {
     accessorKey: "id",
-    header: "Numer zamówienia",
+    header: "Indeks",
     cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
   },
 
@@ -146,7 +146,7 @@ export const columns: ColumnDef<unknown, any>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Klient
+          Nazwa
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -157,14 +157,14 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Kategoria",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("status")}</div>
     ),
   },
   {
     accessorKey: "wz_type",
-    header: "Typ WZ",
+    header: "Magazyn łącznie",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("wz_type")}</div>
     ),
@@ -188,7 +188,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const order = row.original;
+      const order: any = row.original;
 
       return (
         <DropdownMenu>
@@ -217,7 +217,7 @@ export const columns: ColumnDef<unknown, any>[] = [
 type OrdersTableProps = {
   orders: Order[];
 };
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function ProductsTable({ orders }: OrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});

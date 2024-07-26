@@ -146,7 +146,7 @@ export const CustomerForm = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full font-normal" variant="zazaGrey">
-          Dodaj klienta zamówienie
+          Dodaj klienta
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[80%] min-h-[85%] flex flex-col content-start">

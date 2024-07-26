@@ -133,7 +133,7 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
   {
     accessorKey: "id",
-    header: "Numer zamówienia",
+    header: "Kilent",
     cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
   },
 
@@ -146,7 +146,7 @@ export const columns: ColumnDef<unknown, any>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Klient
+          NIP
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -157,14 +157,14 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Filie",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("status")}</div>
     ),
   },
   {
     accessorKey: "wz_type",
-    header: "Typ WZ",
+    header: "Email",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("wz_type")}</div>
     ),
