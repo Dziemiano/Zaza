@@ -24,9 +24,11 @@ export const createOrder = async (
   fileF: any[] | FormData
 ) => {
   const result = OrderSchema.safeParse(Object.fromEntries(fileF.entries()));
-  const file = result.data.file as File;
+  const file = result.data?.file as File;
 
   let filePath = "";
+
+  console.log(result.data);
 
   if (file) {
     await fs.mkdir("/tmp/documents", { recursive: true });

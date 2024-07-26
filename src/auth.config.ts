@@ -37,27 +37,28 @@ export default {
     async signIn({ user }) {
       const existingUser = await getUserById(user.id);
 
+      //RESEND features waiting for new email service
       //Prevent sign in if email is not verified
-      if (!existingUser?.emailVerified) {
-        return false;
-      }
+      // if (!existingUser?.emailVerified) {
+      //   return false;
+      // }
 
-      if (existingUser.isTwoFactorEnabled) {
-        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
-          existingUser.id
-        );
+      // if (existingUser.isTwoFactorEnabled) {
+      //   const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+      //     existingUser.id
+      //   );
 
-        if (!twoFactorConfirmation) {
-          return false;
-        }
+      //   if (!twoFactorConfirmation) {
+      //     return false;
+      //   }
 
-        //Delete two factor confirmation after every sign in
-        await db.twoFactorConfirmation.delete({
-          where: {
-            userId: existingUser.id,
-          },
-        });
-      }
+      //   //Delete two factor confirmation after every sign in
+      //   await db.twoFactorConfirmation.delete({
+      //     where: {
+      //       userId: existingUser.id,
+      //     },
+      //   });
+      // }
 
       return true;
     },

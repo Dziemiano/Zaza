@@ -51,4 +51,28 @@ export const OrderSchema = z.object({
   document_path: z.any(),
   file: z.instanceof(File).optional(),
   nip: z.string().optional(),
+  comments: z.object({
+    general: z.array(z.string()),
+    transport: z.array(z.string()),
+    warehouse: z.array(z.string()),
+  }),
+});
+
+export const CustomerSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(3, { message: "Name is required" }),
+  email: z.string().email({ message: "Invalid email" }).min(4),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  nip: z.string().optional(),
+  created_at: z.date().optional(),
+  created_by: z.string().optional(),
+});
+
+export const ProductSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(3, { message: "Name is required" }),
+  description: z.string().optional(),
+  created_at: z.date().optional(),
+  created_by: z.string().optional(),
 });

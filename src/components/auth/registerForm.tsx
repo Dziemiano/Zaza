@@ -52,8 +52,8 @@ export const RegisterForm = () => {
   };
   return (
     <CardWrapper
-      headerLabel="Create an account"
-      backButtonLabel="Already have an account?"
+      headerLabel="Utwórz konto"
+      backButtonLabel="Posiadasz już konto?"
       backButtonHref="/login"
     >
       <Form {...form}>
@@ -107,7 +107,7 @@ export const RegisterForm = () => {
               render={({ field }) => (
                 <FormItem className="flex flex-row">
                   <FormLabel className="flex place-content-center pt-6 pr-1">
-                    Name
+                    Nazwa
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -124,7 +124,7 @@ export const RegisterForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button type="submit">Register</Button>
+          <Button type="submit">Utwórz konto</Button>
         </form>
       </Form>
     </CardWrapper>

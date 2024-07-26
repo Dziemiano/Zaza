@@ -41,6 +41,10 @@ export default auth((req) => {
     }
   }
 
+  if (req.nextUrl.pathname.endsWith("/")) {
+    return Response.redirect(new URL("/dashboard", nextUrl));
+  }
+
   return null;
 });
 

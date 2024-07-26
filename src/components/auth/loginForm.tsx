@@ -64,7 +64,7 @@ export const LoginForm = () => {
   return (
     <CardWrapper
       headerLabel="Login"
-      backButtonLabel="Create an account"
+      backButtonLabel="Utwórz konto"
       backButtonHref="/register"
     >
       <Form {...form}>
@@ -114,7 +114,7 @@ export const LoginForm = () => {
           <FormError message={error} />
           <FormSuccess message={success} />
           <div className="flex flex-col items-center">
-            <PasswordResetForm />
+            {/* <PasswordResetForm /> */}
             <Button
               className="mt-4 text-black text-lg w-48  h-10  py-3 bg-white rounded-lg shadow "
               type="submit"
@@ -122,6 +122,10 @@ export const LoginForm = () => {
               Zaloguj się
             </Button>
           </div>
+          {/*
+
+          RESEND feauture to be enabled with new mail service
+
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -161,7 +165,7 @@ export const LoginForm = () => {
                 </form>
               </Form>
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
         </form>
       </Form>
     </CardWrapper>

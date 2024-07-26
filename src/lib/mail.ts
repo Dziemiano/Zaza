@@ -12,7 +12,7 @@ export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const confirmLink = `http://localhost:3000/new-password?token=${token}`;
+  const confirmLink = `http://zaza.amitec.com.pl/new-password?token=${token}`;
   await resend.emails.send({
     from: "onboarding@resend.dev",
     to: email,
@@ -22,7 +22,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
 };
 
 export const sendVerificationEmail = async (email: string, token: string) => {
-  const confirmLink = `http://localhost:3000/new-verification?token=${token}`;
+  const confirmLink = `http://zaza.amitec.com.pl/new-verification?token=${token}`;
   await resend.emails.send({
     from: "onboarding@resend.dev",
     to: email,
