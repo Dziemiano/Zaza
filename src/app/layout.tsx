@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import localFont from "next/font/local";
+import { Suspense } from "react";
 
 const objectivity = localFont({
   src: "../../public/fonts/objectivity.regular.otf",
@@ -20,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${objectivity.variable} font-sans`}>{children}</body>
+      <Suspense fallback={<div>Loading...</div>}>
+        <body className={`${objectivity.variable} font-sans`}>{children}</body>
+      </Suspense>
     </html>
   );
 }
