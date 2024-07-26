@@ -89,7 +89,7 @@ export type OrderViewProps = {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const OrderForm = ({
+export const ProductForm = ({
   customers,
   userId,
 }: {
@@ -146,7 +146,7 @@ export const OrderForm = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full font-normal" variant="zazaGrey">
-          Utwórz nowe zamówienie
+          Stwórz nowy produkt
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[80%] min-h-[85%] flex flex-col content-start">
