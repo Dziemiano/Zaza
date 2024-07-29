@@ -65,6 +65,7 @@ import { Calendar } from "../ui/calendar";
 import { getAllCustomers } from "@/data/customers";
 import { createOrder } from "@/actions/orders";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { OrderForm } from "./ordersForm";
 
 // Define a more specific type for the order object
 interface OrderType {
@@ -99,6 +100,9 @@ export const OrderView: React.FC<OrderViewProps> = ({
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
+
+  const userId = useCurrentUser()?.id;
+  const customers = [];
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toDateString();
@@ -145,6 +149,12 @@ export const OrderView: React.FC<OrderViewProps> = ({
               <TabsTrigger value="documents">Dokumenty</TabsTrigger>
               <TabsTrigger value="completion">Realizacja</TabsTrigger>
               <TabsTrigger value="comments">Uwagi</TabsTrigger>
+              <OrderForm
+                customers={customers || []}
+                userId={userId}
+                editMode={true}
+                order={order}
+              />
             </TabsList>
             <TabsContent value="order">
               <div className="flex flex-row  mt-10 mb-5">

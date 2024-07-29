@@ -104,11 +104,13 @@ model Wz {
 }
 
 model Comment {
-  id       String  @id @default(cuid())
-  type     String
-  body     String
-  Order    Order?  @relation(fields: [order_id], references: [id])
-  order_id String?
+  id        String   @id @default(cuid())
+  type      String
+  body      String
+  Order     Order?   @relation(fields: [order_id], references: [id])
+  order_id  String?
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId String?
 }
 
 model Permission {
@@ -123,15 +125,48 @@ model Permission {
 }
 
 model Product {
-  id          String     @id @default(uuid())
-  name        String     @db.VarChar(255)
-  description String     @db.VarChar(255)
-  price       Int
-  category    String     @db.VarChar(255)
-  created_at  DateTime   @default(now())
-  created_by  String
-  users       User       @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Products_ibfk_1")
-  LineItem    LineItem[]
+  id                             String     @id @default(uuid())
+  name                           String     @db.VarChar(255)
+  description                    String?    @db.VarChar(255)
+  category                       String?
+  sku                            String?
+  length                         String?
+  width                          String?
+  height                         String?
+  quantity_in_package            String?
+  actual_volume                  String?
+  quantity_needed_for_production String?
+  sales_volume                   String?
+  technological_volume           String?
+  eps_type                       String?
+  ean                            String?
+  weight                         String?
+  seasoning_time                 String?
+  manufacturer                   String?
+  primary_unit                   String?
+  secondary_unit                 String?
+  secondary_unit_volume          String?
+  is_sold                        Boolean?   @default(false)
+  is_produced                    Boolean?   @default(false)
+  is_internal                    Boolean?   @default(false)
+  is_one_time                    Boolean?   @default(false)
+  is_entrusted                   Boolean?   @default(false)
+  production_description         String?
+  image_path                     String?
+  raw_material_type              String?
+  raw_material_granulation       String?
+  packaging_weight               String?
+  packaging_type                 String?
+  price                          String?
+  auto_price_translate           Boolean?
+  min_price                      String?
+  vat                            String?
+  price_tolerance                String?
+  created_at                     DateTime   @default(now())
+  created_by                     String
+  comments                       Comment[]
+  users                          User       @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Products_ibfk_1")
+  LineItem                       LineItem[]
 
   @@index([created_by], map: "created_by")
 }

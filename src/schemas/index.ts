@@ -51,11 +51,13 @@ export const OrderSchema = z.object({
   document_path: z.any(),
   file: z.instanceof(File).optional(),
   nip: z.string().optional(),
-  comments: z.object({
-    general: z.array(z.string()),
-    transport: z.array(z.string()),
-    warehouse: z.array(z.string()),
-  }),
+  comments: z
+    .object({
+      general: z.array(z.string()),
+      transport: z.array(z.string()),
+      warehouse: z.array(z.string()),
+    })
+    .optional(),
 });
 
 export const CustomerSchema = z.object({
@@ -71,8 +73,47 @@ export const CustomerSchema = z.object({
 
 export const ProductSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(3, { message: "Name is required" }),
-  description: z.string().optional(),
+  name: z.string().min(1, "Name is required"),
+  category: z.string().min(1, "Category is required"),
+  sku: z.string().min(1, "SKU is required"),
+  unit: z.string().min(1, "Unit is required"),
+  secondary_unit: z.string().optional(),
+  isForSale: z.boolean(),
+  isInProduction: z.boolean(),
+  isInternalProduct: z.boolean(),
+  isOneTimeProduct: z.boolean(),
+  isEntrustedProduct: z.boolean(),
+  length: z.string().optional(),
+  width: z.string().optional(),
+  height: z.string().optional(),
+  packQuantity: z.string().optional(),
+  actualShapeVolume: z.string().optional(),
+  minProductionQuantity: z.string().optional(),
+  salesVolume: z.string().optional(),
+  technologicalVolume: z.string().optional(),
+  epsType: z.string().optional(),
+  weight: z.string().optional(),
+  seasoningTime: z.string().optional(),
+  producer: z.string().optional(),
+  ean: z.string().optional(),
+  production_description: z.string().optional(),
+  file: z.instanceof(File).optional(),
+  raw_material_type: z.string().optional(),
+  raw_material_granulation: z.string().optional(),
+  packaging_weight: z.string().optional(),
+  packaging_type: z.string().optional(),
   created_at: z.date().optional(),
   created_by: z.string().optional(),
+  price: z.string().optional(),
+  auto_price_translate: z.boolean().optional(),
+  min_price: z.string().optional(),
+  vat: z.string().optional(),
+  price_tolerance: z.string().optional(),
+  comments: z
+    .object({
+      general: z.array(z.string()),
+      transport: z.array(z.string()),
+      warehouse: z.array(z.string()),
+    })
+    .optional(),
 });

@@ -83,20 +83,19 @@ import { createOrder } from "@/actions/orders";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { CommentSection } from "./commentsFormElement";
 
-export type OrderViewProps = {
-  order: {};
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+export type OrderFormProps = {
+  customers: any[];
+  userId: string;
+  editMode?: boolean;
+  order?: z.infer<typeof OrderSchema>;
 };
 
 export const OrderForm = ({
   customers,
   userId,
-}: {
-  customers: any[];
-  userId: string;
-}) => {
-  // Rest of the code...
+  editMode,
+  order,
+}: OrderFormProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -105,7 +104,7 @@ export const OrderForm = ({
 
   const form = useForm<z.infer<typeof OrderSchema>>({
     resolver: zodResolver(OrderSchema),
-    defaultValues: {
+    defaultValues: order || {
       created_by: userId,
       personal_collect: false,
       is_paid: false,
@@ -135,18 +134,25 @@ export const OrderForm = ({
     setSuccess("");
 
     startTransition(() => {
-      createOrder(data, formData).then((response) => {
-        setSuccess(response?.success);
-        setOpen(false);
-      });
+      if (order) {
+        // Call an update function instead of create
+        // updateOrder(order.id, data, formData).then((response) => {
+        //   setSuccess(response?.success);
+        //   setOpen(false);
+        // }); console.log("Order updated successfully");
+      } else {
+        createOrder(data, formData).then((response) => {
+          setSuccess(response?.success);
+          setOpen(false);
+        });
+      }
     });
   };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full font-normal" variant="zazaGrey">
-          Utwórz nowe zamówienie
+          {editMode ? "Edytuj zamówienie" : "Utwórz nowe zamówienie"}
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[80%] min-h-[85%] flex flex-col content-start">
@@ -159,7 +165,7 @@ export const OrderForm = ({
                 className="shrink-0 self-stretch my-auto aspect-square w-[25px]"
               />
               <div className="self-stretch text-3xl font-bold">
-                Nowe zamówienie
+                {order ? "Edytuj zamówienie" : "Nowe zamówienie"}
               </div>
               <div className="flex gap-2 self-stretch my-auto text-sm">
                 <div className="shrink-0 my-auto w-2.5 bg-amber-300 rounded-full h-[11px]" />
@@ -456,9 +462,9 @@ export const OrderForm = ({
                                     )}
                                   >
                                     {field.value ? (
-                                      format(field.value, "PPP")
+                                      format(new Date(field.value), "PPP")
                                     ) : (
-                                      <span>Pick a date</span>
+                                      <span>Wybierz datę</span>
                                     )}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                   </Button>
@@ -470,7 +476,11 @@ export const OrderForm = ({
                               >
                                 <Calendar
                                   mode="single"
-                                  selected={field.value}
+                                  selected={
+                                    field.value
+                                      ? new Date(field.value)
+                                      : undefined
+                                  }
                                   onSelect={field.onChange}
                                   disabled={(date) =>
                                     date > new Date() ||
@@ -503,7 +513,7 @@ export const OrderForm = ({
                                     )}
                                   >
                                     {field.value ? (
-                                      format(field.value, "PPP")
+                                      format(new Date(field.value), "PPP")
                                     ) : (
                                       <span>Wybierz datę</span>
                                     )}
@@ -571,7 +581,7 @@ export const OrderForm = ({
                                     )}
                                   >
                                     {field.value ? (
-                                      format(field.value, "PPP")
+                                      format(new Date(field.value), "PPP")
                                     ) : (
                                       <span>Wybierz datę</span>
                                     )}
