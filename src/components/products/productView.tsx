@@ -91,7 +91,7 @@ export interface OrderViewProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const OrderView: React.FC<OrderViewProps> = ({
+export const ProductView: React.FC<OrderViewProps> = ({
   order,
   isOpen,
   setIsOpen,
@@ -226,7 +226,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
                     Produkty
                   </div>
                 </div>
-                <OrderProductsTable orders={order.LineItem} />
               </div>
             </TabsContent>
 

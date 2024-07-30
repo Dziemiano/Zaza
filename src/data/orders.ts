@@ -1,5 +1,14 @@
 import db from "@/db/db";
 
+export const getOrdersCount = async () => {
+  try {
+    const count = await db.order.count();
+    return count;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const getAllOrders = async () => {
   try {
     const orders = await db.order.findMany({

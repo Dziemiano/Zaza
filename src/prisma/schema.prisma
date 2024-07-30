@@ -7,18 +7,109 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Customer {
-  id         String   @id @default(cuid())
-  name       String   @db.VarChar(255)
-  email      String   @db.VarChar(255)
-  username   String?  @db.VarChar(255)
-  password   String?  @db.VarChar(255)
-  created_at DateTime @default(now())
-  created_by String
-  users      User     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Customers_ibfk_1")
-  Order      Order[]
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @db.VarChar(255)
+  created_at  DateTime     @default(now())
+  created_by  String
+  users       User         @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Roles_ibfk_1")
+  permissions Permission[]
 
   @@index([created_by], map: "created_by")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  SALESMAN
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  name                  String?
+  username              String?                @unique
+  email                 String?                @unique
+  emailVerified         DateTime?
+  password              String?
+  phone_number          String?
+  Account               Account?
+  role                  UserRole               @default(USER)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  isTwoFactorEnabled    Boolean                @default(false)
+  twoFactorConfirmation TwoFactorConfirmation?
+  customers_created     Customer[]             @relation("created_by")
+  customers_salesman    Customer[]             @relation("salesman")
+  branches_salesman     CompanyBranch[]
+  Orders                Order[]
+  Permissions           Permission[]
+  Products              Product[]
+  Roles                 Role[]
+}
+
+enum PaymentType {
+  PREPAID
+  WIRE
+  CASH
+}
+
+enum PaymentPunctuality {
+  ON_TIME
+  OK
+  WARNING
+  NOT_ON_TIME
+}
+
+model Customer {
+  id                  String              @id @default(cuid())
+  nip                 String
+  symbol              String
+  name                String              @db.VarChar(255)
+  primary_email       String              @db.VarChar(255)
+  documents_email     String
+  phone_number        String
+  street              String
+  building            String
+  city                String
+  postal_code         String
+  country             String
+  payment_type        PaymentType         @default(PREPAID)
+  customer_type       String?
+  payment_punctuality PaymentPunctuality?
+  comments            Comment[]
+  salesman            User[]              @relation("salesman")
+  branch              CompanyBranch[]
+  credit_limit        String
+  max_discount        String
+  send_email_invoice  Boolean             @default(false)
+  invoice_street      String
+  invoice_building    String
+  invoice_city        String
+  invoice_postal_code String
+  invoice_country     String
+  created_at          DateTime            @default(now())
+  created_by          User                @relation("created_by", fields: [created_by_id], references: [id])
+  created_by_id       String
+  Orders              Order[]
+
+  @@index([nip], map: "nip")
+  @@index([symbol], map: "symbol")
+}
+
+model CompanyBranch {
+  id           String   @id @default(cuid())
+  name         String
+  customer_id  String
+  salesman_id  String
+  street       String
+  building     String
+  postal_code  String
+  country      String
+  person       String
+  phone_number String
+  email        String
+  salesman     User     @relation(fields: [salesman_id], references: [id])
+  customer     Customer @relation(fields: [customer_id], references: [id])
 }
 
 enum WzType {
@@ -28,7 +119,7 @@ enum WzType {
 }
 
 model Order {
-  id                      String     @id @default(cuid())
+  id                      String     @id
   foreign_id              String
   customer_id             String
   status                  String     @db.VarChar(255)
@@ -104,13 +195,15 @@ model Wz {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  type      String
-  body      String
-  Order     Order?   @relation(fields: [order_id], references: [id])
-  order_id  String?
-  Product   Product? @relation(fields: [productId], references: [id])
-  productId String?
+  id          String    @id @default(cuid())
+  type        String
+  body        String
+  order_id    String?
+  product_id  String?
+  customer_id String?
+  Order       Order?    @relation(fields: [order_id], references: [id])
+  Product     Product?  @relation(fields: [product_id], references: [id])
+  Customer    Customer? @relation(fields: [customer_id], references: [id])
 }
 
 model Permission {
@@ -125,7 +218,7 @@ model Permission {
 }
 
 model Product {
-  id                             String     @id @default(uuid())
+  id                             String     @id @default(cuid())
   name                           String     @db.VarChar(255)
   description                    String?    @db.VarChar(255)
   category                       String?
@@ -169,42 +262,6 @@ model Product {
   LineItem                       LineItem[]
 
   @@index([created_by], map: "created_by")
-}
-
-model Role {
-  id          String       @id @default(uuid())
-  name        String       @db.VarChar(255)
-  created_at  DateTime     @default(now())
-  created_by  String
-  users       User         @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Roles_ibfk_1")
-  permissions Permission[]
-
-  @@index([created_by], map: "created_by")
-}
-
-enum UserRole {
-  ADMIN
-  USER
-}
-
-model User {
-  id                    String                 @id @default(cuid())
-  name                  String?
-  username              String?                @unique
-  email                 String?                @unique
-  emailVerified         DateTime?
-  password              String?
-  Account               Account?
-  role                  UserRole               @default(USER)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  isTwoFactorEnabled    Boolean                @default(true)
-  twoFactorConfirmation TwoFactorConfirmation?
-  Customers             Customer[]
-  Orders                Order[]
-  Permissions           Permission[]
-  Products              Product[]
-  Roles                 Role[]
 }
 
 model Account {

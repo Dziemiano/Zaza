@@ -48,7 +48,7 @@ export const OrderSchema = z.object({
   created_at: z.date().optional(),
   created_by: z.string().optional(),
   is_paid: z.boolean().optional(),
-  document_path: z.any(),
+  document_path: z.any().optional(),
   file: z.instanceof(File).optional(),
   nip: z.string().optional(),
   comments: z

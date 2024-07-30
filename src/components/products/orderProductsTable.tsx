@@ -49,7 +49,7 @@ import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 
-import { OrderView } from "./orderView";
+import { ProductView } from "./productView";
 
 // TODO: drag and drop colums
 // import {

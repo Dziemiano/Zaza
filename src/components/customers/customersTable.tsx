@@ -101,6 +101,39 @@ export type Order = {
   customer: {};
 };
 
+export type Customer = {
+  id: String;
+  nip: String;
+  symbol: String;
+  name: String;
+  primary_email: String;
+  documents_email: String;
+  phone_number: String;
+  street: String;
+  building: String;
+  city: String;
+  postal_code: String;
+  country: String;
+  payment_type: "PREPAID" | "WIRE" | "CASH";
+  customer_type: String;
+  payment_punctuality: String;
+  comments: String[];
+  salesman: String[];
+  branch: String[];
+  credit_limit: String;
+  max_discount: String;
+  send_email_invoice: Boolean;
+  invoice_street: String;
+  invoice_building: String;
+  invoice_city: String;
+  invoice_postal_code: String;
+  invoice_country: String;
+  created_at: Date;
+  created_by: String;
+  created_by_id: String;
+  Orders: Order[];
+};
+
 export type Payment = {
   id: string;
   amount: number;
@@ -108,65 +141,87 @@ export type Payment = {
   email: string;
 };
 
-export const columns: ColumnDef<unknown, any>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "id",
-    header: "Kilent",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
-  },
+const PaymentType = {
+  PREPAID: "Przedpłata",
+  WIRE: "Przelew",
+  CASH: "Gotówka",
+};
 
+export const columns: ColumnDef<unknown, any>[] = [
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={
+  //         table.getIsAllPageRowsSelected() ||
+  //         (table.getIsSomePageRowsSelected() && "indeterminate")
+  //       }
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
-    accessorKey: "customer.name",
-    id: "customer",
+    accessorKey: "symbol",
+    id: "symbol",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          NIP
+          Klient
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => (
-      <div className="lowercase">{row.getValue("customer")}</div>
+      <div className="capitalize">{row.getValue("symbol")}</div>
     ),
   },
   {
-    accessorKey: "status",
-    header: "Filie",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
+    accessorKey: "nip",
+    header: "NIP",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("nip")}</div>,
   },
+
   {
-    accessorKey: "wz_type",
+    accessorKey: "primary_email",
     header: "Email",
+    cell: ({ row }) => <div>{row.getValue("primary_email")}</div>,
+  },
+  {
+    accessorKey: "phone_number",
+    header: "Numer telefonu",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("wz_type")}</div>
+      <div className="capitalize">{row.getValue("phone_number")}</div>
+    ),
+  },
+
+  {
+    accessorKey: "payment_type",
+    header: "Rodzaj płatnosci",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {PaymentType[row.getValue("payment_type")]}
+      </div>
+    ),
+  },
+
+  {
+    accessorKey: "street",
+    header: "Adres",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("street")}</div>
     ),
   },
   // {
@@ -188,7 +243,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const order: any = row.original;
+      const customer: any = row.original;
 
       return (
         <DropdownMenu>
@@ -200,13 +255,12 @@ export const columns: ColumnDef<unknown, any>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(order.id)}
+              onClick={() => navigator.clipboard.writeText(customer.id)}
             >
-              Skopiuj nr zamówienia
+              Skopiuj nr klienta
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Zobacz szczegóły klienta</DropdownMenuItem>
-            <DropdownMenuItem>Zobacz szczgóły zamówienia</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -214,10 +268,10 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
 ];
 
-type OrdersTableProps = {
-  orders: Order[];
+type CustomersTableProps = {
+  customers: Customer[];
 };
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function CustomersTable({ customers }: CustomersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -230,12 +284,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   ]); //optionally initialize the column order
 
   const [open, setOpen] = useState(false);
-  const [order, setOrder] = useState({});
+  const [customer, setCustomer] = useState({});
 
-  const ordersTable = orders;
+  const ordersTable = customers;
 
   const table = useReactTable({
-    data: orders,
+    data: customers,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -255,10 +309,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     },
   });
   const names: { [key: string]: string } = {
-    id: "Numer zamówienia",
-    status: "Status",
-    created_at: "Data utworzenia",
-    total: "Suma",
+    symbol: "Symbol",
+    nip: "NIP",
+    primary_email: "Email",
+    phone_number: "Numer telefonu",
+    payment_type: "Rodzaj płatnosci",
+    street: "Adres",
     payment_status: "Status płatnosci",
     payment_method: "Metoda płatnosci",
     wz_type: "Typ WZ",
@@ -394,7 +450,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                       <TableCell
                         key={cell.id}
                         onClick={() => {
-                          setOrder(row.original);
+                          setCustomer(row.original);
                           setOpen(true);
                         }}
                       >
@@ -420,7 +476,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           </TableBody>
         </Table>
       </div>
-      <CustomerView order={order} isOpen={open} setIsOpen={setOpen} />
+      <CustomerView customer={customer} isOpen={open} setIsOpen={setOpen} />
     </div>
   );
 }

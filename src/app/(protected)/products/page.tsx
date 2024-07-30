@@ -10,6 +10,7 @@ import { OrderView } from "@/components/orders/orderView";
 import { useState } from "react";
 import { ProductForm } from "@/components/products/productsForm";
 import { getAllCustomers } from "@/data/customers";
+import { getAllProducts } from "@/data/products";
 
 const ProductsPage = async () => {
   const session = await auth();
@@ -19,6 +20,8 @@ const ProductsPage = async () => {
   const orders = await getAllOrders();
 
   const customers = await getAllCustomers();
+
+  const products = await getAllProducts();
   return (
     <div className="m-5">
       <div className="flex flex-col justify-center">
@@ -42,7 +45,7 @@ const ProductsPage = async () => {
         </div>
       </div>
       <Suspense fallback={<div>Loading...</div>}>
-        <ProductsTable orders={orders || []} />
+        <ProductsTable products={products || []} />
       </Suspense>
     </div>
   );

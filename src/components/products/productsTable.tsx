@@ -49,7 +49,7 @@ import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 
-import { OrderView } from "./orderView";
+import { ProductView } from "./productView";
 
 // TODO: drag and drop colums
 // import {
@@ -72,6 +72,47 @@ import { OrderView } from "./orderView";
 // // needed for row & cell level scope DnD setup
 // import { useSortable } from "@dnd-kit/sortable";
 // import { CSS } from "@dnd-kit/utilities";
+export type Product = {
+  id: String;
+  name: String;
+  description: String | null;
+  category: String | null;
+  sku: String | null;
+  length: String | null;
+  width: String | null;
+  height: String | null;
+  quantity_in_package: String | null;
+  actual_volume: String | null;
+  quantity_needed_for_production: String | null;
+  sales_volume: String | null;
+  technological_volume: String | null;
+  eps_type: String | null;
+  ean: String | null;
+  weight: String | null;
+  seasoning_time: String | null;
+  manufacturer: String | null;
+  primary_unit: String | null;
+  secondary_unit: String | null;
+  secondary_unit_volume: String | null;
+  is_sold: Boolean | null;
+  is_produced: Boolean | null;
+  is_internal: Boolean | null;
+  is_one_time: Boolean | null;
+  is_entrusted: Boolean | null;
+  production_description: String | null;
+  image_path: String | null;
+  raw_material_type: String | null;
+  raw_material_granulation: String | null;
+  packaging_weight: String | null;
+  packaging_type: String | null;
+  price: String | null;
+  auto_price_translate: Boolean | null;
+  min_price: String | null;
+  vat: String | null;
+  price_tolerance: String | null;
+  created_at: Date;
+  created_by: String;
+};
 
 export type Order = {
   id: string;
@@ -109,28 +150,28 @@ export type Payment = {
 };
 
 export const columns: ColumnDef<unknown, any>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={
+  //         table.getIsAllPageRowsSelected() ||
+  //         (table.getIsSomePageRowsSelected() && "indeterminate")
+  //       }
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "id",
     header: "Indeks",
@@ -138,35 +179,45 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
 
   {
-    accessorKey: "customer.name",
-    id: "customer",
+    accessorKey: "name",
+    id: "name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Nazwa
+          Nazwa produktu
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => (
-      <div className="lowercase">{row.getValue("customer")}</div>
-    ),
+    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "status",
+    accessorKey: "category",
     header: "Kategoria",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
+      <div className="capitalize">{row.getValue("category")}</div>
     ),
   },
   {
-    accessorKey: "wz_type",
-    header: "Magazyn łącznie",
+    accessorKey: "sku",
+    header: "SKU",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("sku")}</div>,
+  },
+
+  {
+    accessorKey: "ean",
+    header: "EAN",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("ean")}</div>,
+  },
+
+  {
+    accessorKey: "manufacturer",
+    header: "Producent",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("wz_type")}</div>
+      <div className="capitalize">{row.getValue("manufacturer")}</div>
     ),
   },
   // {
@@ -188,7 +239,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const order: any = row.original;
+      const product: any = row.original;
 
       return (
         <DropdownMenu>
@@ -200,13 +251,12 @@ export const columns: ColumnDef<unknown, any>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(order.id)}
+              onClick={() => navigator.clipboard.writeText(product.indeks)}
             >
-              Skopiuj nr zamówienia
+              Skopiuj indeks produktu
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Zobacz szczegóły klienta</DropdownMenuItem>
-            <DropdownMenuItem>Zobacz szczgóły zamówienia</DropdownMenuItem>
+            <DropdownMenuItem>Zobacz szczegóły produktu</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -214,10 +264,10 @@ export const columns: ColumnDef<unknown, any>[] = [
   },
 ];
 
-type OrdersTableProps = {
-  orders: Order[];
+type ProductsTableProps = {
+  products: Product[];
 };
-export function ProductsTable({ orders }: OrdersTableProps) {
+export function ProductsTable({ products }: ProductsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -230,12 +280,12 @@ export function ProductsTable({ orders }: OrdersTableProps) {
   ]); //optionally initialize the column order
 
   const [open, setOpen] = useState(false);
-  const [order, setOrder] = useState({});
+  const [product, setProduct] = useState({});
 
-  const ordersTable = orders;
+  const ordersTable = products;
 
   const table = useReactTable({
-    data: orders,
+    data: products,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -255,8 +305,12 @@ export function ProductsTable({ orders }: OrdersTableProps) {
     },
   });
   const names: { [key: string]: string } = {
-    id: "Numer zamówienia",
-    status: "Status",
+    id: "Indeks",
+    name: "Nazwa produktu",
+    category: "Kategoria",
+    sku: "SKU",
+    ean: "EAN",
+    manufacturer: "Producent",
     created_at: "Data utworzenia",
     total: "Suma",
     payment_status: "Status płatnosci",
@@ -394,7 +448,7 @@ export function ProductsTable({ orders }: OrdersTableProps) {
                       <TableCell
                         key={cell.id}
                         onClick={() => {
-                          setOrder(row.original);
+                          setProduct(row.original);
                           setOpen(true);
                         }}
                       >
@@ -420,7 +474,7 @@ export function ProductsTable({ orders }: OrdersTableProps) {
           </TableBody>
         </Table>
       </div>
-      <OrderView order={order} isOpen={open} setIsOpen={setOpen} />
+      <ProductView order={product} isOpen={open} setIsOpen={setOpen} />
     </div>
   );
 }

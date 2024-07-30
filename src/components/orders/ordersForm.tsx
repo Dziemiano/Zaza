@@ -79,6 +79,7 @@ import { Calendar } from "../ui/calendar";
 
 import { getAllCustomers } from "@/data/customers";
 import { createOrder } from "@/actions/orders";
+import { updateOrder } from "@/actions/orders";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { CommentSection } from "./commentsFormElement";
@@ -136,10 +137,12 @@ export const OrderForm = ({
     startTransition(() => {
       if (order) {
         // Call an update function instead of create
-        // updateOrder(order.id, data, formData).then((response) => {
-        //   setSuccess(response?.success);
-        //   setOpen(false);
-        // }); console.log("Order updated successfully");
+        updateOrder(data, formData).then((response) => {
+          setSuccess(response?.success);
+          setOpen(false);
+        });
+        console.log("Order updated successfully");
+        console.log(values);
       } else {
         createOrder(data, formData).then((response) => {
           setSuccess(response?.success);

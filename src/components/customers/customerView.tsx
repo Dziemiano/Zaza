@@ -68,13 +68,35 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface CustomerType {
   id: string;
-  name: string;
   nip: string;
-  email: string;
-  phone: string;
-  addres: string;
-  created_at: string;
-  created_by: string;
+  symbol: string;
+  name: string;
+  primary_email: string;
+  documents_email: string;
+  phone_number: string;
+  street: string;
+  building: string;
+  city: string;
+  postal_code: string;
+  country: string;
+  payment_type: any;
+  customer_type: string | null;
+  payment_punctuality: any;
+  comments: any; // You'll need to define the Comment type separately
+  salesman: any; // You'll need to define the User type separately
+  branch: any; // You'll need to define the CompanyBranch type separately
+  credit_limit: string;
+  max_discount: string;
+  send_email_invoice: boolean;
+  invoice_street: string;
+  invoice_building: string;
+  invoice_city: string;
+  invoice_postal_code: string;
+  invoice_country: string;
+  created_at: Date;
+  created_by: any; // You'll need to define the User type separately
+  created_by_id: string;
+  Orders: any; // You'll need to define the Order type separately
 }
 
 export interface CustomerViewProps {
@@ -150,22 +172,25 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
                 <div className="text-2xl">Dane podstawowe</div>
                 <div className="flex flex-row mt-4">
                   <div className="flex flex-col mr-10">
-                    <div className="text-xl">Nazwa firmy</div>
+                    <div className="text-xl">{customer.name}</div>
                     <div className="text-sm">Rodzaj firmy</div>
                   </div>
                   <div className="flex flex-col mr-4">
-                    <div className="text-xl">987619 283 89754512</div>
+                    <div className="text-xl">{customer.nip}</div>
                     <div className="text-sm">NIP</div>
                   </div>
                 </div>
                 <div className="text-2xl mt-10">Dane adresowe</div>
                 <div className="flex flex-row mt-4">
                   <div className="flex flex-col mr-10">
-                    <div className="text-md">Ulica</div>
-                    <div className="text-md">Kod pocztowy</div>
-                    <div className="text-md">Kraj</div>
-                    <div className="text-md mt-5">619 283 897</div>
-                    <div className="text-md">email@email.com</div>
+                    <div className="text-md">
+                      {customer.street} {customer.building}
+                    </div>
+                    <div className="text-md">{customer.city}</div>
+                    <div className="text-md">{customer.postal_code}</div>
+                    <div className="text-md">{customer.country}</div>
+                    <div className="text-md mt-5">{customer.phone_number}</div>
+                    <div className="text-md">{customer.primary_email}</div>
                   </div>
                 </div>
               </div>
@@ -287,29 +312,31 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
                 <div className="text-2xl">Symbol</div>
                 <div className="flex flex-row mt-4">
                   <div className="flex flex-col mr-10">
-                    <div className="text-xl">Symbol</div>
+                    <div className="text-xl">{customer.symbol}</div>
                     <div className="text-sm">Symbol</div>
                   </div>
                 </div>
-                <div className="text-2xl mt-10">Dane adresowe</div>
+                <div className="text-2xl mt-10">Dane do faktury</div>
                 <div className="flex flex-col mt-4">
                   <div className="flex flex-row mt-4">
                     <div className="flex flex-col mr-10">
-                      <div className="text-xl">Nazwa firmy</div>
+                      <div className="text-xl">{customer.name}</div>
                       <div className="text-sm">Rodzaj firmy</div>
                     </div>
                     <div className="flex flex-col mr-4">
-                      <div className="text-xl">619 283 897</div>
+                      <div className="text-xl">{customer.nip}</div>
                       <div className="text-sm">NIP</div>
                     </div>
                   </div>
                   <div className="flex flex-col mt-10">
-                    <div className="text-lg">Adres do faktury</div>
-                    <div className="text-md">Ulica</div>
-                    <div className="text-md">Kod pocztowy</div>
-                    <div className="text-md">Kraj</div>
-                    <div className="text-md mt-5">619 283 897</div>
-                    <div className="text-md">email@email.com</div>
+                    <div className="text-md">
+                      {customer.street} {customer.building}
+                    </div>
+                    <div className="text-md">{customer.city}</div>
+                    <div className="text-md">{customer.postal_code}</div>
+                    <div className="text-md">{customer.country}</div>
+                    <div className="text-md mt-5">{customer.phone_number}</div>
+                    <div className="text-md">{customer.documents_email}</div>
                   </div>
                 </div>
               </div>
