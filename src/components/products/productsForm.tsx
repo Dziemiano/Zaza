@@ -854,7 +854,7 @@ export const ProductForm = ({
                   className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                   size="sm"
                 >
-                  Utwórz
+                  {editMode ? "Edytuj" : "Utwórz"}
                 </Button>
               </DialogFooter>
             </div>

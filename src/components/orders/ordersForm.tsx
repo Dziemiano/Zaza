@@ -325,9 +325,9 @@ export const OrderForm = ({
                       <div className="text-black text-[28px] font-medium mr-4">
                         Produkty
                       </div>
-                      <Button variant={"zaza"} className="min-w-80 font-normal">
+                      {/* <Button variant={"zaza"} className="min-w-80 font-normal">
                         Dodaj produkty
-                      </Button>
+                      </Button> */}
                     </div>
                     <OrderProductsTable orders={[]} />
                   </div>

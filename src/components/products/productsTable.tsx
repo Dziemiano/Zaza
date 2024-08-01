@@ -173,9 +173,9 @@ export const columns: ColumnDef<unknown, any>[] = [
   //   enableHiding: false,
   // },
   {
-    accessorKey: "id",
-    header: "Indeks",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
+    accessorKey: "sku",
+    header: "Indeks/SKU",
+    cell: ({ row }) => <div className="capitalize">{row.getValue("sku")}</div>,
   },
 
   {
@@ -201,16 +201,19 @@ export const columns: ColumnDef<unknown, any>[] = [
       <div className="capitalize">{row.getValue("category")}</div>
     ),
   },
-  {
-    accessorKey: "sku",
-    header: "SKU",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("sku")}</div>,
-  },
 
   {
     accessorKey: "ean",
     header: "EAN",
     cell: ({ row }) => <div className="capitalize">{row.getValue("ean")}</div>,
+  },
+
+  {
+    accessorKey: "price",
+    header: "Cena",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("price")}</div>
+    ),
   },
 
   {
@@ -475,7 +478,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
           </TableBody>
         </Table>
       </div>
-      <ProductView order={product} isOpen={open} setIsOpen={setOpen} />
+      <ProductView product={product} isOpen={open} setIsOpen={setOpen} />
     </div>
   );
 }

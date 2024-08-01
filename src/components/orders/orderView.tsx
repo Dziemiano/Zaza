@@ -2,27 +2,15 @@
 
 import React, { useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+
 import {
   Select,
   SelectContent,
@@ -38,32 +26,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Switch } from "@/components/ui/switch";
+
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { OrderSchema } from "@/schemas";
-import { CustomerCombo } from "./customerCombo";
 import { OrderProductsTable } from "./orderProductsTable";
-import { Input } from "../ui/input";
-import { Calendar } from "../ui/calendar";
-import { getAllCustomers } from "@/data/customers";
-import { createOrder } from "@/actions/orders";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { OrderForm } from "./ordersForm";
 
@@ -87,12 +54,14 @@ interface OrderType {
 }
 
 export interface OrderViewProps {
+  customers: any[];
   order: OrderType;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const OrderView: React.FC<OrderViewProps> = ({
+  customers,
   order,
   isOpen,
   setIsOpen,
@@ -102,7 +71,6 @@ export const OrderView: React.FC<OrderViewProps> = ({
   const [isPending, startTransition] = useTransition();
 
   const userId = useCurrentUser()?.id;
-  const customers = [];
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toDateString();

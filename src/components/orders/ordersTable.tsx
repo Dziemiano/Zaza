@@ -188,7 +188,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const order = row.original;
+      const order: any = row.original;
 
       return (
         <DropdownMenu>
@@ -215,9 +215,10 @@ export const columns: ColumnDef<unknown, any>[] = [
 ];
 
 type OrdersTableProps = {
+  customers: any[];
   orders: Order[];
 };
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function OrdersTable({ customers, orders }: OrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -420,7 +421,12 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           </TableBody>
         </Table>
       </div>
-      <OrderView order={order} isOpen={open} setIsOpen={setOpen} />
+      <OrderView
+        customers={customers}
+        order={order}
+        isOpen={open}
+        setIsOpen={setOpen}
+      />
     </div>
   );
 }
