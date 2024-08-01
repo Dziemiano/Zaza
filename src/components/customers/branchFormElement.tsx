@@ -306,7 +306,6 @@ export function BranchFormElement({ name }: BranchFormElementProps) {
         >
           Dodaj filię
         </Button>
-        <code>{JSON.stringify(fields)}</code>
       </CardContent>
     </Card>
   );
