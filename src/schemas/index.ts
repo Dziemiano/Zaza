@@ -88,12 +88,12 @@ export const ContactPersonSchema = z.object({
 
 export const DeliveryAdressSchema = z.object({
   id: z.string().optional(),
-  street: z.string(),
-  building: z.string(),
+  street: z.string().optional(),
+  building: z.string().optional(),
   premises: z.string().optional(),
-  city: z.string(),
-  postal_code: z.string(),
-  country: z.string(),
+  city: z.string().optional(),
+  postal_code: z.string().optional(),
+  country: z.string().optional(),
   customer_id: z.string().optional(),
 });
 
