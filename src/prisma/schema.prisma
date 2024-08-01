@@ -88,7 +88,7 @@ model Customer {
   invoice_nip         String?
   invoice_street      String
   invoice_building    String
-  invoice_premises    String
+  invoice_premises    String?
   invoice_city        String
   invoice_postal_code String
   invoice_country     String
