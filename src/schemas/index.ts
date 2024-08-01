@@ -17,11 +17,26 @@ export const LoginSchema = z.object({
 export const RegisterSchema = z.object({
   email: z.string().email({ message: "Invalid email" }).min(4),
   password: z.string().min(6, { message: "Minimum 6 characters" }),
-  name: z.string().min(3, { message: "Name is required" }),
+  firstname: z.string().min(3, { message: "Name is required" }),
 });
 
 export const TwoFactorSchema = z.object({
   code: z.string().min(6, { message: "Minimum 6 characters" }),
+});
+
+export const LineItemSchema = z.object({
+  order_id: z.string().optional(),
+  product_id: z.string().optional(),
+  product_name: z.string().optional(),
+  quantity: z.string().optional(),
+  quant_unit: z.string().optional(),
+  helper_quantity: z.string().optional(),
+  help_quant_unit: z.string().optional(),
+  discount: z.string().optional(),
+  netto_cost: z.string().optional(),
+  brutto_cost: z.string().optional(),
+  vat_percentage: z.string().optional(),
+  vat_cost: z.string().optional(),
 });
 
 export const OrderSchema = z.object({
@@ -47,6 +62,7 @@ export const OrderSchema = z.object({
   order_history: z.string().optional(),
   created_at: z.date().optional(),
   created_by: z.string().optional(),
+  created_by_id: z.string().optional(),
   is_paid: z.boolean().optional(),
   document_path: z.any().optional(),
   file: z.instanceof(File).optional(),
@@ -58,17 +74,92 @@ export const OrderSchema = z.object({
       warehouse: z.array(z.string()),
     })
     .optional(),
+  line_items: z.array(LineItemSchema).optional(),
+});
+
+export const ContactPersonSchema = z.object({
+  id: z.string().optional(),
+  firstname: z.string().optional(),
+  lastname: z.string().optional(),
+  phone_number: z.string().optional(),
+  email: z.string().optional(),
+  customer_id: z.string().optional(),
+});
+
+export const DeliveryAdressSchema = z.object({
+  id: z.string().optional(),
+  street: z.string(),
+  building: z.string(),
+  premises: z.string().optional(),
+  city: z.string(),
+  postal_code: z.string(),
+  country: z.string(),
+  customer_id: z.string().optional(),
+});
+
+export const CompanyBranchSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  customer_id: z.string().optional(),
+  salesman_id: z.string().optional(),
+  street: z.string().optional(),
+  building: z.string().optional(),
+  premises: z.string().optional(),
+  city: z.string().optional(),
+  postal_code: z.string().optional(),
+  country: z.string().optional(),
+  person: z.string().optional(),
+  phone_number: z.string().optional(),
+  email: z.string().optional(),
 });
 
 export const CustomerSchema = z.object({
   id: z.string().optional(),
+  nip: z.string(),
+  symbol: z.string().optional(),
   name: z.string().min(3, { message: "Name is required" }),
-  email: z.string().email({ message: "Invalid email" }).min(4),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  nip: z.string().optional(),
+  primary_email: z
+    .string()
+    .email({ message: "Invalid email" })
+    .min(4)
+    .optional(),
+  documents_email: z.string().optional(),
+  phone_number: z.string().optional(),
+  street: z.string().optional(),
+  building: z.string().optional(),
+  premises: z.string().optional(),
+  city: z.string().optional(),
+  postal_code: z.string().optional(),
+  country: z.string().optional(),
+  payment_type: z.string().optional(),
+  customer_type: z.string().optional(),
+  payment_punctuality: z.string().optional(),
+  salesman: z.array(z.string()).optional().default([]),
+  branch: z.array(CompanyBranchSchema).optional().default([]),
+  credit_limit: z.string().optional(),
+  max_discount: z.string().optional(),
+  send_email_invoice: z.boolean().optional().default(false),
+  invoice_name: z.string().optional(),
+  invoice_nip: z.string().optional(),
+  invoice_street: z.string().optional(),
+  invoice_building: z.string().optional(),
+  invoice_premises: z.string().optional(),
+  invoice_city: z.string().optional(),
+  invoice_postal_code: z.string().optional(),
+  invoice_country: z.string().optional(),
   created_at: z.date().optional(),
   created_by: z.string().optional(),
+  created_by_id: z.string().optional(),
+  Orders: z.array(OrderSchema).optional().default([]),
+  contactPerson: z.array(ContactPersonSchema).optional().default([]),
+  DeliveryAdress: z.array(DeliveryAdressSchema).optional().default([]),
+  comments: z
+    .object({
+      general: z.array(z.string()),
+      transport: z.array(z.string()),
+      warehouse: z.array(z.string()),
+    })
+    .optional(),
 });
 
 export const ProductSchema = z.object({

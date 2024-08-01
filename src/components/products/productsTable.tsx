@@ -304,6 +304,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
       columnOrder,
     },
   });
+
   const names: { [key: string]: string } = {
     id: "Indeks",
     name: "Nazwa produktu",

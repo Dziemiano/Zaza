@@ -26,7 +26,8 @@ enum UserRole {
 
 model User {
   id                    String                 @id @default(cuid())
-  name                  String?
+  firstname             String?
+  lastname              String?
   username              String?                @unique
   email                 String?                @unique
   emailVerified         DateTime?
@@ -65,11 +66,12 @@ model Customer {
   nip                 String
   symbol              String
   name                String              @db.VarChar(255)
-  primary_email       String              @db.VarChar(255)
-  documents_email     String
-  phone_number        String
+  primary_email       String?             @db.VarChar(255)
+  documents_email     String?
+  phone_number        String?
   street              String
   building            String
+  premises            String?
   city                String
   postal_code         String
   country             String
@@ -79,11 +81,14 @@ model Customer {
   comments            Comment[]
   salesman            User[]              @relation("salesman")
   branch              CompanyBranch[]
-  credit_limit        String
-  max_discount        String
+  credit_limit        String?
+  max_discount        String?
   send_email_invoice  Boolean             @default(false)
+  invoice_name        String?
+  invoice_nip         String?
   invoice_street      String
   invoice_building    String
+  invoice_premises    String
   invoice_city        String
   invoice_postal_code String
   invoice_country     String
@@ -91,6 +96,8 @@ model Customer {
   created_by          User                @relation("created_by", fields: [created_by_id], references: [id])
   created_by_id       String
   Orders              Order[]
+  ContactPerson       ContactPerson[]
+  DeliveryAdress      DeliveryAdress[]
 
   @@index([nip], map: "nip")
   @@index([symbol], map: "symbol")
@@ -100,16 +107,40 @@ model CompanyBranch {
   id           String   @id @default(cuid())
   name         String
   customer_id  String
-  salesman_id  String
+  salesman_id  String?
   street       String
   building     String
+  premises     String?
+  city         String
   postal_code  String
   country      String
-  person       String
+  phone_number String?
+  email        String?
+  salesman     User?    @relation(fields: [salesman_id], references: [id])
+  customer     Customer @relation(fields: [customer_id], references: [id])
+}
+
+model ContactPerson {
+  id           String   @id @default(cuid())
+  firstname    String
+  lastname     String
   phone_number String
   email        String
-  salesman     User     @relation(fields: [salesman_id], references: [id])
+  customer_id  String
   customer     Customer @relation(fields: [customer_id], references: [id])
+}
+
+model DeliveryAdress {
+  id                   String   @id @default(cuid())
+  is_construction_site Boolean  @default(false)
+  street               String
+  building             String
+  premises             String?
+  city                 String
+  postal_code          String
+  country              String
+  customer_id          String
+  customer             Customer @relation(fields: [customer_id], references: [id])
 }
 
 enum WzType {
@@ -156,19 +187,19 @@ model Order {
 }
 
 model LineItem {
-  id              String @id @default(cuid())
+  id              String  @id @default(cuid())
   order_id        String
   product_id      String
-  quantity        Int
+  product_name    String
+  quantity        String
   quant_unit      String
-  helper_quantity Int
+  helper_quantity String?
   help_quant_unit String
-  comment         String
-  discount        Int
-  netto_cost      Int
-  brutto_cost     Int
-  vat_percentage  Int
-  vat_cost        Int
+  discount        String?
+  netto_cost      String
+  brutto_cost     String
+  vat_percentage  String
+  vat_cost        String
 
   order   Order   @relation(fields: [order_id], references: [id])
   product Product @relation(fields: [product_id], references: [id])

@@ -36,13 +36,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
 import { Switch } from "@/components/ui/switch";
 
 import { Textarea } from "@/components/ui/textarea";
@@ -65,69 +58,61 @@ import {
 } from "../ui/form";
 
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { OrderSchema } from "@/schemas";
+import { CustomerSchema } from "@/schemas";
 
 import { useState, useTransition } from "react";
-import { CustomerCombo } from "./customerCombo";
 import { OrderProductsTable } from "./orderProductsTable";
 import { Input } from "../ui/input";
 import { Calendar } from "../ui/calendar";
 
-import { getAllCustomers } from "@/data/customers";
-import { createOrder } from "@/actions/orders";
-
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { CommentSection } from "./commentsFormElement";
-
-export type OrderViewProps = {
-  order: {};
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-};
+import { createCustomer } from "@/actions/customer";
+import { ContactPersonFormElement } from "./contactPersonFormElement";
+import { BranchFormElement } from "./branchFormElement";
+import { DeliveryFormElement } from "./deliveryFormElement";
 
 export const CustomerForm = ({
-  customers,
+  editMode,
   userId,
+  customer,
+  salesmen,
 }: {
-  customers: any[];
+  editMode?: boolean;
   userId: string;
+  customer: any;
+  salesmen: any[];
 }) => {
-  // Rest of the code...
-  const [date, setDate] = useState<Date | undefined>(new Date());
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof OrderSchema>>({
-    resolver: zodResolver(OrderSchema),
-    defaultValues: {
-      created_by: userId,
-      personal_collect: false,
-      is_paid: false,
-      is_proforma: false,
+  const form = useForm<z.infer<typeof CustomerSchema>>({
+    resolver: zodResolver(CustomerSchema),
+    defaultValues: customer || {
+      send_email_invoice: false,
+      payment_type: "PREPAID",
+      created_by_id: userId,
+      contactPersons: [],
     },
   });
 
-  const customerList = customers.map((customer) => {
+  const salesmanList = salesmen.map((salesman) => {
     return {
-      label: customer.name,
-      value: customer.id,
+      label: `${salesman.firstname} ${salesman.lastname}`,
+      value: salesman.id,
     };
   });
 
-  const onSubmit = (values: z.infer<typeof OrderSchema>) => {
+  const onSubmit = (values: z.infer<typeof CustomerSchema>) => {
     //TODO rethink file upload
-    let formData = new FormData();
     console.log(values);
-
-    if (values.file) {
-      formData.append("file", values.file);
-    }
+    console.log(salesmen);
 
     const data = JSON.parse(JSON.stringify(values));
 
@@ -135,7 +120,7 @@ export const CustomerForm = ({
     setSuccess("");
 
     startTransition(() => {
-      createOrder(data, formData).then((response) => {
+      createCustomer(data).then((response) => {
         setSuccess(response?.success);
         setOpen(false);
       });
@@ -146,7 +131,7 @@ export const CustomerForm = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full font-normal" variant="zazaGrey">
-          Dodaj klienta
+          {editMode ? `Edytuj` : "Dodaj nowego klietna"}
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[80%] min-h-[85%] flex flex-col content-start">
@@ -159,7 +144,7 @@ export const CustomerForm = ({
                 className="shrink-0 self-stretch my-auto aspect-square w-[25px]"
               />
               <div className="self-stretch text-3xl font-bold">
-                Nowe zamówienie
+                {customer ? `Edytuj ${customer.name}` : `Nowy klient`}
               </div>
               <div className="flex gap-2 self-stretch my-auto text-sm">
                 <div className="shrink-0 my-auto w-2.5 bg-amber-300 rounded-full h-[11px]" />
@@ -171,493 +156,682 @@ export const CustomerForm = ({
               <div>/</div>
               <div>Zamówienia</div>
               <div>/</div>
-              <div>Nowe zamówienie</div>
+              <div>{customer ? `Edytuj ${customer.name}` : `Nowy klient`}</div>
             </div>
           </div>
         </DialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 flex flex-col w-full h-full justify-between"
-          >
-            <div className="flex flex-col content-between h-[700px]">
-              <Tabs defaultValue="account" className="w-full h-full">
-                <TabsList>
-                  <TabsTrigger value="customer">Dane Klienta</TabsTrigger>
-                  <TabsTrigger value="order">Szczegóły zamówienia</TabsTrigger>
-                  <TabsTrigger value="documents">Dokumenty</TabsTrigger>
-                  <TabsTrigger value="comments">Uwagi</TabsTrigger>
-                </TabsList>
+        <FormProvider {...form}>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6 flex flex-col w-full h-full justify-between"
+            >
+              <div className="flex flex-col content-between h-[700px]">
+                <Tabs defaultValue="account" className="w-full h-full">
+                  <TabsList>
+                    <TabsTrigger value="customer">Dane kontaktowe</TabsTrigger>
+                    <TabsTrigger value="payment">Rodzaj płatności</TabsTrigger>
+                    <TabsTrigger value="contact_person">
+                      Osoba kontaktowa
+                    </TabsTrigger>
+                    <TabsTrigger value="salesman">
+                      Przypisany handlowiec
+                    </TabsTrigger>
+                    <TabsTrigger value="discount">Limity i rabaty</TabsTrigger>
+                    <TabsTrigger value="delivery">
+                      Filie i adresy dostaw
+                    </TabsTrigger>
+                    <TabsTrigger value="invoice">
+                      Symbol i dane do faktury
+                    </TabsTrigger>
+                    <TabsTrigger value="comments">Uwagi</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="customer" className="w-full h-[550px]">
-                  <div className="flex flex-row mt-6 mb-10">
+                  <TabsContent value="customer" className="w-full h-[550px]">
+                    <div className="text-xl mt-5">Dane postawowe</div>
+                    <div className="flex flex-row  mt-5 mb-5 pb-4 border-b-2">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Nazwa firmy</Label>
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>NIP firmy</Label>
+                        <FormField
+                          control={form.control}
+                          name="nip"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
+                        <Label>Rodzaj klienta</Label>
+                        <FormField
+                          control={form.control}
+                          name="customer_type"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row">
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Wybierz" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="construction">
+                                    Budowlany
+                                  </SelectItem>
+                                  <SelectItem value="developer">
+                                    Deweloper
+                                  </SelectItem>
+                                  <SelectItem value="furniture">
+                                    Meblowy
+                                  </SelectItem>
+                                  <SelectItem value="Kształtka">
+                                    Tylko proforma
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Button variant={"zaza"}>Pobierz z GUS</Button>
+                      </div>
+                    </div>
+                    <div className="text-xl">Dane adresowe</div>
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Ulica</Label>
+                        <FormField
+                          control={form.control}
+                          name="street"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Nr budynku</Label>
+                        <FormField
+                          control={form.control}
+                          name="building"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Nr lokalu</Label>
+                        <FormField
+                          control={form.control}
+                          name="premises"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Kod pocztowy</Label>
+                        <FormField
+                          control={form.control}
+                          name="postal_code"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Miejscowość</Label>
+                        <FormField
+                          control={form.control}
+                          name="city"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Państwo</Label>
+                        <FormField
+                          control={form.control}
+                          name="country"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-xl mt-5">
+                      Email do wysyłki dokumentów
+                    </div>
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Telefon kontaktowy</Label>
+                        <FormField
+                          control={form.control}
+                          name="phone_number"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Email</Label>
+                        <FormField
+                          control={form.control}
+                          name="documents_email"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="payment">
+                    <div className="flex flex-row  mt-10 mb-5">
+                      <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
+                        <Label>Rodzaj płatności</Label>
+                        <FormField
+                          control={form.control}
+                          name="payment_type"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row">
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Wybierz" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="PREPAID">
+                                    Przedpłata
+                                  </SelectItem>
+                                  <SelectItem value="WIRE">Przelew</SelectItem>
+                                  <SelectItem value="CASH">Gotówka</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="contact_person">
+                    <div className="text-xl mt-5">Osoba kontaktowa</div>
+                    <ContactPersonFormElement name="contactPerson" />
+                  </TabsContent>
+
+                  <TabsContent value="salesman">
                     <div className="flex flex-col w-5/12">
                       <div className="text-black text-[28px] font-medium">
-                        Klient
+                        Handlowiec
                       </div>
                       <FormField
                         control={form.control}
-                        name="customer_id"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                      "h-10 px-3 py-2 mr-4 mb-4 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value
-                                      ? customerList.find(
-                                          (language) =>
-                                            language.value === field.value
-                                        )?.label
-                                      : "Wybierz klienta"}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height]">
-                                <Command>
-                                  <CommandInput placeholder="Znajdź klienta" />
-                                  <CommandList>
-                                    <CommandEmpty>
-                                      Nie znaleziono klientów
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                      {customerList.map((language) => (
-                                        <CommandItem
-                                          value={language.label}
-                                          key={language.value}
-                                          onSelect={() => {
-                                            form.setValue(
-                                              "customer_id",
-                                              language.value
-                                            );
-                                          }}
-                                        >
-                                          <Check
-                                            key={language.value}
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              language.value === field.value
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                          />
-                                          {language.label}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex flex-row">
-                        <Button
-                          variant={"zaza"}
-                          className="w-max font-normal mr-4"
-                        >
-                          Wybierz Klienta
-                        </Button>
-                        <Button variant={"zaza"} className="w-max font-normal">
-                          Dodaj Klienta po NIP
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="text-black text-[28px] font-medium">
-                        NIP
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="nip"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col mb-4">
-                            <FormControl>
-                              <Input
-                                className="w-full"
-                                disabled={isPending}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex flex-row">
-                        <Button
-                          variant={"zaza"}
-                          className="w-max font-normal mr-4"
-                        >
-                          Sprawdź NIP
-                        </Button>
-                        <Button variant={"zaza"} className="w-max font-normal">
-                          Historia NIP
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col mt-6">
-                    <div className="flex flex-row w-96">
-                      <div className="text-black text-[28px] font-medium mr-4">
-                        Produkty
-                      </div>
-                      <Button variant={"zaza"} className="min-w-80 font-normal">
-                        Dodaj produkty
-                      </Button>
-                    </div>
-                    <OrderProductsTable orders={[]} />
-                  </div>
-                </TabsContent>
+                        name="salesman"
+                        render={({ field }) => {
+                          // Ensure field.value is an array
+                          const valueArray = Array.isArray(field.value)
+                            ? field.value
+                            : [];
 
-                <TabsContent value="order">
-                  <div className="flex flex-row  mt-10 mb-5">
-                    <div className="grid w-full mr-5 items-center gap-1.5">
-                      <Label>Numer w miesiącu</Label>
-                      <Input disabled id="order_number" value="01/01/2024" />
-                    </div>
-                    <div className="grid w-full mr-5 items-center gap-1.5">
-                      <Label>Numer obcy</Label>
-                      <FormField
-                        control={form.control}
-                        name="foreign_id"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormControl>
-                              <Input
-                                className="w-full"
-                                disabled={isPending}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                          return (
+                            <FormItem className="flex flex-col">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn(
+                                        "h-10 px-3 py-2 mr-4 mb-4 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex",
+                                        !valueArray.length &&
+                                          "text-muted-foreground"
+                                      )}
+                                    >
+                                      {valueArray.length
+                                        ? valueArray
+                                            .map(
+                                              (value) =>
+                                                salesmanList.find(
+                                                  (salesman) =>
+                                                    salesman.value === value
+                                                )?.label
+                                            )
+                                            .join(", ")
+                                        : "Wybierz handlowców"}
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height]">
+                                  <Command>
+                                    <CommandInput placeholder="Znajdź handlowców" />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        Nie znaleziono handlowców
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {salesmanList.map((salesman) => (
+                                          <CommandItem
+                                            value={salesman.label}
+                                            key={salesman.value}
+                                            onSelect={() => {
+                                              const selectedSalesmen = [
+                                                ...valueArray,
+                                              ];
+                                              const index =
+                                                selectedSalesmen.indexOf(
+                                                  salesman.value
+                                                );
+                                              if (index > -1) {
+                                                selectedSalesmen.splice(
+                                                  index,
+                                                  1
+                                                ); // Deselect if already selected
+                                              } else {
+                                                selectedSalesmen.push(
+                                                  salesman.value
+                                                ); // Select if not selected
+                                              }
+                                              form.setValue(
+                                                "salesman",
+                                                selectedSalesmen
+                                              );
+                                            }}
+                                          >
+                                            <Check
+                                              key={salesman.value}
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                valueArray.includes(
+                                                  salesman.value
+                                                )
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                            {salesman.label}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
-                    <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                      <Label>Status</Label>
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row">
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                  </TabsContent>
+
+                  <TabsContent value="discount">
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Limit kredytowy</Label>
+                        <FormField
+                          control={form.control}
+                          name="credit_limit"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
                               <FormControl>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Wybierz" />
-                                </SelectTrigger>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="created">
-                                  Utworzone
-                                </SelectItem>
-                                <SelectItem value="in_production">
-                                  W produkcji
-                                </SelectItem>
-                                <SelectItem value="in_transport">
-                                  W transporcie
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid w-full items-center gap-1.5">
-                      <Label>Zapłacono</Label>
-                      <FormField
-                        control={form.control}
-                        name="is_paid"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row">
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid w-full  items-center gap-1.5">
-                      <Label>Proforma</Label>
-                      <FormField
-                        control={form.control}
-                        name="is_proforma"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row">
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-row">
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label>Typ WZ</Label>
-                      <FormField
-                        control={form.control}
-                        name="wz_type"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Maksymalny rabat</Label>
+                        <FormField
+                          control={form.control}
+                          name="max_discount"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
                               <FormControl>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Wybierz" />
-                                </SelectTrigger>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectGroup>
-                                  <SelectItem value="WZS">WZS</SelectItem>
-                                  <SelectItem value="WZU">WZU</SelectItem>
-                                  <SelectItem value="WZN">WZN</SelectItem>
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label>Data dostawy</Label>
-                      <FormField
-                        control={form.control}
-                        name="delivery_date"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-[240px] pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label>Data płatnosci</Label>
-                      <FormField
-                        control={form.control}
-                        name="payment_deadline"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-[240px] pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Wybierz datę</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  </TabsContent>
 
-                    <div className="grid w-full max-w-sm mr-5 items-center gap-1.5">
-                      <Label>Koszt transportu</Label>
-                      <FormField
-                        control={form.control}
-                        name="transport_cost"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row">
-                            <FormControl>
-                              <Input
-                                type="number"
-                                className="w-full"
-                                disabled={isPending}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label>Data płatnosci proformy</Label>
-                      <FormField
-                        control={form.control}
-                        name="proforma_payment_date"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-[240px] pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Wybierz datę</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
+                  <TabsContent value="delivery">
+                    <BranchFormElement name="branch" />
+                    <DeliveryFormElement name="DeliveryAdress" />
+                  </TabsContent>
+
+                  <TabsContent value="invoice">
+                    <div className="text-xl mt-5">Symbol</div>
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Symbol</Label>
+                        <FormField
+                          control={form.control}
+                          name="symbol"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
                                 />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
+                    <div className="text-xl mt-5">Dane do faktury</div>
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Nazwa</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_name"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>NIP</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_nip"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-row mt-5">
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Ulica</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_street"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Nr budynku</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_building"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Nr lokalu</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_premises"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Miejscowość</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_city"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Kod poczotwy</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_postal_code"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Kraj</Label>
+                        <FormField
+                          control={form.control}
+                          name="invoice_country"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
 
-                <TabsContent value="documents">
-                  <div>
-                    <h1>Dokumenty</h1>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label>Dodaj dokument</Label>
-                      <FormField
+                  <TabsContent value="comments">
+                    <div className="flex flex-row mt-10">
+                      <CommentSection
                         control={form.control}
-                        name="file"
-                        render={({
-                          field: { value, onChange, ...fieldProps },
-                        }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                {...fieldProps}
-                                placeholder="file"
-                                type="file"
-                                onChange={(event) =>
-                                  onChange(
-                                    event.target.files && event.target.files[0]
-                                  )
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        setValue={form.setValue}
+                        name="comments"
                       />
                     </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="comments">
-                  <div className="flex flex-row mt-10">
-                    <CommentSection
-                      control={form.control}
-                      setValue={form.setValue}
-                      name="comments"
-                    />
-                  </div>
-                </TabsContent>
-              </Tabs>
-              <DialogFooter className="max-h-fit">
-                <Button
-                  type="submit"
-                  variant="zaza"
-                  className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
-                  size="sm"
-                >
-                  Utwórz
-                </Button>
-              </DialogFooter>
-            </div>
-          </form>
-        </Form>
+                  </TabsContent>
+                </Tabs>
+                <DialogFooter className="max-h-fit">
+                  <Button
+                    type="submit"
+                    variant="zaza"
+                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
+                    size="sm"
+                  >
+                    Utwórz
+                  </Button>
+                </DialogFooter>
+              </div>
+            </form>
+          </Form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );

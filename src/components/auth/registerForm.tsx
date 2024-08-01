@@ -35,7 +35,7 @@ export const RegisterForm = () => {
     defaultValues: {
       email: "",
       password: "",
-      name: "",
+      firstname: "",
     },
   });
 
@@ -103,7 +103,7 @@ export const RegisterForm = () => {
             />
             <FormField
               control={form.control}
-              name="name"
+              name="firstname"
               render={({ field }) => (
                 <FormItem className="flex flex-row">
                   <FormLabel className="flex place-content-center pt-6 pr-1">

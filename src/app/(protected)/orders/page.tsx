@@ -10,6 +10,7 @@ import { OrderView } from "@/components/orders/orderView";
 import { useState } from "react";
 import { OrderForm } from "@/components/orders/ordersForm";
 import { getAllCustomers } from "@/data/customers";
+import { getAllProducts } from "@/data/products";
 
 const OrderPage = async () => {
   // const [open, setOpen] = useState(false);
@@ -22,6 +23,8 @@ const OrderPage = async () => {
   const orders = await getAllOrders();
 
   const customers = await getAllCustomers();
+
+  const products = await getAllProducts();
 
   return (
     <div className="m-5">
@@ -42,7 +45,11 @@ const OrderPage = async () => {
       </div>
       <div className="mt-4 mb-4 flex flex-row">
         <div className="min-w-[24%] mr-4">
-          <OrderForm customers={customers || []} userId={userId} />
+          <OrderForm
+            customers={customers || []}
+            userId={userId}
+            products={products || []}
+          />
         </div>
         <Button variant={"zaza"} className="w-max min-w-[24%] mr-4 font-normal">
           Drukuj zamówienie

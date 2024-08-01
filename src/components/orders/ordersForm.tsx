@@ -83,12 +83,14 @@ import { updateOrder } from "@/actions/orders";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { CommentSection } from "./commentsFormElement";
+import { LineItemFormElement } from "./lineItemForm";
 
 export type OrderFormProps = {
   customers: any[];
   userId: string;
   editMode?: boolean;
   order?: z.infer<typeof OrderSchema>;
+  products: [];
 };
 
 export const OrderForm = ({
@@ -96,6 +98,7 @@ export const OrderForm = ({
   userId,
   editMode,
   order,
+  products,
 }: OrderFormProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [error, setError] = useState<string | undefined>("");
@@ -110,6 +113,7 @@ export const OrderForm = ({
       personal_collect: false,
       is_paid: false,
       is_proforma: false,
+      line_items: [],
     },
   });
 
@@ -193,6 +197,7 @@ export const OrderForm = ({
               <Tabs defaultValue="account" className="w-full h-full">
                 <TabsList>
                   <TabsTrigger value="customer">Dane Klienta</TabsTrigger>
+                  <TabsTrigger value="products">Produkty</TabsTrigger>
                   <TabsTrigger value="order">Szczegóły zamówienia</TabsTrigger>
                   <TabsTrigger value="documents">Dokumenty</TabsTrigger>
                   <TabsTrigger value="comments">Uwagi</TabsTrigger>
@@ -222,8 +227,8 @@ export const OrderForm = ({
                                   >
                                     {field.value
                                       ? customerList.find(
-                                          (language) =>
-                                            language.value === field.value
+                                          (customer) =>
+                                            customer.value === field.value
                                         )?.label
                                       : "Wybierz klienta"}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -238,27 +243,27 @@ export const OrderForm = ({
                                       Nie znaleziono klientów
                                     </CommandEmpty>
                                     <CommandGroup>
-                                      {customerList.map((language) => (
+                                      {customerList.map((customer) => (
                                         <CommandItem
-                                          value={language.label}
-                                          key={language.value}
+                                          value={customer.label}
+                                          key={customer.value}
                                           onSelect={() => {
                                             form.setValue(
                                               "customer_id",
-                                              language.value
+                                              customer.value
                                             );
                                           }}
                                         >
                                           <Check
-                                            key={language.value}
+                                            key={customer.value}
                                             className={cn(
                                               "mr-2 h-4 w-4",
-                                              language.value === field.value
+                                              customer.value === field.value
                                                 ? "opacity-100"
                                                 : "opacity-0"
                                             )}
                                           />
-                                          {language.label}
+                                          {customer.label}
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
@@ -326,6 +331,10 @@ export const OrderForm = ({
                     </div>
                     <OrderProductsTable orders={[]} />
                   </div>
+                </TabsContent>
+
+                <TabsContent value="products">
+                  <LineItemFormElement name="line_items" products={products} />
                 </TabsContent>
 
                 <TabsContent value="order">

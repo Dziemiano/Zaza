@@ -9,6 +9,8 @@ import { OrderView } from "@/components/orders/orderView";
 import { useState } from "react";
 import { CustomerForm } from "@/components/customers/customerForm";
 import { getAllCustomers } from "@/data/customers";
+import { getSalesmen } from "@/data/user";
+import { getAllProducts } from "@/data/products";
 
 const OrderPage = async () => {
   const session = await auth();
@@ -18,6 +20,10 @@ const OrderPage = async () => {
   const orders = await getAllOrders();
 
   const customers = await getAllCustomers();
+
+  const salesmen = await getSalesmen();
+
+  const products = await getAllProducts();
 
   return (
     <div className="m-5">
@@ -38,7 +44,12 @@ const OrderPage = async () => {
       </div>
       <div className="mt-4 mb-4 flex flex-row">
         <div className="min-w-[24%] mr-4">
-          <CustomerForm customers={customers || []} userId={userId} />
+          <CustomerForm
+            customers={customers || []}
+            userId={userId}
+            salesmen={salesmen || []}
+            products={products || []}
+          />
         </div>
       </div>
       <Suspense fallback={<div>Loading...</div>}>

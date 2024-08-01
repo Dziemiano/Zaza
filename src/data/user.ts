@@ -1,5 +1,14 @@
 import db from "../db/db";
 
+export const getSalesmen = async () => {
+  try {
+    const salesmen = await db.user.findMany({ where: { role: "SALESMAN" } });
+    return salesmen;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const getUserByEmail = async (email: string) => {
   try {
     const user = await db.user.findUnique({ where: { email } });

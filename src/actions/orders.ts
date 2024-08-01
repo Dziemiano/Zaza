@@ -21,6 +21,7 @@ export const createOrder = async (
     delivery_date: any;
     created_by: any;
     is_paid: any;
+    line_items: [];
   },
   fileF: any[] | FormData
 ) => {
@@ -61,6 +62,9 @@ export const createOrder = async (
       created_by: data.created_by,
       is_paid: data.is_paid,
       document_path: filePath,
+      LineItem: {
+        create: data.line_items,
+      },
     },
   });
 
