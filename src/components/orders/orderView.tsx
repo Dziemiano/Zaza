@@ -50,11 +50,16 @@ interface OrderType {
   created_by: string;
   foreign_id: string;
   wz_type: string;
-  LineItem: any[]; // Consider defining a more specific type for LineItem
+  LineItem: any[]; // TODO define LineItem type
+  user: {
+    firstname: string;
+    lastname: string;
+  };
 }
 
 export interface OrderViewProps {
   customers: any[];
+  products: any[];
   order: OrderType;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -63,6 +68,7 @@ export interface OrderViewProps {
 export const OrderView: React.FC<OrderViewProps> = ({
   customers,
   order,
+  products,
   isOpen,
   setIsOpen,
 }) => {
@@ -71,6 +77,8 @@ export const OrderView: React.FC<OrderViewProps> = ({
   const [isPending, startTransition] = useTransition();
 
   const userId = useCurrentUser()?.id;
+
+  console.log(order);
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toDateString();
@@ -118,6 +126,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
               <TabsTrigger value="completion">Realizacja</TabsTrigger>
               <TabsTrigger value="comments">Uwagi</TabsTrigger>
               <OrderForm
+                products={products}
                 customers={customers || []}
                 userId={userId}
                 editMode={true}
@@ -145,7 +154,9 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   </div>
                 </div>
                 <div className="w-full mr-5">
-                  <div>{order.created_by}</div>
+                  <div>
+                    {order.user?.firstname} {order.user?.lastname}
+                  </div>
                   <div className="w-full">Handlowiec</div>
                 </div>
                 <div className="w-full mr-5">

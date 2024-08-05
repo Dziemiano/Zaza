@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -54,11 +54,13 @@ export type LineItem = {
 type LineItemFormElementProps = {
   name: string;
   products: [];
+  line_items: LineItem[];
 };
 
 export function LineItemFormElement({
   name,
   products,
+  line_items,
 }: LineItemFormElementProps) {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -100,6 +102,13 @@ export function LineItemFormElement({
     }
   };
 
+  useEffect(() => {
+    //TODO fix appendig
+    line_items?.forEach((item) => {
+      append(item);
+    });
+  }, [line_items]);
+
   const productList = products.map((product) => {
     return {
       id: product.id,
@@ -119,7 +128,7 @@ export function LineItemFormElement({
                 name={`${name}.${index}`}
                 render={({ field: formField }) => (
                   <Input
-                    value={`${formField.value.product_name} ${formField.value.guantity}  ${formField.value.quant_unit} ${formField.value.helper_quantity} ${formField.value.help_quant_unit} ${formField.value.discount} ${formField.value.netto_cost} ${formField.value.brutto_cost} ${formField.value.vat_percentage} ${formField.value.vat_cost}`}
+                    value={`${formField.value.product_name} ${formField.value.quantity}  ${formField.value.quant_unit} ${formField.value.helper_quantity} ${formField.value.help_quant_unit} ${formField.value.discount} ${formField.value.netto_cost} ${formField.value.brutto_cost} ${formField.value.vat_percentage} ${formField.value.vat_cost}`}
                     readOnly
                   />
                 )}

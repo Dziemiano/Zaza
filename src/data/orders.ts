@@ -15,6 +15,7 @@ export const getAllOrders = async () => {
       include: {
         customer: true,
         LineItem: true,
+        user: true,
       },
     });
     return orders;

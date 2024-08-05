@@ -71,7 +71,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { OrderSchema } from "@/schemas";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { CustomerCombo } from "./customerCombo";
 import { OrderProductsTable } from "./orderProductsTable";
 import { Input } from "../ui/input";
@@ -108,6 +108,7 @@ export const OrderForm = ({
 
   const form = useForm<z.infer<typeof OrderSchema>>({
     resolver: zodResolver(OrderSchema),
+    reValidateMode: "onChange",
     defaultValues: order || {
       created_by: userId,
       personal_collect: false,
@@ -123,6 +124,11 @@ export const OrderForm = ({
       value: customer.id,
     };
   });
+
+  useEffect(() => {
+    console.log(form.getValues());
+    console.log(form.formState);
+  }, [form.getValues()]);
 
   const onSubmit = (values: z.infer<typeof OrderSchema>) => {
     //TODO rethink file upload
@@ -334,15 +340,15 @@ export const OrderForm = ({
                 </TabsContent>
 
                 <TabsContent value="products">
-                  <LineItemFormElement name="line_items" products={products} />
+                  <LineItemFormElement
+                    name="line_items"
+                    products={products}
+                    line_items={order?.LineItem}
+                  />
                 </TabsContent>
 
                 <TabsContent value="order">
                   <div className="flex flex-row  mt-10 mb-5">
-                    <div className="grid w-full mr-5 items-center gap-1.5">
-                      <Label>Numer w miesiącu</Label>
-                      <Input disabled id="order_number" value="01/01/2024" />
-                    </div>
                     <div className="grid w-full mr-5 items-center gap-1.5">
                       <Label>Numer obcy</Label>
                       <FormField
@@ -426,8 +432,6 @@ export const OrderForm = ({
                         )}
                       />
                     </div>
-                  </div>
-                  <div className="flex flex-row">
                     <div className="grid w-full max-w-sm items-center gap-1.5">
                       <Label>Typ WZ</Label>
                       <FormField
@@ -456,6 +460,8 @@ export const OrderForm = ({
                         )}
                       />
                     </div>
+                  </div>
+                  <div className="flex flex-row">
                     <div className="grid w-full max-w-sm items-center gap-1.5">
                       <Label>Data dostawy</Label>
                       <FormField
@@ -494,10 +500,6 @@ export const OrderForm = ({
                                       : undefined
                                   }
                                   onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -541,10 +543,6 @@ export const OrderForm = ({
                                   mode="single"
                                   selected={field.value}
                                   onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -609,10 +607,6 @@ export const OrderForm = ({
                                   mode="single"
                                   selected={field.value}
                                   onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -670,11 +664,12 @@ export const OrderForm = ({
               <DialogFooter className="max-h-fit">
                 <Button
                   type="submit"
+                  // disabled={!form.formState.isValid}
                   variant="zaza"
                   className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                   size="sm"
                 >
-                  Utwórz
+                  {editMode ? "Zapisz" : "Utwórz"}
                 </Button>
               </DialogFooter>
             </div>

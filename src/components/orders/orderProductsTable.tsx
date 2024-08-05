@@ -132,10 +132,10 @@ export const columns: ColumnDef<unknown, any>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "product_id",
+    accessorKey: "product_name",
     header: "Nazwa pozycji",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("product_id")}</div>
+      <div className="capitalize">{row.getValue("product_name")}</div>
     ),
   },
 

@@ -89,6 +89,7 @@ export const updateOrder = async (
     delivery_date: any;
     created_by: any;
     is_paid: any;
+    line_items: any[];
   },
   fileF: any[] | FormData
 ) => {
@@ -105,6 +106,23 @@ export const updateOrder = async (
     await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
   }
 
+  // Fetch existing line items from the database
+  const existingLineItems = await db.lineItem.findMany({
+    where: { order_id: data.id },
+    select: { id: true },
+  });
+
+  const incomingLineItemIds = new Set(data.line_items.map((item) => item.id));
+  const lineItemsToDelete = existingLineItems.filter(
+    (item) => !incomingLineItemIds.has(item.id)
+  );
+
+  // Delete line items that are not in the incoming data
+  await db.lineItem.deleteMany({
+    where: { id: { in: lineItemsToDelete.map((item) => item.id) } },
+  });
+
+  // Update or upsert the remaining line items
   const order = await db.order.update({
     where: { id: data.id },
     data: {
@@ -121,110 +139,20 @@ export const updateOrder = async (
       created_by: data.created_by,
       is_paid: data.is_paid,
       document_path: filePath,
+      LineItem: {
+        upsert: data.line_items
+          .filter((item) => item.id) // Ensure the item has an id
+          .map((item) => ({
+            where: { id: item.id },
+            update: item,
+            create: item,
+          })),
+      },
     },
   });
 
   revalidatePath("/orders");
   return {
-    success: "Order created",
+    success: "Order updated",
   };
-};
-
-export const addData = async (data: {
-  productData: any;
-  orderData?: {
-    foreign_id: string;
-    customer_id: string;
-    status: string;
-    is_proforma: boolean;
-    proforma_payment_date: string;
-    wz_type: string;
-    personal_collect: boolean;
-    delivey_date: string;
-    production_date: string;
-    payment_deadline: string;
-    delivery_place_id: string;
-    delivery_city: string;
-    delivery_street: string;
-    delivery_building: string;
-    delivery_zipcode: string;
-    delivery_contact_number: string;
-    delivery_date: string;
-    deliver_time: string;
-    transport_cost: number;
-    order_history: string;
-    created_by: string;
-    is_paid: boolean;
-  };
-  lineItems: any;
-  foreign_id?: any;
-  customer_id?: any;
-  status?: any;
-  is_proforma?: any;
-  proforma_payment_date?: any;
-  wz_type?: any;
-  personal_collect?: any;
-  production_date?: any;
-  payment_deadline?: any;
-  delivery_place_id?: any;
-  delivery_city?: any;
-  delivery_street?: any;
-  delivery_building?: any;
-  delivery_zipcode?: any;
-  delivery_contact_number?: any;
-  delivery_date?: any;
-  deliver_time?: any;
-  transport_cost?: any;
-  order_history?: any;
-  created_by?: any;
-  is_paid?: any;
-}) => {
-  // Create a new Product
-  const product = await db.product.create({
-    data: {
-      name: data.productData.name,
-      description: data.productData.description,
-      price: data.productData.price,
-      created_by: data.productData.created_by,
-      category: data.productData.category,
-    },
-  });
-
-  // Create a new Order
-  const order = await db.order.create({
-    data: {
-      foreign_id: data.foreign_id,
-      customer_id: data.customer_id,
-      status: data.status,
-      is_proforma: data.is_proforma,
-      proforma_payment_date: data.proforma_payment_date,
-      wz_type: data.wz_type,
-      personal_collect: data.personal_collect,
-      production_date: data.production_date,
-      payment_deadline: data.payment_deadline,
-      delivery_place_id: data.delivery_place_id,
-      delivery_city: data.delivery_city,
-      delivery_street: data.delivery_street,
-      delivery_building: data.delivery_building,
-      delivery_zipcode: data.delivery_zipcode,
-      delivery_contact_number: data.delivery_contact_number,
-      delivery_date: data.delivery_date,
-      deliver_time: data.deliver_time,
-      transport_cost: data.transport_cost,
-      order_history: data.order_history,
-      created_by: data.created_by,
-      is_paid: data.is_paid,
-    },
-  });
-
-  // Create LineItems for the Order
-  const lineItemsData = data.lineItems.map((item: any) => ({
-    ...item,
-    order_id: order.id,
-    product_id: product.id,
-  }));
-
-  const createdLineItems = await db.lineItem.createMany({
-    data: lineItemsData,
-  });
 };

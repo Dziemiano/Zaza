@@ -217,8 +217,9 @@ export const columns: ColumnDef<unknown, any>[] = [
 type OrdersTableProps = {
   customers: any[];
   orders: Order[];
+  products: any[];
 };
-export function OrdersTable({ customers, orders }: OrdersTableProps) {
+export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -422,6 +423,7 @@ export function OrdersTable({ customers, orders }: OrdersTableProps) {
         </Table>
       </div>
       <OrderView
+        products={products}
         customers={customers}
         order={order}
         isOpen={open}

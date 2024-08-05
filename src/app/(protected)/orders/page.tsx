@@ -62,7 +62,11 @@ const OrderPage = async () => {
         </Button>
       </div>
       <Suspense fallback={<div>Loading...</div>}>
-        <OrdersTable customers={customers || []} orders={orders || []} />
+        <OrdersTable
+          customers={customers || []}
+          orders={orders || []}
+          products={products || []}
+        />
       </Suspense>
     </div>
   );
