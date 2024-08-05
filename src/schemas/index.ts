@@ -25,6 +25,7 @@ export const TwoFactorSchema = z.object({
 });
 
 export const LineItemSchema = z.object({
+  id: z.string().optional(),
   order_id: z.string().optional(),
   product_id: z.string().optional(),
   product_name: z.string().optional(),

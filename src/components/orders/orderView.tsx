@@ -81,7 +81,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
   console.log(order);
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toDateString();
+    return new Date(dateString).toLocaleDateString("pl-PL");
   };
 
   const booleanToYesNo = (value: boolean): string => {

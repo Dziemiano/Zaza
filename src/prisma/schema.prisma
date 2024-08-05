@@ -187,7 +187,7 @@ model Order {
 }
 
 model LineItem {
-  id              String  @id @default(cuid())
+  id              String  @id @unique @default(cuid())
   order_id        String
   product_id      String
   product_name    String
@@ -203,6 +203,8 @@ model LineItem {
 
   order   Order   @relation(fields: [order_id], references: [id])
   product Product @relation(fields: [product_id], references: [id])
+
+  @@unique([id, order_id])
 }
 
 model Proforma {

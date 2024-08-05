@@ -203,7 +203,7 @@ export const OrderForm = ({
               <Tabs defaultValue="account" className="w-full h-full">
                 <TabsList>
                   <TabsTrigger value="customer">Dane Klienta</TabsTrigger>
-                  <TabsTrigger value="products">Produkty</TabsTrigger>
+                  {/* <TabsTrigger value="products">Produkty</TabsTrigger> */}
                   <TabsTrigger value="order">Szczegóły zamówienia</TabsTrigger>
                   <TabsTrigger value="documents">Dokumenty</TabsTrigger>
                   <TabsTrigger value="comments">Uwagi</TabsTrigger>
@@ -335,17 +335,18 @@ export const OrderForm = ({
                         Dodaj produkty
                       </Button> */}
                     </div>
-                    <OrderProductsTable orders={[]} />
+                    {/* <OrderProductsTable orders={[]} /> */}
+                    <LineItemFormElement
+                      name="line_items"
+                      products={products}
+                      line_items={order?.LineItem}
+                    />
                   </div>
                 </TabsContent>
 
-                <TabsContent value="products">
-                  <LineItemFormElement
-                    name="line_items"
-                    products={products}
-                    line_items={order?.LineItem}
-                  />
-                </TabsContent>
+                {/* <TabsContent value="products">
+
+                </TabsContent> */}
 
                 <TabsContent value="order">
                   <div className="flex flex-row  mt-10 mb-5">

@@ -24,20 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-type CompanyBranch = {
-  name: string;
-  street: string;
-  guant_unit: string;
-  helper?: string | null;
-  discount: string;
-  netto_cost: string;
-  brutto_cost: string;
-  vat_percentage?: string;
-  vat_cost?: string;
-};
-
 export type LineItem = {
+  id?: string;
   product_id?: string;
   product_name?: string;
   quantity?: string;
@@ -66,10 +54,12 @@ export function LineItemFormElement({
   const { fields, append, remove } = useFieldArray({
     control,
     name,
+    keyName: "key",
   });
 
   const form = useFormContext();
   const [newLineItem, setnewLineItem] = useState<LineItem>({
+    id: "",
     product_id: "",
     product_name: "",
     quantity: "",
@@ -87,6 +77,7 @@ export function LineItemFormElement({
     if (newLineItem.product_id && newLineItem.quantity) {
       append(newLineItem);
       setnewLineItem({
+        id: "",
         product_id: "",
         product_name: "",
         quantity: "",
@@ -104,9 +95,20 @@ export function LineItemFormElement({
 
   useEffect(() => {
     //TODO fix appendig
+
     line_items?.forEach((item) => {
-      append(item);
+      console.log(item);
+      if (fields.length === 0) {
+        append({ id: item.id, ...item });
+      } else {
+        fields.forEach((field) => {
+          if (field.product_id !== item.product_id) {
+            append({ id: item.id, ...item });
+          }
+        });
+      }
     });
+    console.log(fields);
   }, [line_items]);
 
   const productList = products.map((product) => {
