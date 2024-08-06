@@ -101,11 +101,13 @@ export function LineItemFormElement({
       if (fields.length === 0) {
         append({ id: item.id, ...item });
       } else {
-        fields.forEach((field) => {
-          if (field.product_id !== item.product_id) {
-            append({ id: item.id, ...item });
-          }
-        });
+        const itemExists = fields.some(
+          (field) => field.product_id === item.product_id
+        );
+
+        if (!itemExists) {
+          append({ id: item.id, ...item });
+        }
       }
     });
     console.log(fields);
