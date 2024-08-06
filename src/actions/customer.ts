@@ -70,7 +70,7 @@ export const createCustomer = async (data: CustomerType) => {
       payment_type: data.payment_type,
       customer_type: data.customer_type,
       payment_punctuality: data.payment_punctuality,
-      comments: data.comments,
+      // comments: data.comments,
       salesman: { connect: data.salesman.map((id) => ({ id: id })) },
       credit_limit: data.credit_limit,
       max_discount: data.max_discount,
