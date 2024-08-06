@@ -184,7 +184,7 @@ export const CustomerForm = ({
                     <TabsTrigger value="invoice">
                       Symbol i dane do faktury
                     </TabsTrigger>
-                    <TabsTrigger value="comments">Uwagi</TabsTrigger>
+                    {/* <TabsTrigger value="comments">Uwagi</TabsTrigger> */}
                   </TabsList>
 
                   <TabsContent value="customer" className="w-full h-[550px]">
@@ -808,7 +808,7 @@ export const CustomerForm = ({
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="comments">
+                  {/* <TabsContent value="comments">
                     <div className="flex flex-row mt-10">
                       <CommentSection
                         control={form.control}
@@ -816,7 +816,7 @@ export const CustomerForm = ({
                         name="comments"
                       />
                     </div>
-                  </TabsContent>
+                  </TabsContent> */}
                 </Tabs>
                 <DialogFooter className="max-h-fit">
                   <Button
