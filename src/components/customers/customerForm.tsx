@@ -181,9 +181,7 @@ export const CustomerForm = ({
                     <TabsTrigger value="delivery">
                       Filie i adresy dostaw
                     </TabsTrigger>
-                    <TabsTrigger value="invoice">
-                      Symbol i dane do faktury
-                    </TabsTrigger>
+                    <TabsTrigger value="invoice">Dane do faktury</TabsTrigger>
                     {/* <TabsTrigger value="comments">Uwagi</TabsTrigger> */}
                   </TabsList>
 
@@ -191,7 +189,7 @@ export const CustomerForm = ({
                     <div className="text-xl mt-5">Dane postawowe</div>
                     <div className="flex flex-row  mt-5 mb-5 pb-4 border-b-2">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Nazwa firmy</Label>
+                        <Label>Nazwa firmy*</Label>
                         <FormField
                           control={form.control}
                           name="name"
@@ -210,7 +208,7 @@ export const CustomerForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>NIP firmy</Label>
+                        <Label>NIP firmy*</Label>
                         <FormField
                           control={form.control}
                           name="nip"
@@ -228,8 +226,27 @@ export const CustomerForm = ({
                           )}
                         />
                       </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Symbol*</Label>
+                        <FormField
+                          control={form.control}
+                          name="symbol"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                       <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                        <Label>Rodzaj klienta</Label>
+                        <Label>Rodzaj klienta*</Label>
                         <FormField
                           control={form.control}
                           name="customer_type"
@@ -271,7 +288,7 @@ export const CustomerForm = ({
                     <div className="text-xl">Dane adresowe</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Ulica</Label>
+                        <Label>Ulica*</Label>
                         <FormField
                           control={form.control}
                           name="street"
@@ -290,7 +307,7 @@ export const CustomerForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Nr budynku</Label>
+                        <Label>Nr budynku*</Label>
                         <FormField
                           control={form.control}
                           name="building"
@@ -309,7 +326,7 @@ export const CustomerForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Nr lokalu</Label>
+                        <Label>Nr lokalu*</Label>
                         <FormField
                           control={form.control}
                           name="premises"
@@ -330,7 +347,7 @@ export const CustomerForm = ({
                     </div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Kod pocztowy</Label>
+                        <Label>Kod pocztowy*</Label>
                         <FormField
                           control={form.control}
                           name="postal_code"
@@ -349,7 +366,7 @@ export const CustomerForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Miejscowość</Label>
+                        <Label>Miejscowość*</Label>
                         <FormField
                           control={form.control}
                           name="city"
@@ -368,7 +385,7 @@ export const CustomerForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Państwo</Label>
+                        <Label>Państwo*</Label>
                         <FormField
                           control={form.control}
                           name="country"
@@ -392,7 +409,7 @@ export const CustomerForm = ({
                     </div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Telefon kontaktowy</Label>
+                        <Label>Telefon kontaktowy*</Label>
                         <FormField
                           control={form.control}
                           name="phone_number"
@@ -411,7 +428,7 @@ export const CustomerForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Email</Label>
+                        <Label>Email*</Label>
                         <FormField
                           control={form.control}
                           name="documents_email"
@@ -627,28 +644,6 @@ export const CustomerForm = ({
                   </TabsContent>
 
                   <TabsContent value="invoice">
-                    <div className="text-xl mt-5">Symbol</div>
-                    <div className="flex flex-row mt-5">
-                      <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Symbol</Label>
-                        <FormField
-                          control={form.control}
-                          name="symbol"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormControl>
-                                <Input
-                                  className="w-full"
-                                  disabled={isPending}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
                     <div className="text-xl mt-5">Dane do faktury</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">

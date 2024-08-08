@@ -1,10 +1,12 @@
 import { SignOutButton } from "@/components/dashboard/signOutButton";
-
+import Link from "next/link";
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3 font-medium bg-white rounded-lg max-md:flex-wrap">
-        <div className="text-3xl tracking-tighter text-red-400">ZaZa</div>
+        <Link href="/" className="text-3xl tracking-tighter text-red-400">
+          ZaZa
+        </Link>
         <div className="flex gap-5 my-auto text-xs text-black max-md:flex-wrap">
           <div className="flex gap-5 justify-between max-md:flex-wrap">
             <div className="justify-center px-2 py-3 text-sm whitespace-nowrap rounded-lg border border-solid shadow-sm border-neutral-400 text-neutral-400">

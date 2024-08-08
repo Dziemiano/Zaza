@@ -164,7 +164,9 @@ export const OrderView: React.FC<OrderViewProps> = ({
                   <div className="w-full">Data utworzenia</div>
                 </div>
                 <div className="w-full mr-5">
-                  <div>12:35</div>
+                  <div>
+                    {new Date(order.created_at).toLocaleTimeString("pl-PL")}
+                  </div>
                   <div className="w-full">Godzina utworzenia</div>
                 </div>
               </div>

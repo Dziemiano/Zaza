@@ -130,16 +130,12 @@ export const updateOrder = async (
   console.log(existingLineItems, incomingLineItemIds, lineItemsToDelete);
   console.log(data.line_items);
 
-  // Delete line items that are not in the incoming data
-  // await db.lineItem.deleteMany({
-  //   where: { id: { in: lineItemsToDelete.map((item) => item.id) } },
-  // });
-
   // Update or upsert the remaining line items
   const order = await db.order.update({
     where: { id: data.id },
     data: {
       transport_cost: parseInt(data.transport_cost),
+      customer_id: data.customer_id,
       foreign_id: data.foreign_id,
       status: data.status,
       is_proforma: data.is_proforma,

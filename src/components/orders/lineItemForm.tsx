@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -16,6 +16,16 @@ import {
   CommandInput,
   CommandEmpty,
 } from "@/components/ui/command";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ChevronsUpDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,54 +60,17 @@ export function LineItemFormElement({
   products,
   line_items,
 }: LineItemFormElementProps) {
-  const { control } = useFormContext();
+  const { control, setValue, getValues } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name,
     keyName: "key",
   });
 
-  const form = useFormContext();
-  const [newLineItem, setnewLineItem] = useState<LineItem>({
-    id: "",
-    product_id: "",
-    product_name: "",
-    quantity: "",
-    quant_unit: "",
-    helper_quantity: "",
-    help_quant_unit: "",
-    discount: "",
-    netto_cost: "",
-    brutto_cost: "",
-    vat_percentage: "",
-    vat_cost: "",
-  });
-
-  const addLineItem = () => {
-    if (newLineItem.product_id && newLineItem.quantity) {
-      append(newLineItem);
-      setnewLineItem({
-        id: "",
-        product_id: "",
-        product_name: "",
-        quantity: "",
-        quant_unit: "",
-        helper_quantity: "",
-        help_quant_unit: "",
-        discount: "",
-        netto_cost: "",
-        brutto_cost: "",
-        vat_percentage: "",
-        vat_cost: "",
-      });
-    }
-  };
+  const newLineItem = useWatch({ control, name: `${name}.new` });
 
   useEffect(() => {
-    //TODO fix appendig
-
     line_items?.forEach((item) => {
-      console.log(item);
       if (fields.length === 0) {
         append({ id: item.id, ...item });
       } else {
@@ -110,8 +83,87 @@ export function LineItemFormElement({
         }
       }
     });
-    console.log(fields);
-  }, [line_items]);
+  }, [line_items, append, fields]);
+
+  const nettoCost = useWatch({
+    control,
+    name: `${name}.new.netto_cost`,
+  });
+  const vatPercentage = useWatch({
+    control,
+    name: `${name}.new.vat_percentage`,
+  });
+
+  // Effect to update brutto_cost when netto_cost or vat_percentage change
+  useEffect(() => {
+    if (nettoCost && vatPercentage) {
+      const netto = parseFloat(nettoCost);
+      const vat = parseFloat(vatPercentage);
+      if (!isNaN(netto) && !isNaN(vat)) {
+        const vatCost = netto * (vat / 100);
+        const brutto = netto + vatCost;
+        setValue(`${name}.new.brutto_cost`, brutto.toFixed(2));
+        setValue(`${name}.new.vat_cost`, vatCost.toFixed(2));
+      }
+    }
+  }, [nettoCost, vatPercentage, setValue, name]);
+
+  const addLineItem = () => {
+    const newItemValues = getValues(`${name}.new`);
+    const newItem = {
+      ...newItemValues,
+      netto_cost: newItemValues.netto_cost
+        ? parseFloat(newItemValues.netto_cost).toFixed(2)
+        : "",
+      vat_percentage: newItemValues.vat_percentage
+        ? parseFloat(newItemValues.vat_percentage).toFixed(2)
+        : "",
+      brutto_cost: newItemValues.brutto_cost || "",
+      vat_cost: newItemValues.vat_cost || "",
+    };
+
+    append({
+      ...newItem,
+      quant_unit: newItem.quant_unit || "m3",
+      discount: newItem.discount || "0",
+    });
+
+    // Reset the new item fields
+    setValue(`${name}.new`, {
+      id: "",
+      product_id: "",
+      product_name: "",
+      quantity: "",
+      quant_unit: "m3",
+      helper_quantity: "",
+      help_quant_unit: "",
+      discount: "0",
+      netto_cost: "",
+      brutto_cost: "",
+      vat_percentage: "",
+      vat_cost: "",
+    });
+  };
+
+  // useEffect(() => {
+  //   //TODO fix appendig
+
+  //   line_items?.forEach((item) => {
+  //     console.log(item);
+  //     if (fields.length === 0) {
+  //       append({ id: item.id, ...item });
+  //     } else {
+  //       const itemExists = fields.some(
+  //         (field) => field.product_id === item.product_id
+  //       );
+
+  //       if (!itemExists) {
+  //         append({ id: item.id, ...item });
+  //       }
+  //     }
+  //   });
+  //   console.log(fields);
+  // }, [line_items]);
 
   const productList = products.map((product) => {
     return {
@@ -132,7 +184,7 @@ export function LineItemFormElement({
                 name={`${name}.${index}`}
                 render={({ field: formField }) => (
                   <Input
-                    value={`${formField.value.product_name} ${formField.value.quantity}  ${formField.value.quant_unit} ${formField.value.helper_quantity} ${formField.value.help_quant_unit} ${formField.value.discount} ${formField.value.netto_cost} ${formField.value.brutto_cost} ${formField.value.vat_percentage} ${formField.value.vat_cost}`}
+                    value={`${formField.value.product_name} Ilość: ${formField.value.quantity}  ${formField.value.quant_unit} Ilość pomocnicza: ${formField.value.helper_quantity} ${formField.value.help_quant_unit} Rabat: ${formField.value.discount} Cenna netto: ${formField.value.netto_cost} Cena brutto: ${formField.value.brutto_cost} Stawka VAT: ${formField.value.vat_percentage}% Wartość VAT: ${formField.value.vat_cost}`}
                     readOnly
                   />
                 )}
@@ -167,10 +219,10 @@ export function LineItemFormElement({
                       >
                         {field.value
                           ? productList.find(
-                              (product) => product.value === field.value
+                              (product) => product.id === field.value
                             )?.label
                           : "Wybierz produkt"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opadiscount-50" />
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -183,22 +235,21 @@ export function LineItemFormElement({
                           {productList.map((product) => (
                             <CommandItem
                               value={product.label}
-                              key={product.value}
+                              key={product.id}
                               onSelect={() => {
-                                field.onChange(product.value);
-                                setnewLineItem((prev) => ({
-                                  ...prev,
-                                  product_id: product.id,
-                                  product_name: product.label,
-                                }));
+                                field.onChange(product.id);
+                                setValue(
+                                  `${name}.new.product_name`,
+                                  product.label
+                                );
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  product.value === field.value
-                                    ? "opadiscount-100"
-                                    : "opadiscount-0"
+                                  product.id === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
                                 )}
                               />
                               {product.label}
@@ -220,42 +271,52 @@ export function LineItemFormElement({
               <FormItem>
                 <FormLabel>Ilość</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.quantity}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        quantity: e.target.value,
-                      }));
-                    }}
-                    placeholder="Ilość"
-                  />
+                  <Input {...field} placeholder="Ilość" />
                 </FormControl>
               </FormItem>
             )}
           />
-          <FormField
+          {/* <FormField
             control={control}
             name={`${name}.new.quant_unit`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Jednostka</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.quant_unit}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        quant_unit: e.target.value,
-                      }));
-                    }}
-                    placeholder="Jednostka"
-                  />
+                  <Input {...field} placeholder="Jednostka" />
                 </FormControl>
+              </FormItem>
+            )}
+          /> */}
+          <FormField
+            control={control}
+            name={`${name}.new.quant_unit`}
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value || "m3"}
+                  value={field.value}
+                >
+                  <FormLabel>Jednostka</FormLabel>
+                  <FormControl>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Wybierz" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="m3">m3</SelectItem>
+                      <SelectItem value="m2">m2</SelectItem>
+                      <SelectItem value="opak">opak</SelectItem>
+                      <SelectItem value="mb">mb</SelectItem>
+                      <SelectItem value="kpl">kpl</SelectItem>
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="szt">szt</SelectItem>
+                      <SelectItem value="t">t</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </FormItem>
             )}
           />
@@ -266,18 +327,7 @@ export function LineItemFormElement({
               <FormItem>
                 <FormLabel>Ilość pomocnicza</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.helper_quantity || ""}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        helper_quantity: e.target.value,
-                      }));
-                    }}
-                    placeholder="Ilość pomocnicza"
-                  />
+                  <Input {...field} placeholder="Ilość pomocnicza" />
                 </FormControl>
               </FormItem>
             )}
@@ -286,22 +336,27 @@ export function LineItemFormElement({
             control={control}
             name={`${name}.new.help_quantity_unit`}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Jednostka pomocnicza</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.help_quantity_unit || ""}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        help_quantity_unit: e.target.value,
-                      }));
-                    }}
-                    placeholder="Jednostka pomocnicza"
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormLabel>Jednostka pomocnicza</FormLabel>
+                  <FormControl>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Wybierz" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="m3">m3</SelectItem>
+                      <SelectItem value="m2">m2</SelectItem>
+                      <SelectItem value="opak">opak</SelectItem>
+                      <SelectItem value="mb">mb</SelectItem>
+                      <SelectItem value="kpl">kpl</SelectItem>
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="szt">szt</SelectItem>
+                      <SelectItem value="t">t</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </FormItem>
             )}
           />
@@ -312,18 +367,7 @@ export function LineItemFormElement({
               <FormItem>
                 <FormLabel>Rabat</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.discount}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        discount: e.target.value,
-                      }));
-                    }}
-                    placeholder="Rabat"
-                  />
+                  <Input {...field} value={"0"} placeholder="Rabat" />
                 </FormControl>
               </FormItem>
             )}
@@ -337,38 +381,9 @@ export function LineItemFormElement({
                 <FormControl>
                   <Input
                     {...field}
-                    value={newLineItem.netto_cost}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        netto_cost: e.target.value,
-                      }));
-                    }}
+                    type="number"
+                    step="0.01"
                     placeholder="Netto"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name={`${name}.new.brutto_cost`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Brutto</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.brutto_cost}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        brutto_cost: e.target.value,
-                      }));
-                    }}
-                    placeholder="Brutto"
                   />
                 </FormControl>
               </FormItem>
@@ -383,16 +398,22 @@ export function LineItemFormElement({
                 <FormControl>
                   <Input
                     {...field}
-                    value={newLineItem.vat_percentage}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        vat_percentage: e.target.value,
-                      }));
-                    }}
+                    type="number"
+                    step="0.1"
                     placeholder="Stawka VAT"
                   />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`${name}.new.brutto_cost`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Brutto</FormLabel>
+                <FormControl>
+                  <Input {...field} readOnly placeholder="Brutto" />
                 </FormControl>
               </FormItem>
             )}
@@ -404,18 +425,7 @@ export function LineItemFormElement({
               <FormItem>
                 <FormLabel>Wartość VAT</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={newLineItem.vat_cost}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setnewLineItem((prev) => ({
-                        ...prev,
-                        vat_cost: e.target.value,
-                      }));
-                    }}
-                    placeholder="Wartość VAT"
-                  />
+                  <Input {...field} readOnly placeholder="Wartość VAT" />
                 </FormControl>
               </FormItem>
             )}
