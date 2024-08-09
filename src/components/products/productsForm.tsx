@@ -64,14 +64,44 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
 
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
-    defaultValues: product || {
-      created_by: userId,
-      is_sold: false,
-      is_produced: false,
-      is_internal: false,
-      is_one_time: false,
-      is_entrusted: false,
-    },
+    defaultValues: product
+      ? {
+          ...product,
+          // Convert null values to empty strings for input fields
+          unit: product.unit ?? "m3",
+          secondary_unit: product.secondary_unit ?? "",
+          length: product.length ?? "",
+          width: product.width ?? "",
+          height: product.height ?? "",
+          pack_quantity: product.pack_quantity ?? "",
+          actual_shape_volume: product.actual_shape_volume ?? "",
+          min_production_quantity: product.min_production_quantity ?? "",
+          sales_volume: product.sales_volume ?? "",
+          technological_volume: product.technological_volume ?? "",
+          eps_type: product.eps_type ?? "",
+          weight: product.weight ?? "",
+          seasoning_time: product.seasoning_time ?? "",
+          manufacturer: product.manufacturer ?? "",
+          ean: product.ean ?? "",
+          description: product.description ?? "",
+          raw_material_type: product.raw_material_type ?? "",
+          raw_material_granulation: product.raw_material_granulation ?? "",
+          packaging_weight: product.packaging_weight ?? "",
+          packaging_type: product.packaging_type ?? "",
+          price: product.price ?? "",
+          min_price: product.min_price ?? "",
+          vat: product.vat ?? "",
+          price_tolerance: product.price_tolerance ?? "",
+        }
+      : {
+          created_by: userId,
+          is_sold: false,
+          is_produced: false,
+          is_internal: false,
+          is_one_time: false,
+          is_entrusted: false,
+          unit: "m3",
+        },
   });
 
   useEffect(() => {
@@ -426,7 +456,7 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       <Label>Ilość w paczce</Label>
                       <FormField
                         control={form.control}
-                        name="packQuantity"
+                        name="pack_quantity"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -445,7 +475,7 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       <Label>Faktyczna objętość kształtki</Label>
                       <FormField
                         control={form.control}
-                        name="actualShapeVolume"
+                        name="actual_shape_volume"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -466,7 +496,7 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       <Label>Min do wyprodukowania</Label>
                       <FormField
                         control={form.control}
-                        name="minProductionQuantity"
+                        name="min_production_quantity"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -485,7 +515,7 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       <Label>Objętość sprzedażowa</Label>
                       <FormField
                         control={form.control}
-                        name="salesVolume"
+                        name="sales_volume"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -569,7 +599,7 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       <Label>Producent</Label>
                       <FormField
                         control={form.control}
-                        name="producer"
+                        name="manufacturer"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -634,7 +664,7 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       <Label>Opis</Label>
                       <FormField
                         control={form.control}
-                        name="production_description"
+                        name="description"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -759,30 +789,17 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
                       />
                     </div>
                     <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                      <Label>Tolerancja ceny</Label>
+                      <Label>Tolerancja ceny %</Label>
                       <FormField
                         control={form.control}
                         name="price_tolerance"
                         render={({ field }) => (
                           <FormItem className="flex flex-row">
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Wybierz" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="m2">m2</SelectItem>
-                                <SelectItem value="m3">m3</SelectItem>
-                                <SelectItem value="kg">kg</SelectItem>
-                                <SelectItem value="l">l</SelectItem>
-                                <SelectItem value="szt">szt</SelectItem>
-                              </SelectContent>
-                            </Select>
-
+                            <Input
+                              className="w-full"
+                              disabled={isPending}
+                              {...field}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}

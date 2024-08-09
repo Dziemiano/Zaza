@@ -37,7 +37,7 @@ interface Product {
   is_internal?: boolean;
   is_one_time?: boolean;
   is_entrusted?: boolean;
-  production_description?: string;
+  description?: string;
   image_path?: string;
   raw_material_type?: string;
   raw_material_granulation?: string;

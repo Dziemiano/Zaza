@@ -22,17 +22,17 @@ export const createProduct = async (
     length: string;
     width: string;
     height: string;
-    packQuantity: string;
-    actualShapeVolume: string;
-    minProductionQuantity: string;
-    salesVolume: string;
+    pack_quantity: string;
+    actual_shape_volume: string;
+    min_production_quantity: string;
+    sales_volume: string;
     technological_volume: string;
     eps_type: string;
     weight: string;
     seasoning_time: string;
-    producer: string;
+    manufacturer: string;
     ean: string;
-    production_description: string;
+    description: string;
     file: File;
     raw_material_type: string;
     raw_material_granulation: string;
@@ -65,22 +65,22 @@ export const createProduct = async (
   const product = await db.product.create({
     data: {
       name: data.name,
-      description: data.production_description,
+      description: data.description,
       category: data.category,
       sku: data.sku,
       length: data.length,
       width: data.width,
       height: data.height,
-      quantity_in_package: data.packQuantity,
-      actual_volume: data.actualShapeVolume,
-      quantity_needed_for_production: data.minProductionQuantity,
-      sales_volume: data.salesVolume,
+      quantity_in_package: data.pack_quantity,
+      actual_volume: data.actual_shape_volume,
+      quantity_needed_for_production: data.min_production_quantity,
+      sales_volume: data.sales_volume,
       technological_volume: data.technological_volume,
       eps_type: data.eps_type,
       ean: data.ean,
       weight: data.weight,
       seasoning_time: data.seasoning_time,
-      manufacturer: data.producer,
+      manufacturer: data.manufacturer,
       primary_unit: data.unit,
       secondary_unit: data.secondary_unit,
       is_sold: data.is_sold,
@@ -125,17 +125,17 @@ export const updateProduct = async (
     length: string;
     width: string;
     height: string;
-    packQuantity: string;
-    actualShapeVolume: string;
-    minProductionQuantity: string;
-    salesVolume: string;
+    pack_quantity: string;
+    actual_shape_volume: string;
+    min_production_quantity: string;
+    sales_volume: string;
     technological_volume: string;
     eps_type: string;
     weight: string;
     seasoning_time: string;
-    producer: string;
+    manufacturer: string;
     ean: string;
-    production_description: string;
+    description: string;
     file: File;
     raw_material_type: string;
     raw_material_granulation: string;
@@ -169,22 +169,22 @@ export const updateProduct = async (
     },
     data: {
       name: data.name,
-      description: data.production_description,
+      description: data.description,
       category: data.category,
       sku: data.sku,
       length: data.length,
       width: data.width,
       height: data.height,
-      quantity_in_package: data.packQuantity,
-      actual_volume: data.actualShapeVolume,
-      quantity_needed_for_production: data.minProductionQuantity,
-      sales_volume: data.salesVolume,
+      quantity_in_package: data.pack_quantity,
+      actual_volume: data.actual_shape_volume,
+      quantity_needed_for_production: data.min_production_quantity,
+      sales_volume: data.sales_volume,
       technological_volume: data.technological_volume,
       eps_type: data.eps_type,
       ean: data.ean,
       weight: data.weight,
       seasoning_time: data.seasoning_time,
-      manufacturer: data.producer,
+      manufacturer: data.manufacturer,
       primary_unit: data.unit,
       secondary_unit: data.secondary_unit,
       is_sold: data.is_sold,

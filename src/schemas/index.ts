@@ -1,5 +1,16 @@
 import * as z from "zod";
 
+// const customErrorMap: z.ZodErrorMap = (issue, ctx) => {
+//   if (issue.code === z.ZodIssueCode.required_error) {
+//     if (issue.expected === "string") {
+//       return { message: "bad type!" };
+//     }
+//   }
+//   return { message: ctx.defaultError };
+// };
+
+// z.setErrorMap(customErrorMap);
+
 export const NewPasswordSchema = z.object({
   password: z.string().min(6, { message: "Minimum 6 characters" }),
 });
@@ -135,10 +146,10 @@ export const CustomerSchema = z.object({
   id: z.string().optional(),
   nip: z.string(),
   symbol: z.string().optional(),
-  name: z.string().min(3, { message: "Name is required" }),
+  name: z.string().min(3, { message: "Nazwa jest wymagana" }),
   primary_email: z
     .string()
-    .email({ message: "Invalid email" })
+    .email({ message: "Niepoprawny email" })
     .min(4)
     .optional(),
   documents_email: z.string().optional(),
@@ -183,42 +194,52 @@ export const CustomerSchema = z.object({
 
 export const ProductSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Name is required"),
-  category: z.string().min(1, "Category is required"),
-  sku: z.string().min(1, "SKU is required"),
-  unit: z.string().min(1, "Unit is required"),
-  secondary_unit: z.string().optional(),
+  name: z
+    .string({ required_error: "Pole wymagane" })
+    .min(1, "Nazwa jest wymagana"),
+  category: z
+    .string({ required_error: "Pole wymagane" })
+    .min(1, "Kategoria jest wymagana"),
+  sku: z
+    .string({ required_error: "Pole wymagane" })
+    .min(1, "SKU jest wymagane"),
+  unit: z
+    .string({ required_error: "Pole wymagane" })
+    .min(1, "Jednostka podstawowa jest wymagana"),
+  secondary_unit: z.string().nullable().optional(),
   is_sold: z.boolean(),
   is_produced: z.boolean(),
   is_internal: z.boolean(),
   is_one_time: z.boolean(),
   is_entrusted: z.boolean(),
-  length: z.string().optional(),
-  width: z.string().optional(),
-  height: z.string().optional(),
-  packQuantity: z.string().optional(),
-  actualShapeVolume: z.string().optional(),
-  minProductionQuantity: z.string().optional(),
-  salesVolume: z.string().optional(),
-  technological_volume: z.string().optional(),
-  eps_type: z.string().optional(),
-  weight: z.string().optional(),
-  seasoning_time: z.string().optional(),
-  producer: z.string().optional(),
-  ean: z.string().optional(),
-  production_description: z.string().optional(),
-  file: z.instanceof(File).optional(),
-  raw_material_type: z.string().optional(),
-  raw_material_granulation: z.string().optional(),
-  packaging_weight: z.string().optional(),
-  packaging_type: z.string().optional(),
-  created_at: z.date().optional(),
-  created_by: z.string().optional(),
-  price: z.string().optional(),
-  auto_price_translate: z.boolean().optional(),
-  min_price: z.string().optional(),
-  vat: z.string().optional(),
-  price_tolerance: z.string().optional(),
+  length: z.string().nullable().optional(),
+  width: z.string().nullable().optional(),
+  height: z.string().nullable().optional(),
+  pack_quantity: z.string().nullable().optional(),
+  actual_shape_volume: z.string().nullable().optional(),
+  min_production_quantity: z.string().nullable().optional(),
+  sales_volume: z.string().nullable().optional(),
+  technological_volume: z.string().nullable().optional(),
+  eps_type: z.string().nullable().optional(),
+  weight: z.string().nullable().optional(),
+  seasoning_time: z.string().nullable().optional(),
+  manufacturer: z.string().nullable().optional(),
+  ean: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  file: z.any().optional(),
+  raw_material_type: z.string().nullable().optional(),
+  raw_material_granulation: z.string().nullable().optional(),
+  packaging_weight: z.string().nullable().optional(),
+  packaging_type: z.string().nullable().optional(),
+  price: z
+    .string({
+      required_error: "Pole wymagane",
+    })
+    .nullable(),
+  auto_price_translate: z.boolean(),
+  min_price: z.string().nullable().optional(),
+  vat: z.string().nullable().default("23"),
+  price_tolerance: z.string().nullable().optional(),
   comments: z
     .object({
       general: z.array(z.string()),

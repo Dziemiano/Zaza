@@ -99,7 +99,7 @@ export type Product = {
   is_internal: Boolean | null;
   is_one_time: Boolean | null;
   is_entrusted: Boolean | null;
-  production_description: String | null;
+  description: String | null;
   image_path: String | null;
   raw_material_type: String | null;
   raw_material_granulation: String | null;
