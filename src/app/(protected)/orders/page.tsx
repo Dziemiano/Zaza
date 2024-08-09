@@ -2,8 +2,6 @@ import { auth } from "@/auth";
 import { OrdersTable } from "@/components/orders/ordersTable";
 
 import { Button } from "@/components/ui/button";
-import { addData } from "@/actions/orders";
-import { AddBut } from "./addBut";
 import { getAllOrders } from "@/data/orders";
 import { Suspense } from "react";
 import { OrderView } from "@/components/orders/orderView";
