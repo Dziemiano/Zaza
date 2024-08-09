@@ -67,7 +67,11 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
     defaultValues: product
       ? {
           ...product,
-          // Convert null values to empty strings for input fields
+          is_sold: product.is_sold ?? false,
+          is_produced: product.is_produced ?? false,
+          is_internal: product.is_internal ?? false,
+          is_one_time: product.is_one_time ?? false,
+          is_entrusted: product.is_entrusted ?? false,
           unit: product.unit ?? "m3",
           secondary_unit: product.secondary_unit ?? "",
           length: product.length ?? "",
