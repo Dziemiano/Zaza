@@ -270,8 +270,9 @@ export const columns: ColumnDef<unknown, any>[] = [
 
 type CustomersTableProps = {
   customers: Customer[];
+  salesmen: any[];
 };
-export function CustomersTable({ customers }: CustomersTableProps) {
+export function CustomersTable({ customers, salesmen }: CustomersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -476,7 +477,12 @@ export function CustomersTable({ customers }: CustomersTableProps) {
           </TableBody>
         </Table>
       </div>
-      <CustomerView customer={customer} isOpen={open} setIsOpen={setOpen} />
+      <CustomerView
+        customer={customer}
+        salesmen={salesmen}
+        isOpen={open}
+        setIsOpen={setOpen}
+      />
     </div>
   );
 }

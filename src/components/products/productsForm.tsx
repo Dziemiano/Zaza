@@ -2,56 +2,26 @@
 
 import { Button } from "../ui/button";
 
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-
-import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-
-import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
 import { Switch } from "@/components/ui/switch";
 
 import { Textarea } from "@/components/ui/textarea";
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -60,43 +30,31 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "../ui/form";
 
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFormContext, useFieldArray } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { OrderSchema } from "@/schemas";
-
-import { useState, useTransition } from "react";
-import { CustomerCombo } from "./customerCombo";
-import { OrderProductsTable } from "./orderProductsTable";
+import { useEffect, useState, useTransition } from "react";
 import { Input } from "../ui/input";
-import { Calendar } from "../ui/calendar";
-
-import { getAllCustomers } from "@/data/customers";
-import { createOrder } from "@/actions/orders";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { CommentSection } from "./commentsFormElement";
+import { CommentSection } from "../reusable/commentsFormElement";
 
 import { ProductSchema } from "@/schemas";
-import { createProduct } from "@/actions/products";
+import { createProduct, updateProduct } from "@/actions/products";
+import SelectFormElement from "../reusable/selectFormElement";
 
 type ProductFormProps = {
-  isOpen: boolean;
   editMode?: boolean;
   product?: z.infer<typeof ProductSchema>;
 };
 
-export const ProductForm = ({
-  isOpen,
-  editMode,
-  product,
-}: ProductFormProps) => {
+export const ProductForm = ({ editMode, product }: ProductFormProps) => {
+  //TODO: add form validation, error handling
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -107,21 +65,25 @@ export const ProductForm = ({
   const form = useForm<z.infer<typeof ProductSchema>>({
     resolver: zodResolver(ProductSchema),
     defaultValues: product || {
-      // name: "Product Name",
-      // sku: "12321441",
-      // category: "opakowanie",
       created_by: userId,
-      isForSale: false,
-      isInProduction: false,
-      isInternalProduct: false,
-      isOneTimeProduct: false,
-      isEntrustedProduct: false,
+      is_sold: false,
+      is_produced: false,
+      is_internal: false,
+      is_one_time: false,
+      is_entrusted: false,
     },
+  });
+
+  useEffect(() => {
+    if (product) {
+      console.log(product);
+      // console.log(fields);
+      console.log(form);
+    }
   });
 
   const onSubmit = (values: z.infer<typeof ProductSchema>) => {
     let formData = new FormData();
-    console.log(values);
 
     if (values.file) {
       formData.append("file", values.file);
@@ -130,12 +92,12 @@ export const ProductForm = ({
     const data = JSON.parse(JSON.stringify(values));
 
     startTransition(() => {
-      if (product) {
-        // Call an update function instead of create
-        // updateOrder(order.id, data, formData).then((response) => {
-        //   setSuccess(response?.success);
-        //   setOpen(false);
-        // }); console.log("Order updated successfully");
+      if (product && product.id) {
+        updateProduct(product.id, data, formData).then((response) => {
+          setSuccess(response?.success);
+          setOpen(false);
+        });
+        console.log("Order updated successfully");
       } else {
         createProduct(data, formData).then((response) => {
           setSuccess(response?.success);
@@ -144,6 +106,55 @@ export const ProductForm = ({
       }
     });
   };
+
+  const materials = [
+    { label: "Styropian", value: "styrofoam" },
+    { label: "Styropapa", value: "styrofelt" },
+    { label: "Surowiec", value: "raw material" },
+    { label: "Formatki", value: "sheets" },
+    { label: "Kształtki", value: "shaped forms" },
+    { label: "Transport", value: "transport" },
+    { label: "Granulat", value: "granulate" },
+    { label: "Wełna", value: "wool" },
+    { label: "Skos", value: "slope" },
+    { label: "Inne", value: "others" },
+  ];
+
+  const eps_types = [
+    { label: "EPS 045", value: "eps_045" },
+    { label: "EPS 045 S", value: "eps_045_s" },
+    { label: "EPS 042", value: "eps_042" },
+    { label: "EPS 042 S", value: "eps_042_s" },
+    { label: "EPS 040", value: "eps_040" },
+    { label: "EPS 040 S", value: "eps_040_s" },
+    { label: "EPS 070-038", value: "eps_070_038" },
+    { label: "EPS 070-038 S", value: "eps_070_038_s" },
+    { label: "EPS 080-038", value: "eps_080_038" },
+    { label: "EPS 080-038 S", value: "eps_080_038_s" },
+    { label: "EPS 100/17 S", value: "eps_100_017_s" },
+    { label: "EPS 100-037", value: "eps_100_037" },
+    { label: "EPS 100-035", value: "eps_100_035" },
+    { label: "EPS 120-035", value: "eps_120_035" },
+    { label: "EPS 150-035", value: "eps_150_035" },
+    { label: "EPS 200-034", value: "eps_200_034" },
+    { label: "EPS 100-035 AQUA", value: "eps_100_035_aqua" },
+    { label: "EPS 120-035 AQUA", value: "eps_120_035_aqua" },
+    { label: "EPS 150-035 AQUA", value: "eps_150_035_aqua" },
+    { label: "EPS 200-034 AQUA", value: "eps_200_034_aqua" },
+    { label: "EPS 031 GRAFIT", value: "eps_031_grafit" },
+    { label: "EPS 033 GRAFIT", value: "eps_033_grafit" },
+    { label: "EPS 100-030 GRAFIT", value: "eps_100_030_grafit" },
+    { label: "EPS T - Akustyczny", value: "eps_t_acustic" },
+  ];
+
+  const raw_materials = [
+    { label: "Palny/niebudowlany", value: "flammable/non-construction" },
+    { label: "Niepalny/budowlany", value: "non-flammable/construction" },
+    { label: "Drobny", value: "fine" },
+    { label: "Gruby", value: "coarse" },
+    { label: "Spożywczy", value: "food-grade" },
+    { label: "Grafitowy", value: "graphite" },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -195,7 +206,7 @@ export const ProductForm = ({
                     <div className="flex w-full items-center">
                       <FormField
                         control={form.control}
-                        name="isForSale"
+                        name="is_sold"
                         render={({ field }) => (
                           <FormItem className="flex flex-row mr-2">
                             <Switch
@@ -210,7 +221,7 @@ export const ProductForm = ({
                     <div className="flex w-full items-center">
                       <FormField
                         control={form.control}
-                        name="isInProduction"
+                        name="is_produced"
                         render={({ field }) => (
                           <FormItem className="flex flex-row mr-2">
                             <Switch
@@ -225,7 +236,7 @@ export const ProductForm = ({
                     <div className="flex w-full items-center">
                       <FormField
                         control={form.control}
-                        name="isInternalProduct"
+                        name="is_internal"
                         render={({ field }) => (
                           <FormItem className="flex flex-row mr-2">
                             <Switch
@@ -240,7 +251,7 @@ export const ProductForm = ({
                     <div className="flex w-full items-center">
                       <FormField
                         control={form.control}
-                        name="isOneTimeProduct"
+                        name="is_one_time"
                         render={({ field }) => (
                           <FormItem className="flex flex-row mr-2">
                             <Switch
@@ -255,7 +266,7 @@ export const ProductForm = ({
                     <div className="flex w-full items-center">
                       <FormField
                         control={form.control}
-                        name="isEntrustedProduct"
+                        name="is_entrusted"
                         render={({ field }) => (
                           <FormItem className="flex flex-row mr-2">
                             <Switch
@@ -288,40 +299,12 @@ export const ProductForm = ({
                         )}
                       />
                     </div>
-                    <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                      <Label>Kategoria produktu</Label>
-                      <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row">
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Wybierz" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Styropian">
-                                  Styropian
-                                </SelectItem>
-                                <SelectItem value="Opakowanie">
-                                  Opakowanie
-                                </SelectItem>
-                                <SelectItem value="Kształtka">
-                                  Kształtka
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <SelectFormElement
+                      label="Kategoria produktu"
+                      items={materials}
+                      form={form}
+                      name="category"
+                    />
                     <div className="grid w-full mr-5 items-center gap-1.5">
                       <Label>SKU / Kod</Label>
                       <FormField
@@ -521,7 +504,7 @@ export const ProductForm = ({
                       <Label>Objętość technologiczna</Label>
                       <FormField
                         control={form.control}
-                        name="technologicalVolume"
+                        name="technological_volume"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -536,25 +519,12 @@ export const ProductForm = ({
                         )}
                       />
                     </div>
-                    <div className="grid w-full mr-5 items-center gap-1.5">
-                      <Label>Rodzaj EPS</Label>
-                      <FormField
-                        control={form.control}
-                        name="epsType"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormControl>
-                              <Input
-                                className="w-full"
-                                disabled={isPending}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <SelectFormElement
+                      label="Rodzaj EPS"
+                      form={form}
+                      name="eps_type"
+                      items={eps_types}
+                    />
                     <div className="grid w-full mr-5 items-center gap-1.5">
                       <Label>Waga</Label>
                       <FormField
@@ -580,7 +550,7 @@ export const ProductForm = ({
                       <Label>Czas sezonowania</Label>
                       <FormField
                         control={form.control}
-                        name="seasoningTime"
+                        name="seasoning_time"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <FormControl>
@@ -633,25 +603,12 @@ export const ProductForm = ({
                         )}
                       />
                     </div>
-                    <div className="grid w-full mr-5 items-center gap-1.5">
-                      <Label>Rodzaj surowca</Label>
-                      <FormField
-                        control={form.control}
-                        name="raw_material_type"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormControl>
-                              <Input
-                                className="w-full"
-                                disabled={isPending}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <SelectFormElement
+                      label="Rodzaj surowca"
+                      form={form}
+                      name="raw_material_type"
+                      items={raw_materials}
+                    />
                     <div className="grid w-full mr-5 items-center gap-1.5">
                       <Label>Granulacja surowca</Label>
                       <FormField

@@ -58,7 +58,7 @@ enum PaymentPunctuality {
   ON_TIME
   OK
   WARNING
-  NOT_ON_TIME
+  LATE
 }
 
 model Customer {
@@ -222,7 +222,7 @@ model Wz {
   created_at DateTime
   out_date   DateTime
   order_id   String
-  foreig_id  String
+  foreign_id String
   car        String
   Order      Order    @relation(fields: [order_id], references: [id])
 }

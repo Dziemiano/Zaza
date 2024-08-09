@@ -41,7 +41,7 @@ const ProductsPage = async () => {
       </div>
       <div className="mt-4 mb-4 flex flex-row">
         <div className="min-w-[24%] mr-4">
-          <ProductForm customers={customers || []} userId={userId} />
+          <ProductForm />
         </div>
       </div>
       <Suspense fallback={<div>Loading...</div>}>

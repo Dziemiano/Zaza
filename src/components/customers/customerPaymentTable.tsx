@@ -49,7 +49,7 @@ import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 
-import { OrderView } from "./customerView";
+import { CustomerView } from "./customerView";
 
 // TODO: drag and drop colums
 // import {
@@ -212,7 +212,7 @@ export const columns: ColumnDef<unknown, any>[] = [
 type OrdersTableProps = {
   orders: Order[];
 };
-export function OrderProductsTable({ orders }: OrdersTableProps) {
+export function CustomerPaymentTable({ orders }: OrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});

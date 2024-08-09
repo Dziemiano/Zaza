@@ -25,7 +25,6 @@ import {
   SelectValue,
   SelectGroup,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ChevronsUpDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +33,9 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+
+import { LineItemSchema } from "@/schemas";
 export type LineItem = {
   id?: string;
   product_id?: string;
@@ -60,30 +62,13 @@ export function LineItemFormElement({
   products,
   line_items,
 }: LineItemFormElementProps) {
-  const { control, setValue, getValues } = useFormContext();
+  const { control, setValue, getValues, setError, clearErrors } =
+    useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name,
     keyName: "key",
   });
-
-  const newLineItem = useWatch({ control, name: `${name}.new` });
-
-  useEffect(() => {
-    line_items?.forEach((item) => {
-      if (fields.length === 0) {
-        append({ id: item.id, ...item });
-      } else {
-        const itemExists = fields.some(
-          (field) => field.product_id === item.product_id
-        );
-
-        if (!itemExists) {
-          append({ id: item.id, ...item });
-        }
-      }
-    });
-  }, [line_items, append, fields]);
 
   const nettoCost = useWatch({
     control,
@@ -110,60 +95,72 @@ export function LineItemFormElement({
 
   const addLineItem = () => {
     const newItemValues = getValues(`${name}.new`);
-    const newItem = {
-      ...newItemValues,
-      netto_cost: newItemValues.netto_cost
-        ? parseFloat(newItemValues.netto_cost).toFixed(2)
-        : "",
-      vat_percentage: newItemValues.vat_percentage
-        ? parseFloat(newItemValues.vat_percentage).toFixed(2)
-        : "",
-      brutto_cost: newItemValues.brutto_cost || "",
-      vat_cost: newItemValues.vat_cost || "",
-    };
+    try {
+      const validatedNewItem = LineItemSchema.parse(newItemValues);
 
-    append({
-      ...newItem,
-      quant_unit: newItem.quant_unit || "m3",
-      discount: newItem.discount || "0",
-    });
+      if (
+        !validatedNewItem.quantity ||
+        !validatedNewItem.netto_cost ||
+        !validatedNewItem.vat_percentage
+      ) {
+        throw new Error("Required fields are missing");
+      }
 
-    // Reset the new item fields
-    setValue(`${name}.new`, {
-      id: "",
-      product_id: "",
-      product_name: "",
-      quantity: "",
-      quant_unit: "m3",
-      helper_quantity: "",
-      help_quant_unit: "",
-      discount: "0",
-      netto_cost: "",
-      brutto_cost: "",
-      vat_percentage: "",
-      vat_cost: "",
-    });
+      append({
+        ...validatedNewItem,
+        quant_unit: validatedNewItem.quant_unit || "m3",
+        discount: validatedNewItem.discount || "0",
+      });
+
+      setValue(`${name}.new`, {
+        id: "",
+        product_id: "",
+        product_name: "",
+        quantity: "",
+        quant_unit: "m3",
+        helper_quantity: "",
+        help_quant_unit: "",
+        discount: "0",
+        netto_cost: "",
+        brutto_cost: "",
+        vat_percentage: "",
+        vat_cost: "",
+      });
+
+      Object.keys(newItemValues).forEach((fieldName) => {
+        clearErrors(`${name}.new.${fieldName}`);
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.issues.forEach((issue) => {
+          setError(`${name}.new.${issue.path[0]}`, {
+            message: issue.message,
+          });
+        });
+      } else if (error instanceof Error) {
+        // Handle the custom error for missing required fields
+        setError(`${name}.new.quantity`, { message: "Ilość jest wymagana" });
+      } else {
+        console.error("Error adding line item:", error);
+      }
+    }
   };
 
-  // useEffect(() => {
-  //   //TODO fix appendig
+  useEffect(() => {
+    line_items?.forEach((item) => {
+      if (fields.length === 0) {
+        append({ id: item.id, ...item });
+      } else {
+        const itemExists = fields.some(
+          (field) => field.product_id === item.product_id
+        );
 
-  //   line_items?.forEach((item) => {
-  //     console.log(item);
-  //     if (fields.length === 0) {
-  //       append({ id: item.id, ...item });
-  //     } else {
-  //       const itemExists = fields.some(
-  //         (field) => field.product_id === item.product_id
-  //       );
-
-  //       if (!itemExists) {
-  //         append({ id: item.id, ...item });
-  //       }
-  //     }
-  //   });
-  //   console.log(fields);
-  // }, [line_items]);
+        if (!itemExists) {
+          append({ id: item.id, ...item });
+        }
+      }
+    });
+  }, [line_items]);
 
   const productList = products.map((product) => {
     return {
@@ -184,7 +181,19 @@ export function LineItemFormElement({
                 name={`${name}.${index}`}
                 render={({ field: formField }) => (
                   <Input
-                    value={`${formField.value.product_name} Ilość: ${formField.value.quantity}  ${formField.value.quant_unit} Ilość pomocnicza: ${formField.value.helper_quantity} ${formField.value.help_quant_unit} Rabat: ${formField.value.discount} Cenna netto: ${formField.value.netto_cost} Cena brutto: ${formField.value.brutto_cost} Stawka VAT: ${formField.value.vat_percentage}% Wartość VAT: ${formField.value.vat_cost}`}
+                    value={`${formField.value.product_name} | Ilość: ${
+                      formField.value.quantity
+                    } ${formField.value.quant_unit} | Ilość pomocnicza: ${
+                      formField.value.helper_quantity || "nie dotyczy"
+                    } ${formField.value.help_quant_unit || ""} | Rabat: ${
+                      formField.value.discount
+                    } | Cenna netto: ${
+                      formField.value.netto_cost
+                    } | Cena brutto: ${
+                      formField.value.brutto_cost
+                    } | Stawka VAT: ${
+                      formField.value.vat_percentage
+                    }% | Wartość VAT: ${formField.value.vat_cost}`}
                     readOnly
                   />
                 )}
@@ -269,10 +278,11 @@ export function LineItemFormElement({
             name={`${name}.new.quantity`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ilość</FormLabel>
+                <FormLabel>Ilość*</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Ilość" />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -334,10 +344,14 @@ export function LineItemFormElement({
           />
           <FormField
             control={control}
-            name={`${name}.new.help_quantity_unit`}
+            name={`${name}.new.help_quant_unit`}
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  defaultValue=""
+                >
                   <FormLabel>Jednostka pomocnicza</FormLabel>
                   <FormControl>
                     <SelectTrigger className="w-[180px]">
@@ -377,7 +391,7 @@ export function LineItemFormElement({
             name={`${name}.new.netto_cost`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Netto</FormLabel>
+                <FormLabel>Netto*</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -394,7 +408,7 @@ export function LineItemFormElement({
             name={`${name}.new.vat_percentage`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Stawka VAT</FormLabel>
+                <FormLabel>Stawka VAT*</FormLabel>
                 <FormControl>
                   <Input
                     {...field}

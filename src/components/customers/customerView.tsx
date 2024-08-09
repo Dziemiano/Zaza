@@ -1,69 +1,26 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CustomerSchema } from "@/schemas";
-import { CustomerCombo } from "./customerCombo";
-import { OrderProductsTable } from "./orderProductsTable";
-import { Input } from "../ui/input";
-import { Calendar } from "../ui/calendar";
-import { getAllCustomers } from "@/data/customers";
-import { createOrder } from "@/actions/orders";
+
+import { CustomerPaymentTable } from "./customerPaymentTable";
+import { CustomerForm } from "./customerForm";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface CustomerType {
@@ -79,12 +36,12 @@ interface CustomerType {
   city: string;
   postal_code: string;
   country: string;
-  payment_type: any;
+  payment_type: string;
   customer_type: string | null;
-  payment_punctuality: any;
-  comments: any; // You'll need to define the Comment type separately
-  salesman: any; // You'll need to define the User type separately
-  branch: any; // You'll need to define the CompanyBranch type separately
+  payment_punctuality: string;
+  comments: string;
+  salesman: { name: string; email: string; phone: string };
+  branch: { name: string };
   credit_limit: string;
   max_discount: string;
   send_email_invoice: boolean;
@@ -94,25 +51,36 @@ interface CustomerType {
   invoice_postal_code: string;
   invoice_country: string;
   created_at: Date;
-  created_by: any; // You'll need to define the User type separately
-  created_by_id: string;
-  Orders: any; // You'll need to define the Order type separately
+  created_by: { name: string };
+  ContactPerson: { name: string; email: string; phone: string }[];
+  DeliveryAdress: {
+    street: string;
+    building: string;
+    city: string;
+    postal_code: string;
+    country: string;
+  }[];
+  Orders: any;
 }
 
 export interface CustomerViewProps {
   customer: CustomerType;
+  salesmen: any[];
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const CustomerView: React.FC<CustomerViewProps> = ({
+export const CustomerView = ({
   customer,
+  salesmen,
   isOpen,
   setIsOpen,
-}) => {
+}: CustomerViewProps) => {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
+
+  const user = useCurrentUser();
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toDateString();
@@ -120,6 +88,23 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
 
   const booleanToYesNo = (value: boolean): string => {
     return value ? "Tak" : "Nie";
+  };
+
+  useEffect(() => {
+    console.log(customer);
+  }, [customer]);
+
+  const payment_type: { [key: string]: string } = {
+    PREPAID: "Przedpłata",
+    WIRE: "Przelew",
+    CASH: "Gotówka",
+  };
+
+  const payment_punctuality: { [key: string]: string } = {
+    ON_TIME: "Terminowy",
+    OK: "Ok",
+    WARNING: "Uwaga",
+    LATE: "Nieterminowy",
   };
 
   return (
@@ -148,7 +133,7 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
               <div>/</div>
               <div>Kliencie</div>
               <div>/</div>
-              <div>Profil klienta </div>
+              <div>Profil klienta</div>
             </div>
           </div>
         </DialogHeader>
@@ -165,15 +150,23 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
               <TabsTrigger value="invoice">
                 Symbol i dane do faktury
               </TabsTrigger>
+              <CustomerForm
+                customer={customer}
+                userId={user?.id ?? ""}
+                salesmen={salesmen || []}
+                editMode
+              />
             </TabsList>
 
             <TabsContent value="main_data">
-              <div className="flex flex-col  mt-10 mb-5">
+              <div className="flex flex-col mt-10 mb-5">
                 <div className="text-2xl">Dane podstawowe</div>
                 <div className="flex flex-row mt-4">
                   <div className="flex flex-col mr-10">
                     <div className="text-xl">{customer.name}</div>
-                    <div className="text-sm">Rodzaj firmy</div>
+                    <div className="text-sm">
+                      {customer.customer_type || "Rodzaj firmy"}
+                    </div>
                   </div>
                   <div className="flex flex-col mr-4">
                     <div className="text-xl">{customer.nip}</div>
@@ -201,35 +194,40 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
                 <div className="text-2xl mt-10">Płatności</div>
                 <div className="flex flex-row mt-4">
                   <div className="text-xl mr-4">Ogólny status klienta:</div>
-                  <div className="text-xl">Terminowy</div>
+                  <div className="text-xl">
+                    {payment_punctuality[customer.payment_punctuality]}
+                  </div>
                 </div>
                 <div className="flex flex-row mt-4">
                   <div className="flex flex-col mr-10">
-                    <div className="text-xl">Przelew</div>
+                    <div className="text-xl">
+                      {payment_type[customer.payment_type]}
+                    </div>
                     <div className="text-sm">Rodzaj płatności</div>
                   </div>
                   <div className="flex flex-col mr-4">
-                    <div className="text-xl">2 tygodnie</div>
+                    <div className="text-xl">
+                      {customer.payment_punctuality || "Brak danych"}
+                    </div>
                     <div className="text-sm">Termin płatności</div>
                   </div>
                 </div>
-                <OrderProductsTable orders={[]} />
+                <CustomerPaymentTable orders={[]} />
               </div>
             </TabsContent>
 
             <TabsContent value="contact_person">
-              <div className="flex flex-col  mt-10 mb-5">
+              <div className="flex flex-col mt-10 mb-5">
                 <div className="text-2xl">Osoba kontaktowa</div>
-                <div className="flex flex-row mt-4">
-                  <div className="flex flex-col mr-10">
-                    <div className="text-md">Imię i nazwisko</div>
-                    <div className="text-md">619 283 897</div>
-                    <div className="text-md">email@email.com</div>
+                {customer.ContactPerson?.map((person, index) => (
+                  <div className="flex flex-row mt-4" key={index}>
+                    <div className="flex flex-col mr-10">
+                      <div className="text-md">{person.name}</div>
+                      <div className="text-md">{person.phone}</div>
+                      <div className="text-md">{person.email}</div>
+                    </div>
                   </div>
-                </div>
-                <Button className="mt-4 h-7 w-fit" variant={"zaza"}>
-                  Dodaj kontakt
-                </Button>
+                ))}
               </div>
             </TabsContent>
 
@@ -237,121 +235,81 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
               <div className="flex flex-row mt-10">
                 <Accordion type="single" collapsible className="w-[40%]">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger>Uwagi ogólne</AccordionTrigger>
-                    <AccordionContent>01. Przykładowa uwaga</AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger>Uwagi dla transportu</AccordionTrigger>
+                    <AccordionTrigger>Uwagi</AccordionTrigger>
                     <AccordionContent>
-                      01. Przykładowa uwaga <br />
-                      02. Przykładowa uwaga
+                      {customer.comments || "Brak uwag"}
                     </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-3">
-                    <AccordionTrigger>Uwagi dla magazynu</AccordionTrigger>
-                    <AccordionContent>01. Przykładowa uwaga</AccordionContent>
-                    <AccordionItem value="item-4">
-                      <AccordionTrigger>Uwagi dla produkcji</AccordionTrigger>
-                      <AccordionContent>01. Przykładowa uwaga</AccordionContent>
-                    </AccordionItem>
                   </AccordionItem>
                 </Accordion>
               </div>
             </TabsContent>
 
             <TabsContent value="salesman">
-              <div className="flex flex-col  mt-10 mb-5">
-                <div className="text-2xl">Przypisany handlowiec</div>
-                <div className="flex flex-row mt-4">
-                  <div className="flex flex-col mr-10">
-                    <div className="text-md">Imię i nazwisko</div>
-                    <div className="text-md">619 283 897</div>
-                    <div className="text-md">email@email.com</div>
-                  </div>
+              <div className="flex flex-col mt-10">
+                <div className="text-2xl">Handlowiec</div>
+                <div className="text-md mt-4">
+                  {customer.salesman?.name || "Brak przypisanego handlowca"}
                 </div>
-                <Button className="mt-4 h-7 w-fit" variant={"zaza"}>
-                  Dodaj kontakt
-                </Button>
+                <div className="text-md">
+                  {customer.salesman?.phone || "Brak telefonu"}
+                </div>
+                <div className="text-md">
+                  {customer.salesman?.email || "Brak e-maila"}
+                </div>
               </div>
             </TabsContent>
 
             <TabsContent value="discount">
-              <div className="flex flex-col  mt-10 mb-5">
-                <div className="text-2xl">Limity i rabaty</div>
-                <div className="flex flex-row mt-4">
-                  <div className="flex flex-col mr-10">
-                    <div className="text-xl">100 000 zł</div>
-                    <div className="text-sm">Limit kredytowy</div>
-                  </div>
-                  <div className="flex flex-col mr-4">
-                    <div className="text-xl">25%</div>
-                    <div className="text-sm">Maksymalny rabat</div>
-                  </div>
+              <div className="flex flex-col mt-10">
+                <div className="text-2xl">Limity kredytowe</div>
+                <div className="text-md mt-4">
+                  Limit kredytowy: {customer.credit_limit}
+                </div>
+                <div className="text-md mt-4">
+                  Maksymalny rabat: {customer.max_discount}%
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="delivery">
-              <div className="flex flex-col  mt-10 mb-5">
-                <div className="text-2xl">Filie</div>
-                <div className="flex flex-row mt-4">
-                  <div className="flex flex-col mr-10">
-                    <div className="text-md">Ulica</div>
-                    <div className="text-md">Kod pocztowy</div>
-                    <div className="text-md">Kraj</div>
-                    <div className="text-md mt-5">Imię i nazwisko</div>
-                    <div className="text-md">619 283 897</div>
-                    <div className="text-md">email@email.com</div>
+              <div className="flex flex-col mt-10">
+                <div className="text-2xl">Adresy dostaw</div>
+                {customer.DeliveryAdress?.map((address, index) => (
+                  <div className="flex flex-row mt-4" key={index}>
+                    <div className="flex flex-col mr-10">
+                      <div className="text-md">
+                        {address.street} {address.building}
+                      </div>
+                      <div className="text-md">{address.city}</div>
+                      <div className="text-md">{address.postal_code}</div>
+                      <div className="text-md">{address.country}</div>
+                    </div>
                   </div>
-                </div>
+                ))}
+                <Button className="mt-4 h-7 w-fit" variant={"zaza"}>
+                  Dodaj adres
+                </Button>
               </div>
             </TabsContent>
 
             <TabsContent value="invoice">
-              <div className="flex flex-col  mt-10 mb-5">
-                <div className="text-2xl">Symbol</div>
-                <div className="flex flex-row mt-4">
-                  <div className="flex flex-col mr-10">
-                    <div className="text-xl">{customer.symbol}</div>
-                    <div className="text-sm">Symbol</div>
-                  </div>
+              <div className="flex flex-col mt-10">
+                <div className="text-2xl">Dane do faktury</div>
+                <div className="text-md mt-4">
+                  Ulica: {customer.invoice_street} {customer.invoice_building}
                 </div>
-                <div className="text-2xl mt-10">Dane do faktury</div>
-                <div className="flex flex-col mt-4">
-                  <div className="flex flex-row mt-4">
-                    <div className="flex flex-col mr-10">
-                      <div className="text-xl">{customer.name}</div>
-                      <div className="text-sm">Rodzaj firmy</div>
-                    </div>
-                    <div className="flex flex-col mr-4">
-                      <div className="text-xl">{customer.nip}</div>
-                      <div className="text-sm">NIP</div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col mt-10">
-                    <div className="text-md">
-                      {customer.street} {customer.building}
-                    </div>
-                    <div className="text-md">{customer.city}</div>
-                    <div className="text-md">{customer.postal_code}</div>
-                    <div className="text-md">{customer.country}</div>
-                    <div className="text-md mt-5">{customer.phone_number}</div>
-                    <div className="text-md">{customer.documents_email}</div>
-                  </div>
+                <div className="text-md">Miasto: {customer.invoice_city}</div>
+                <div className="text-md">
+                  Kod pocztowy: {customer.invoice_postal_code}
+                </div>
+                <div className="text-md">Kraj: {customer.invoice_country}</div>
+                <div className="text-md mt-4">
+                  Wysyłka faktury na email:{" "}
+                  {booleanToYesNo(customer.send_email_invoice)}
                 </div>
               </div>
             </TabsContent>
           </Tabs>
-          <DialogFooter className="max-h-fit">
-            <Button
-              variant="zaza"
-              className="w-[18619 283 897px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
-              size="sm"
-              onClick={() => setIsOpen(false)}
-            >
-              Zamknij
-            </Button>
-          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProductForm } from "./productsForm";
 
 interface Product {
   id: string;
@@ -16,8 +17,8 @@ interface Product {
   category?: string;
   sku?: string;
   length?: string;
-  width?: string;
-  height?: string;
+  width: string;
+  height: string;
   quantity_in_package?: string;
   actual_volume?: string;
   quantity_needed_for_production?: string;
@@ -72,8 +73,6 @@ export const ProductView = ({
       : "";
   };
 
-  console.log(volume);
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -97,6 +96,7 @@ export const ProductView = ({
             <TabsTrigger value="visibility">Widoczność</TabsTrigger>
             <TabsTrigger value="recipes">Receptury</TabsTrigger>
             <TabsTrigger value="comments">Uwagi</TabsTrigger>
+            <ProductForm product={product} editMode />
           </TabsList>
 
           <TabsContent value="product">

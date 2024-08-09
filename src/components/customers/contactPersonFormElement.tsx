@@ -16,7 +16,6 @@ type ContactPerson = {
   phone_number: string;
   email: string;
 };
-
 type ContactPersonFormElementProps = {
   name: string;
 };

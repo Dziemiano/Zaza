@@ -9,7 +9,6 @@ import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -31,21 +30,11 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
 import { Switch } from "@/components/ui/switch";
-
-import { Textarea } from "@/components/ui/textarea";
 
 import {
   Popover,
@@ -60,7 +49,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "../ui/form";
 
@@ -72,18 +60,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { OrderSchema } from "@/schemas";
 
 import { useEffect, useState, useTransition } from "react";
-import { CustomerCombo } from "./customerCombo";
-import { OrderProductsTable } from "./orderProductsTable";
 import { Input } from "../ui/input";
 import { Calendar } from "../ui/calendar";
 
-import { getAllCustomers } from "@/data/customers";
 import { createOrder } from "@/actions/orders";
 import { updateOrder } from "@/actions/orders";
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { CommentSection } from "./commentsFormElement";
+import { CommentSection } from "../reusable/commentsFormElement";
 import { LineItemFormElement } from "./lineItemForm";
+import SelectFormElement from "../reusable/selectFormElement";
 
 export type OrderFormProps = {
   customers: any[];
@@ -140,15 +125,9 @@ export const OrderForm = ({
     };
   });
 
-  useEffect(() => {
-    console.log(form.getValues());
-    console.log(form.formState);
-  }, [form.getValues()]);
-
   const onSubmit = (values: z.infer<typeof OrderSchema> & { id?: string }) => {
     //TODO rethink file upload
     let formData = new FormData();
-    console.log(values);
 
     if (values.file) {
       formData.append("file", values.file);
@@ -177,6 +156,38 @@ export const OrderForm = ({
       }
     });
   };
+
+  type Status = {
+    label: string;
+    value: string;
+  };
+
+  const statuses: Status[] = [
+    { label: "Złożone", value: "submitted" },
+    {
+      label: "Oczekuje na zatwierdzenie przez BOK",
+      value: "awaiting_approval_by_bok",
+    },
+    { label: "Zatwierdzone przez BOK", value: "approved_by_bok" },
+    { label: "Oczekuje na płatność", value: "awaiting_payment" },
+    { label: "Płatność zatwierdzona", value: "payment_approved" },
+    { label: "W trakcie produkcji", value: "in_production" },
+    { label: "W trakcie kompletacji", value: "in_assembly" },
+    { label: "Gotowe do wysyłki", value: "ready_for_shipping" },
+    { label: "Wysłane", value: "shipped" },
+    { label: "Dostarczone", value: "delivered" },
+    { label: "Anulowane", value: "canceled" },
+    { label: "Zwrócone", value: "returned" },
+    { label: "Zamknięte", value: "closed" },
+    { label: "Oczekuje na odbiór", value: "awaiting_pickup" },
+    { label: "Odrzucone przez BOK", value: "rejected_by_bok" },
+    { label: "W trakcie weryfikacji", value: "under_verification" },
+    {
+      label: "Oczekuje na dostępność surowców",
+      value: "awaiting_raw_materials_availability",
+    },
+  ];
+
   return (
     <>
       <Dialog
@@ -388,7 +399,7 @@ export const OrderForm = ({
                   <TabsContent value="order">
                     <div className="flex flex-row  mt-10 mb-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Numer obcy</Label>
+                        <Label>Numer obcy*</Label>
                         <FormField
                           control={form.control}
                           name="foreign_id"
@@ -406,40 +417,12 @@ export const OrderForm = ({
                           )}
                         />
                       </div>
-                      <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                        <Label>Status</Label>
-                        <FormField
-                          control={form.control}
-                          name="status"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row">
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Wybierz" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="created">
-                                    Utworzone
-                                  </SelectItem>
-                                  <SelectItem value="in_production">
-                                    W produkcji
-                                  </SelectItem>
-                                  <SelectItem value="in_transport">
-                                    W transporcie
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <SelectFormElement
+                        name="status"
+                        form={form}
+                        label="Status*"
+                        items={statuses}
+                      />
                       <div className="grid w-full items-center gap-1.5">
                         <Label>Zapłacono</Label>
                         <FormField
@@ -471,7 +454,7 @@ export const OrderForm = ({
                         />
                       </div>
                       <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label>Typ WZ</Label>
+                        <Label>Typ WZ*</Label>
                         <FormField
                           control={form.control}
                           name="wz_type"
@@ -603,6 +586,7 @@ export const OrderForm = ({
                                   type="number"
                                   className="w-full"
                                   disabled={isPending}
+                                  defaultValue={0}
                                   {...field}
                                 />
                               </FormControl>

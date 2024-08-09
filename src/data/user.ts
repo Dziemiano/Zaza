@@ -1,6 +1,6 @@
 import db from "../db/db";
 
-export const getSalesmen = async () => {
+export const getAllSalesmen = async () => {
   try {
     const salesmen = await db.user.findMany({ where: { role: "SALESMAN" } });
     return salesmen;

@@ -44,7 +44,7 @@ export type CustomerType = {
   invoice_postal_code: string;
   invoice_country: string;
   created_by_id: string;
-  contactPerson: [];
+  ContactPerson: [];
   DeliveryAdress: [];
 };
 
@@ -91,7 +91,7 @@ export const createCustomer = async (data: CustomerType) => {
         create: data.branch,
       },
       ContactPerson: {
-        create: data.contactPerson,
+        create: data.ContactPerson,
       },
     },
   });
@@ -102,58 +102,63 @@ export const createCustomer = async (data: CustomerType) => {
   };
 };
 
-export const updateOrder = async (
-  data: {
-    id: string;
-    transport_cost: string;
-    foreign_id: any;
-    customer_id: any;
-    status: any;
-    is_proforma: any;
-    proforma_payment_date: any;
-    wz_type: any;
-    personal_collect: any;
-    payment_deadline: any;
-    delivery_date: any;
-    created_by: any;
-    is_paid: any;
-  },
-  fileF: any[] | FormData
-) => {
-  const result = OrderSchema.safeParse(Object.fromEntries(fileF.entries()));
-  const file = result.data?.file as File;
-
-  let filePath = "";
+export const updateCustomer = async (id: string, data: CustomerType) => {
+  const result = CustomerSchema.safeParse(data);
 
   console.log(result.data);
 
-  if (file) {
-    await fs.mkdir("/tmp/documents", { recursive: true });
-    filePath = `/tmp/documents/${crypto.randomUUID()}-${file.name}`;
-    await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
-  }
-
-  const order = await db.order.update({
-    where: { id: data.id },
+  const updatedCustomer = await db.customer.update({
+    where: {
+      id: id,
+    },
     data: {
-      transport_cost: parseInt(data.transport_cost),
-      foreign_id: data.foreign_id,
-      customer_id: data.customer_id,
-      status: data.status,
-      is_proforma: data.is_proforma,
-      proforma_payment_date: data.proforma_payment_date,
-      wz_type: data.wz_type,
-      personal_collect: data.personal_collect,
-      payment_deadline: data.payment_deadline,
-      delivery_date: data.delivery_date,
-      created_by: data.created_by,
-      is_paid: data.is_paid,
-      document_path: filePath,
+      nip: data.nip,
+      symbol: data.symbol,
+      name: data.name,
+      primary_email: data.primary_email,
+      documents_email: data.documents_email,
+      phone_number: data.phone_number,
+      street: data.street,
+      building: data.building,
+      premises: data.premises,
+      city: data.city,
+      postal_code: data.postal_code,
+      country: data.country,
+      payment_type: data.payment_type,
+      customer_type: data.customer_type,
+      payment_punctuality: data.payment_punctuality,
+      // comments: data.comments,
+      salesman: {
+        set: data.salesman.map((id) => ({ id: id })),
+      },
+      credit_limit: data.credit_limit,
+      max_discount: data.max_discount,
+      send_email_invoice: data.send_email_invoice,
+      invoice_name: data.invoice_name,
+      invoice_nip: data.invoice_nip,
+      invoice_street: data.invoice_street,
+      invoice_building: data.invoice_building,
+      invoice_premises: data.invoice_premises,
+      invoice_city: data.invoice_city,
+      invoice_postal_code: data.invoice_postal_code,
+      invoice_country: data.invoice_country,
+      DeliveryAdress: {
+        deleteMany: {},
+        create: data.DeliveryAdress,
+      },
+      branch: {
+        deleteMany: {},
+        create: data.branch,
+      },
+      ContactPerson: {
+        deleteMany: {},
+        create: data.ContactPerson,
+      },
     },
   });
 
-  revalidatePath("/orders");
+  revalidatePath("/customers");
   return {
-    success: "Order created",
+    success: "Klient zaktualizowany",
   };
 };

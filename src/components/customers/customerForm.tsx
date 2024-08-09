@@ -3,16 +3,13 @@
 import { Button } from "../ui/button";
 
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 
 import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -29,16 +26,10 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { Switch } from "@/components/ui/switch";
-
-import { Textarea } from "@/components/ui/textarea";
 
 import {
   Popover,
@@ -53,7 +44,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "../ui/form";
 
@@ -64,14 +54,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { CustomerSchema } from "@/schemas";
 
-import { useState, useTransition } from "react";
-import { OrderProductsTable } from "./orderProductsTable";
-import { Input } from "../ui/input";
-import { Calendar } from "../ui/calendar";
+import { useEffect, useState, useTransition } from "react";
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { CommentSection } from "./commentsFormElement";
-import { createCustomer } from "@/actions/customer";
+import { Input } from "../ui/input";
+
+import { CommentSection } from "../reusable/commentsFormElement";
+import { createCustomer, updateCustomer } from "@/actions/customer";
 import { ContactPersonFormElement } from "./contactPersonFormElement";
 import { BranchFormElement } from "./branchFormElement";
 import { DeliveryFormElement } from "./deliveryFormElement";
@@ -84,9 +72,10 @@ export const CustomerForm = ({
 }: {
   editMode?: boolean;
   userId: string;
-  customer: any;
+  customer?: any;
   salesmen: any[];
 }) => {
+  //TODO error handling
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -94,12 +83,18 @@ export const CustomerForm = ({
 
   const form = useForm<z.infer<typeof CustomerSchema>>({
     resolver: zodResolver(CustomerSchema),
-    defaultValues: customer || {
-      send_email_invoice: false,
-      payment_type: "PREPAID",
-      created_by_id: userId,
-      contactPersons: [],
-    },
+    defaultValues: customer
+      ? { ...customer, payment_punctuality: "ON_TIME" }
+      : {
+          send_email_invoice: false,
+          payment_type: "PREPAID",
+          created_by_id: userId,
+          payment_punctuality: "ON_TIME",
+        },
+  });
+
+  useEffect(() => {
+    console.log(form);
   });
 
   const salesmanList = salesmen.map((salesman) => {
@@ -110,20 +105,23 @@ export const CustomerForm = ({
   });
 
   const onSubmit = (values: z.infer<typeof CustomerSchema>) => {
-    //TODO rethink file upload
-    console.log(values);
-    console.log(salesmen);
-
     const data = JSON.parse(JSON.stringify(values));
 
     setError("");
     setSuccess("");
-
     startTransition(() => {
-      createCustomer(data).then((response) => {
-        setSuccess(response?.success);
-        setOpen(false);
-      });
+      if (customer) {
+        // Call the update function with the customer ID
+        updateCustomer(customer.id, data).then((response) => {
+          setSuccess(response?.success);
+          setOpen(false);
+        });
+      } else {
+        createCustomer(data).then((response) => {
+          setSuccess(response?.success);
+          setOpen(false);
+        });
+      }
     });
   };
 
@@ -131,7 +129,9 @@ export const CustomerForm = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full font-normal" variant="zazaGrey">
-          {editMode ? `Edytuj` : "Dodaj nowego klietna"}
+          {editMode
+            ? `Edytuj klienta ${customer.name}`
+            : "Dodaj nowego klietna"}
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[80%] min-h-[85%] flex flex-col content-start">
@@ -263,16 +263,26 @@ export const CustomerForm = ({
                                 </FormControl>
                                 <SelectContent>
                                   <SelectItem value="construction">
-                                    Budowlany
-                                  </SelectItem>
-                                  <SelectItem value="developer">
-                                    Deweloper
-                                  </SelectItem>
-                                  <SelectItem value="furniture">
                                     Meblowy
                                   </SelectItem>
-                                  <SelectItem value="Kształtka">
-                                    Tylko proforma
+                                  <SelectItem value="developer">
+                                    Hurtownia
+                                  </SelectItem>
+                                  <SelectItem value="furniture">
+                                    Deweloper
+                                  </SelectItem>
+                                  <SelectItem value="roof">Dachowy</SelectItem>
+                                  <SelectItem value="contractor">
+                                    Wykonawca
+                                  </SelectItem>
+                                  <SelectItem value="main_contractor">
+                                    Wykonawca Generalny
+                                  </SelectItem>
+                                  <SelectItem value="prepaid">
+                                    Przedpłata
+                                  </SelectItem>
+                                  <SelectItem value="manufakturer">
+                                    Producent
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
@@ -404,9 +414,7 @@ export const CustomerForm = ({
                         />
                       </div>
                     </div>
-                    <div className="text-xl mt-5">
-                      Email do wysyłki dokumentów
-                    </div>
+                    <div className="text-xl mt-5">Kontakt</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
                         <Label>Telefon kontaktowy*</Label>
@@ -429,6 +437,25 @@ export const CustomerForm = ({
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
                         <Label>Email*</Label>
+                        <FormField
+                          control={form.control}
+                          name="primary_email"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormControl>
+                                <Input
+                                  className="w-full"
+                                  disabled={isPending}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid w-full mr-5 items-center gap-1.5">
+                        <Label>Email do wysyłki dokumentów</Label>
                         <FormField
                           control={form.control}
                           name="documents_email"
@@ -486,7 +513,7 @@ export const CustomerForm = ({
 
                   <TabsContent value="contact_person">
                     <div className="text-xl mt-5">Osoba kontaktowa</div>
-                    <ContactPersonFormElement name="contactPerson" />
+                    <ContactPersonFormElement name="ContactPerson" />
                   </TabsContent>
 
                   <TabsContent value="salesman">
@@ -820,7 +847,7 @@ export const CustomerForm = ({
                     className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                     size="sm"
                   >
-                    Utwórz
+                    {editMode ? "Zapisz" : "Utwórz"}
                   </Button>
                 </DialogFooter>
               </div>

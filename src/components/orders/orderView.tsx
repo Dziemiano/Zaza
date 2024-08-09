@@ -34,7 +34,6 @@ import { OrderProductsTable } from "./orderProductsTable";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { OrderForm } from "./ordersForm";
 
-// Define a more specific type for the order object
 interface OrderType {
   id: string;
   status: string;
@@ -50,7 +49,7 @@ interface OrderType {
   created_by: string;
   foreign_id: string;
   wz_type: string;
-  LineItem: any[]; // TODO define LineItem type
+  LineItem: any[];
   user: {
     firstname: string;
     lastname: string;

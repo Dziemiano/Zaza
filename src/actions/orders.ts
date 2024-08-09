@@ -22,7 +22,7 @@ export const createOrder = async (
     delivery_date: any;
     created_by: any;
     is_paid: any;
-    line_items: [];
+    line_items: {}[];
   },
   fileF: any[] | FormData
 ) => {
@@ -41,20 +41,22 @@ export const createOrder = async (
 
   const orderCount = await getOrdersCount();
 
-  const id = `${orderCount + 1}/${
-    new Date().getMonth() + 1
-  }/${new Date().getFullYear()}`;
+  const id =
+    orderCount !== null
+      ? `${orderCount + 1}/${
+          new Date().getMonth() + 1
+        }/${new Date().getFullYear()}`
+      : "";
 
   console.log(id);
 
-  const line_items_with_ids = data.line_items.map((item, index) => {
+  const line_items_with_ids = data.line_items.map((item) => {
     return {
       ...item,
       id: randomUUID(),
     };
   });
 
-  console.log(line_items_with_ids);
   const order = await db.order.create({
     data: {
       id: id,
@@ -127,8 +129,6 @@ export const updateOrder = async (
   const lineItemsToDelete = existingLineItems.filter(
     (item) => !incomingLineItemIds.has(item.id)
   );
-  console.log(existingLineItems, incomingLineItemIds, lineItemsToDelete);
-  console.log(data.line_items);
 
   // Update or upsert the remaining line items
   const order = await db.order.update({

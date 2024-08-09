@@ -9,15 +9,15 @@ export const ResetSchema = z.object({
 });
 
 export const LoginSchema = z.object({
-  email: z.string().email({ message: "Invalid email" }).min(4),
-  password: z.string().min(1, { message: "Password is required" }),
+  email: z.string().email({ message: "Nieprawidłowy email" }).min(4),
+  password: z.string().min(1, { message: "Hasło jest wymagane" }),
   code: z.optional(z.string().min(6, { message: "Minimum 6 characters" })),
 });
 
 export const RegisterSchema = z.object({
-  email: z.string().email({ message: "Invalid email" }).min(4),
-  password: z.string().min(6, { message: "Minimum 6 characters" }),
-  firstname: z.string().min(3, { message: "Name is required" }),
+  email: z.string().email({ message: "Nieprawidłowy email" }).min(4),
+  password: z.string().min(6, { message: "Minimum 8 znaków" }),
+  firstname: z.string().min(3, { message: "Imię wymagane" }),
 });
 
 export const TwoFactorSchema = z.object({
@@ -29,7 +29,11 @@ export const LineItemSchema = z.object({
   order_id: z.string().optional(),
   product_id: z.string().optional(),
   product_name: z.string().optional(),
-  quantity: z.string().optional(),
+  quantity: z
+    .string({
+      required_error: "Ilość jest wymagana",
+    })
+    .min(1, { message: "Ilość jest wymagana" }),
   quant_unit: z.string().optional(),
   helper_quantity: z.string().optional(),
   help_quant_unit: z.string().optional(),
@@ -42,9 +46,9 @@ export const LineItemSchema = z.object({
 
 export const OrderSchema = z.object({
   id: z.string().optional(),
-  foreign_id: z.string().optional(),
+  foreign_id: z.string().min(4, "Numer obcy jest wymagany"),
   customer_id: z.string().optional(),
-  status: z.string().optional(), // TODO: enum for statuses
+  status: z.string(), // TODO: enum for statuses
   is_proforma: z.boolean().optional(),
   proforma_payment_date: z.date().optional(),
   wz_type: z.string().optional(),
@@ -59,7 +63,7 @@ export const OrderSchema = z.object({
   delivery_zipcode: z.any().optional(),
   delivery_contact_number: z.any().optional(),
   deliver_time: z.any().optional(),
-  transport_cost: z.any().optional(),
+  transport_cost: z.number(),
   order_history: z.any().optional(),
   created_at: z.date().optional(),
   created_by: z.string().optional(),
@@ -89,6 +93,16 @@ export const ContactPersonSchema = z.object({
   email: z.string().optional(),
   customer_id: z.string().optional(),
 });
+
+const transformContactPersons = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === "object" && value !== null) {
+    return [value];
+  }
+  return [];
+};
 
 export const DeliveryAdressSchema = z.object({
   id: z.string().optional(),
@@ -152,10 +166,11 @@ export const CustomerSchema = z.object({
   invoice_postal_code: z.string().optional(),
   invoice_country: z.string().optional(),
   created_at: z.date().optional(),
-  created_by: z.string().optional(),
   created_by_id: z.string().optional(),
   Orders: z.array(OrderSchema).optional().default([]),
-  contactPerson: z.array(ContactPersonSchema).optional().default([]),
+  ContactPerson: z
+    .array(ContactPersonSchema)
+    .transform(transformContactPersons),
   DeliveryAdress: z.array(DeliveryAdressSchema).optional().default([]),
   comments: z
     .object({
@@ -173,11 +188,11 @@ export const ProductSchema = z.object({
   sku: z.string().min(1, "SKU is required"),
   unit: z.string().min(1, "Unit is required"),
   secondary_unit: z.string().optional(),
-  isForSale: z.boolean(),
-  isInProduction: z.boolean(),
-  isInternalProduct: z.boolean(),
-  isOneTimeProduct: z.boolean(),
-  isEntrustedProduct: z.boolean(),
+  is_sold: z.boolean(),
+  is_produced: z.boolean(),
+  is_internal: z.boolean(),
+  is_one_time: z.boolean(),
+  is_entrusted: z.boolean(),
   length: z.string().optional(),
   width: z.string().optional(),
   height: z.string().optional(),
@@ -185,10 +200,10 @@ export const ProductSchema = z.object({
   actualShapeVolume: z.string().optional(),
   minProductionQuantity: z.string().optional(),
   salesVolume: z.string().optional(),
-  technologicalVolume: z.string().optional(),
-  epsType: z.string().optional(),
+  technological_volume: z.string().optional(),
+  eps_type: z.string().optional(),
   weight: z.string().optional(),
-  seasoningTime: z.string().optional(),
+  seasoning_time: z.string().optional(),
   producer: z.string().optional(),
   ean: z.string().optional(),
   production_description: z.string().optional(),
