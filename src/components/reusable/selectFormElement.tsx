@@ -49,7 +49,7 @@ const SelectFormElement = ({
               </FormControl>
               <SelectContent>
                 {items.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
+                  <SelectItem key={item.value} value={item.label}>
                     {item.label}
                   </SelectItem>
                 ))}
