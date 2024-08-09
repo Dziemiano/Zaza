@@ -1,16 +1,5 @@
 import * as z from "zod";
 
-// const customErrorMap: z.ZodErrorMap = (issue, ctx) => {
-//   if (issue.code === z.ZodIssueCode.required_error) {
-//     if (issue.expected === "string") {
-//       return { message: "bad type!" };
-//     }
-//   }
-//   return { message: ctx.defaultError };
-// };
-
-// z.setErrorMap(customErrorMap);
-
 export const NewPasswordSchema = z.object({
   password: z.string().min(6, { message: "Minimum 6 characters" }),
 });
@@ -236,7 +225,7 @@ export const ProductSchema = z.object({
       required_error: "Pole wymagane",
     })
     .nullable(),
-  auto_price_translate: z.boolean(),
+  auto_price_translate: z.boolean().optional().default(false),
   min_price: z.string().nullable().optional(),
   vat: z.string().nullable().default("23"),
   price_tolerance: z.string().nullable().optional(),
@@ -247,4 +236,6 @@ export const ProductSchema = z.object({
       warehouse: z.array(z.string()),
     })
     .optional(),
+  created_by: z.string().optional(),
+  created_at: z.date().optional(),
 });

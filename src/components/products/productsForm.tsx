@@ -60,6 +60,10 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    console.log(form.formState.errors);
+  });
+
   const userId = useCurrentUser()?.id;
 
   const form = useForm<z.infer<typeof ProductSchema>>({
@@ -96,6 +100,8 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
           min_price: product.min_price ?? "",
           vat: product.vat ?? "",
           price_tolerance: product.price_tolerance ?? "",
+          auto_price_translate: product.auto_price_translate ?? false,
+          created_by: product.created_by || userId,
         }
       : {
           created_by: userId,
@@ -109,6 +115,8 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
   });
 
   useEffect(() => {
+    console.log(userId);
+    console.log(form);
     if (product) {
       console.log(product);
       // console.log(fields);
@@ -123,7 +131,11 @@ export const ProductForm = ({ editMode, product }: ProductFormProps) => {
       formData.append("file", values.file);
     }
 
+    console.log(values);
+
     const data = JSON.parse(JSON.stringify(values));
+
+    console.log(data);
 
     startTransition(() => {
       if (product && product.id) {
