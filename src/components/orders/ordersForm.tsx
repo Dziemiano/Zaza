@@ -122,59 +122,88 @@ export const OrderForm = ({
 
   const [filteredCustomers, setFilteredCustomers] = useState(customerList);
 
+  const [defaultValues, setDefaultValues] = useState({});
+
+  useEffect(() => {
+    let initialValues = {};
+    if (copyMode) {
+      initialValues = {
+        ...order,
+        id: undefined,
+        customer_id: order?.customer_id,
+        created_by: user?.id,
+        personal_collect: false,
+        is_paid: false,
+        is_proforma: false,
+        transport_cost: "0",
+        foreign_id: "",
+        status: undefined,
+        wz_type: undefined,
+        warehouse_to_transport: undefined,
+        delivery_date: undefined,
+        payment_deadline: undefined,
+        deliver_time: undefined,
+        delivery_building: undefined,
+        delivery_premises: undefined,
+        delivery_city: undefined,
+        delivery_street: undefined,
+        delivery_zipcode: undefined,
+        delivery_contact: undefined,
+        production_date: undefined,
+        line_items: order?.line_items?.map((li) => ({
+          ...li,
+          order_id: undefined,
+        })),
+      };
+    } else if (editMode) {
+      initialValues = { ...order, id: order?.id };
+    } else if (user.role === "SALESMAN") {
+      initialValues = {
+        created_by: user?.id,
+        personal_collect: false,
+        is_paid: false,
+        is_proforma: false,
+        line_items: [],
+        transport_cost: "0",
+        status: "Oczekuje na zatwierdzenie przez BOK",
+      };
+    } else {
+      initialValues = {
+        created_by: user?.id,
+        personal_collect: false,
+        is_paid: false,
+        is_proforma: false,
+        line_items: [],
+        transport_cost: "0",
+      };
+    }
+    setDefaultValues(initialValues);
+  }, [copyMode, editMode, order, user]);
+
   const form = useForm<z.infer<typeof OrderSchema>>({
     resolver: zodResolver(OrderSchema),
     reValidateMode: "onChange",
-    defaultValues: copyMode
-      ? {
-          ...order,
-          id: undefined,
-          customer_id: order?.customer_id,
-          created_by: user?.id,
-          personal_collect: false,
-          is_paid: false,
-          is_proforma: false,
-          transport_cost: "0",
-          foreign_id: "",
-          status: undefined,
-          wz_type: undefined,
-          warehouse_to_transport: undefined,
-          delivery_date: undefined,
-          payment_deadline: undefined,
-          deliver_time: undefined,
-          delivery_building: undefined,
-          delivery_premises: undefined,
-          delivery_city: undefined,
-          delivery_street: undefined,
-          delivery_zipcode: undefined,
-          delivery_contact: undefined,
-          production_date: undefined,
-          line_items: order?.line_items?.map((li) => ({
-            ...li,
-            order_id: undefined,
-          })),
-        }
-      : order
-      ? { ...order, id: order.id }
-      : user.role === "SALESMAN"
-      ? {
-          created_by: user?.id,
-          personal_collect: false,
-          is_paid: false,
-          is_proforma: false,
-          line_items: [],
-          transport_cost: "0",
-          status: "Oczekuje na zatwierdzenie przez BOK",
-        }
-      : {
-          created_by: user?.id,
-          personal_collect: false,
-          is_paid: false,
-          is_proforma: false,
-          line_items: [],
-          transport_cost: "0",
-        },
+    defaultValues,
   });
+
+  useEffect(() => {
+    if (Object.keys(defaultValues).length > 0) {
+      form.reset(defaultValues);
+    }
+  }, [defaultValues, form]);
+
+  useEffect(() =>
+    console.log(
+      "ORDER",
+      order,
+      "FORM",
+      form,
+      "EDIT",
+      editMode,
+      "COPY",
+      copyMode
+    )
+  );
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -937,7 +966,6 @@ export const OrderForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
-                                  defaultValue={"0"}
                                   {...field}
                                 />
                               </FormControl>
