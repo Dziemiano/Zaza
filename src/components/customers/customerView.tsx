@@ -23,6 +23,7 @@ import { CustomerPaymentTable } from "./customerPaymentTable";
 import { CustomerForm } from "./customerForm";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Link from "next/link";
+import { formatThousands } from "@/lib/utils";
 
 interface CustomerType {
   id: string;
@@ -269,10 +270,10 @@ export const CustomerView = ({
               <div className="flex flex-col mt-10">
                 <div className="text-2xl">Limity kredytowe</div>
                 <div className="text-md mt-4">
-                  Limit kredytowy: {customer.credit_limit}
+                  Limit kredytowy: {formatThousands(customer.credit_limit)}
                 </div>
                 <div className="text-md mt-4">
-                  Maksymalny rabat: {customer.max_discount}%
+                  Maksymalny rabat: {formatThousands(customer.max_discount)}%
                 </div>
               </div>
             </TabsContent>
