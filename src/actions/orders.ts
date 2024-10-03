@@ -68,7 +68,26 @@ export const createOrder = async (
 
   console.log(id);
 
-  const line_items_with_ids = data.line_items.map((item) => {
+  const replaceCommasInObject = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => replaceCommasInObject(item));
+    } else if (typeof obj === "object" && obj !== null) {
+      const newObj: { [key: string]: any } = {};
+      for (const key in obj) {
+        newObj[key] = replaceCommasInObject(obj[key]);
+      }
+      return newObj;
+    } else if (typeof obj === "string") {
+      return obj.replace(/,/g, ".");
+    } else {
+      return obj;
+    }
+  };
+
+  // Replace commas with periods in the entire data object, including nested arrays/objects
+  const processedData = replaceCommasInObject(data);
+
+  const line_items_with_ids = processedData.line_items.map((item) => {
     const { order_id, ...rest } = item;
     return {
       ...rest,
@@ -91,34 +110,34 @@ export const createOrder = async (
   const order = await db.order.create({
     data: {
       id: id,
-      transport_cost: parseInt(data.transport_cost) || 0,
-      foreign_id: data.foreign_id,
-      customer_id: data.customer_id,
-      status: data.status,
-      is_proforma: data.is_proforma,
-      proforma_payment_date: data.proforma_payment_date,
-      wz_type: data.wz_type,
-      personal_collect: data.personal_collect,
-      payment_deadline: data.payment_deadline,
-      production_date: data.production_date,
-      delivery_date: data.delivery_date,
-      delivery_city: data.delivery_city,
-      delivery_street: data.delivery_street,
-      delivery_building: data.delivery_building,
-      delivery_premises: data.delivery_premises,
-      delivery_zipcode: data.delivery_zipcode,
-      delivery_contact: data.delivery_contact,
-      change_warehouse: data.change_warehouse,
-      warehouse_to_transport: data.warehouse_to_transport,
-      created_by: data.created_by,
-      is_paid: data.is_paid,
+      transport_cost: parseInt(processedData.transport_cost) || 0,
+      foreign_id: processedData.foreign_id,
+      customer_id: processedData.customer_id,
+      status: processedData.status,
+      is_proforma: processedData.is_proforma,
+      proforma_payment_date: processedData.proforma_payment_date,
+      wz_type: processedData.wz_type,
+      personal_collect: processedData.personal_collect,
+      payment_deadline: processedData.payment_deadline,
+      production_date: processedData.production_date,
+      delivery_date: processedData.delivery_date,
+      delivery_city: processedData.delivery_city,
+      delivery_street: processedData.delivery_street,
+      delivery_building: processedData.delivery_building,
+      delivery_premises: processedData.delivery_premises,
+      delivery_zipcode: processedData.delivery_zipcode,
+      delivery_contact: processedData.delivery_contact,
+      change_warehouse: processedData.change_warehouse,
+      warehouse_to_transport: processedData.warehouse_to_transport,
+      created_by: processedData.created_by,
+      is_paid: processedData.is_paid,
       document_path: filePath,
-      email_content: data.email_content,
+      email_content: processedData.email_content,
       lineItems: {
         create: line_items_with_ids,
       },
       comments: {
-        create: data.comments,
+        create: processedData.comments,
       },
     },
   });
@@ -170,6 +189,25 @@ export const updateOrder = async (
   },
   fileF?: any[] | FormData
 ) => {
+  const replaceCommasInObject = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => replaceCommasInObject(item));
+    } else if (typeof obj === "object" && obj !== null) {
+      const newObj: { [key: string]: any } = {};
+      for (const key in obj) {
+        newObj[key] = replaceCommasInObject(obj[key]);
+      }
+      return newObj;
+    } else if (typeof obj === "string") {
+      return obj.replace(/,/g, ".");
+    } else {
+      return obj;
+    }
+  };
+
+  // Replace commas with periods in the entire data object, including nested arrays/objects
+  const processedData = replaceCommasInObject(data);
+
   const result = fileF
     ? OrderSchema.safeParse(Object.fromEntries(fileF.entries()))
     : null;
@@ -177,7 +215,7 @@ export const updateOrder = async (
 
   let filePath = "";
 
-  console.log(data);
+  console.log(processedData);
 
   if (file) {
     await fs.mkdir("/tmp/documents", { recursive: true });
@@ -185,49 +223,51 @@ export const updateOrder = async (
     await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
   }
 
-  const existingOrder = await db.order.findUnique({ where: { id: data.id } });
+  const existingOrder = await db.order.findUnique({
+    where: { id: processedData.id },
+  });
 
   const existingLineItems = await db.lineItem.findMany({
-    where: { order_id: data.id },
+    where: { order_id: processedData.id },
     select: { id: true },
   });
 
   const incomingLineItemIds = new Set(
-    data?.line_items.map((item) => item.id).filter((id) => id)
-  ); // Ensure ids are defined
+    processedData.line_items.map((item) => item.id).filter((id) => id)
+  );
   const lineItemsToDelete = existingLineItems.filter(
     (item) => !incomingLineItemIds.has(item.id)
   );
 
   const order = await db.order.update({
-    where: { id: data.id },
+    where: { id: processedData.id },
     data: {
-      transport_cost: parseInt(data.transport_cost),
-      customer_id: data.customer_id,
-      foreign_id: data.foreign_id,
-      status: data.status,
-      is_proforma: data.is_proforma,
-      proforma_payment_date: data.proforma_payment_date,
-      wz_type: data.wz_type,
-      personal_collect: data.personal_collect,
-      payment_deadline: data.payment_deadline,
-      production_date: data.production_date,
-      delivery_date: data.delivery_date,
-      delivery_city: data.delivery_city,
-      delivery_street: data.delivery_street,
-      delivery_building: data.delivery_building,
-      delivery_premises: data.delivery_premises,
-      delivery_zipcode: data.delivery_zipcode,
-      delivery_contact: data.delivery_contact,
-      change_warehouse: data.change_warehouse,
-      warehouse_to_transport: data.warehouse_to_transport,
-      is_paid: data.is_paid,
+      transport_cost: parseInt(processedData.transport_cost),
+      customer_id: processedData.customer_id,
+      foreign_id: processedData.foreign_id,
+      status: processedData.status,
+      is_proforma: processedData.is_proforma,
+      proforma_payment_date: processedData.proforma_payment_date,
+      wz_type: processedData.wz_type,
+      personal_collect: processedData.personal_collect,
+      payment_deadline: processedData.payment_deadline,
+      production_date: processedData.production_date,
+      delivery_date: processedData.delivery_date,
+      delivery_city: processedData.delivery_city,
+      delivery_street: processedData.delivery_street,
+      delivery_building: processedData.delivery_building,
+      delivery_premises: processedData.delivery_premises,
+      delivery_zipcode: processedData.delivery_zipcode,
+      delivery_contact: processedData.delivery_contact,
+      change_warehouse: processedData.change_warehouse,
+      warehouse_to_transport: processedData.warehouse_to_transport,
+      is_paid: processedData.is_paid,
       document_path: filePath,
-      email_content: data.email_content,
+      email_content: processedData.email_content,
     },
   });
 
-  for (const item of data.line_items) {
+  for (const item of processedData.line_items) {
     if (!item.id) {
       item.id = randomUUID();
     }
@@ -253,13 +293,13 @@ export const updateOrder = async (
   const existingLineItemsIds = new Set(
     (
       await db.lineItem.findMany({
-        where: { order_id: data.id },
+        where: { order_id: processedData.id },
         select: { id: true },
       })
     ).map((item) => item.id)
   );
   for (const item of existingLineItemsIds) {
-    if (!data.line_items.some((li) => li.id === item)) {
+    if (!processedData.line_items.some((li) => li.id === item)) {
       await db.lineItem.delete({ where: { id: item } });
     }
   }
@@ -267,18 +307,18 @@ export const updateOrder = async (
   const existingCommentsIds = new Set(
     (
       await db.comment.findMany({
-        where: { order_id: data.id },
+        where: { order_id: processedData.id },
         select: { id: true },
       })
     ).map((item) => item.id)
   );
   for (const item of existingCommentsIds) {
-    if (!data.comments?.some((comment) => comment.id === item)) {
+    if (!processedData.comments?.some((comment) => comment.id === item)) {
       await db.comment.delete({ where: { id: item } });
     }
   }
 
-  for (const comment of data.comments ?? []) {
+  for (const comment of processedData.comments ?? []) {
     if (!comment.id) {
       comment.id = randomUUID();
     }
@@ -298,52 +338,18 @@ export const updateOrder = async (
   }
 
   const changedFields: { [key: string]: { old: any; new: any } } = {};
-  for (const key in data) {
-    if (data[key] !== existingOrder[key]) {
-      changedFields[key] = { old: existingOrder[key], new: data[key] };
+  for (const key in processedData) {
+    if (processedData[key] !== existingOrder[key]) {
+      changedFields[key] = { old: existingOrder[key], new: processedData[key] };
     }
   }
 
   await logEvent({
     entity: "order",
-    entity_id: data.id,
-    entity_name: data.id,
+    entity_id: processedData.id,
+    entity_name: processedData.id,
     eventType: "updated",
     changedData: changedFields,
-  });
-
-  revalidatePath("/orders");
-  return {
-    success: "Order updated",
-  };
-};
-
-export const updateOrderEmail = async (
-  data: {
-    id: string;
-    email_content: string;
-  },
-  fileF: any[] | FormData
-) => {
-  const result = OrderSchema.safeParse(Object.fromEntries(fileF.entries()));
-  const file = result.data?.file as File;
-
-  let filePath = "";
-
-  console.log(data);
-
-  if (file) {
-    await fs.mkdir("/tmp/documents", { recursive: true });
-    filePath = `/tmp/documents/${crypto.randomUUID()}-${file.name}`;
-    await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
-  }
-
-  const order = await db.order.update({
-    where: { id: data.id },
-    data: {
-      email_content: data.email_content,
-      document_path: filePath,
-    },
   });
 
   revalidatePath("/orders");

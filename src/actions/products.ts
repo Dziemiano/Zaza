@@ -62,56 +62,76 @@ export const createProduct = async (
   console.log(result.data);
   console.log(data);
 
+  const replaceCommasInObject = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => replaceCommasInObject(item));
+    } else if (typeof obj === "object" && obj !== null) {
+      const newObj: { [key: string]: any } = {};
+      for (const key in obj) {
+        newObj[key] = replaceCommasInObject(obj[key]);
+      }
+      return newObj;
+    } else if (typeof obj === "string") {
+      return obj.replace(/,/g, ".");
+    } else {
+      return obj;
+    }
+  };
+
+  // Replace commas with periods in the entire data object, including nested arrays/objects
+  const processedData = replaceCommasInObject(data);
+  console.log(processedData);
+
   if (file) {
     await fs.mkdir("/tmp/documents", { recursive: true });
     filePath = `/tmp/documents/${crypto.randomUUID()}-${file.name}`;
     await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
   }
 
-  if (data.is_one_time) {
+  if (processedData.is_one_time) {
     const product = await db.product.create({
       data: {
-        id: data.id,
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        subcategory: data.subcategory,
-        sku: data.sku,
-        length: data.length,
-        width: data.width,
-        height: data.height,
-        quantity_in_package: data.pack_quantity,
-        actual_volume: data.actual_shape_volume,
-        quantity_needed_for_production: data.min_production_quantity,
-        sales_volume: data.sales_volume,
-        technological_volume: data.technological_volume,
-        eps_type: data.eps_type,
-        ean: data.ean,
-        weight: data.weight,
-        seasoning_time: data.seasoning_time,
-        manufacturer: data.manufacturer,
-        primary_unit: data.primary_unit,
-        first_helper_unit: data.first_helper_unit,
-        first_helper_unit_value: data.first_helper_unit_value,
-        second_helper_unit: data.second_helper_unit,
-        second_helper_unit_value: data.second_helper_unit_value,
-        is_sold: data.is_sold,
-        is_produced: data.is_produced,
-        is_internal: data.is_internal,
-        is_one_time: data.is_one_time,
-        is_entrusted: data.is_entrusted,
+        id: processedData.id,
+        name: processedData.name,
+        description: processedData.description,
+        category: processedData.category,
+        subcategory: processedData.subcategory,
+        sku: processedData.sku,
+        length: processedData.length,
+        width: processedData.width,
+        height: processedData.height,
+        quantity_in_package: processedData.pack_quantity,
+        actual_volume: processedData.actual_shape_volume,
+        quantity_needed_for_production: processedData.min_production_quantity,
+        sales_volume: processedData.sales_volume,
+        technological_volume: processedData.technological_volume,
+        eps_type: processedData.eps_type,
+        ean: processedData.ean,
+        weight: processedData.weight,
+        seasoning_time: processedData.seasoning_time,
+        manufacturer: processedData.manufacturer,
+        primary_unit: processedData.primary_unit,
+        first_helper_unit: processedData.first_helper_unit,
+        first_helper_unit_value: processedData.first_helper_unit_value,
+        second_helper_unit: processedData.second_helper_unit,
+        second_helper_unit_value: processedData.second_helper_unit_value,
+        is_sold: processedData.is_sold,
+        is_produced: processedData.is_produced,
+        is_internal: processedData.is_internal,
+        is_one_time: processedData.is_one_time,
+        is_entrusted: processedData.is_entrusted,
         image_path: filePath,
-        raw_material_type: data.raw_material_type,
-        raw_material_granulation: data.raw_material_granulation,
-        packaging_weight: data.packaging_weight,
-        packaging_type: data.packaging_type,
-        price: data.price,
-        auto_price_translate: data.auto_price_translate,
-        min_price: data.min_price,
-        vat: data.vat,
-        price_tolerance: data.price_tolerance,
-        created_by: data.created_by,
-        comments: data.comments,
+        raw_material_type: processedData.raw_material_type,
+        raw_material_granulation: processedData.raw_material_granulation,
+        packaging_weight: processedData.packaging_weight,
+        packaging_type: processedData.packaging_type,
+        price: processedData.price,
+        auto_price_translate: processedData.auto_price_translate,
+        min_price: processedData.min_price,
+        vat: processedData.vat,
+        price_tolerance: processedData.price_tolerance,
+        created_by: processedData.created_by,
+        comments: processedData.comments,
       },
     });
     await logEvent({
@@ -123,46 +143,46 @@ export const createProduct = async (
   } else {
     const product = await db.product.create({
       data: {
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        subcategory: data.subcategory,
-        sku: data.sku,
-        length: data.length,
-        width: data.width,
-        height: data.height,
-        quantity_in_package: data.pack_quantity,
-        actual_volume: data.actual_shape_volume,
-        quantity_needed_for_production: data.min_production_quantity,
-        sales_volume: data.sales_volume,
-        technological_volume: data.technological_volume,
-        eps_type: data.eps_type,
-        ean: data.ean,
-        weight: data.weight,
-        seasoning_time: data.seasoning_time,
-        manufacturer: data.manufacturer,
-        primary_unit: data.primary_unit,
-        first_helper_unit: data.first_helper_unit,
-        first_helper_unit_value: data.first_helper_unit_value,
-        second_helper_unit: data.second_helper_unit,
-        second_helper_unit_value: data.second_helper_unit_value,
-        is_sold: data.is_sold,
-        is_produced: data.is_produced,
-        is_internal: data.is_internal,
-        is_one_time: data.is_one_time,
-        is_entrusted: data.is_entrusted,
+        name: processedData.name,
+        description: processedData.description,
+        category: processedData.category,
+        subcategory: processedData.subcategory,
+        sku: processedData.sku,
+        length: processedData.length,
+        width: processedData.width,
+        height: processedData.height,
+        quantity_in_package: processedData.pack_quantity,
+        actual_volume: processedData.actual_shape_volume,
+        quantity_needed_for_production: processedData.min_production_quantity,
+        sales_volume: processedData.sales_volume,
+        technological_volume: processedData.technological_volume,
+        eps_type: processedData.eps_type,
+        ean: processedData.ean,
+        weight: processedData.weight,
+        seasoning_time: processedData.seasoning_time,
+        manufacturer: processedData.manufacturer,
+        primary_unit: processedData.primary_unit,
+        first_helper_unit: processedData.first_helper_unit,
+        first_helper_unit_value: processedData.first_helper_unit_value,
+        second_helper_unit: processedData.second_helper_unit,
+        second_helper_unit_value: processedData.second_helper_unit_value,
+        is_sold: processedData.is_sold,
+        is_produced: processedData.is_produced,
+        is_internal: processedData.is_internal,
+        is_one_time: processedData.is_one_time,
+        is_entrusted: processedData.is_entrusted,
         image_path: filePath,
-        raw_material_type: data.raw_material_type,
-        raw_material_granulation: data.raw_material_granulation,
-        packaging_weight: data.packaging_weight,
-        packaging_type: data.packaging_type,
-        price: data.price,
-        auto_price_translate: data.auto_price_translate,
-        min_price: data.min_price,
-        vat: data.vat,
-        price_tolerance: data.price_tolerance,
-        created_by: data.created_by,
-        comments: data.comments,
+        raw_material_type: processedData.raw_material_type,
+        raw_material_granulation: processedData.raw_material_granulation,
+        packaging_weight: processedData.packaging_weight,
+        packaging_type: processedData.packaging_type,
+        price: processedData.price,
+        auto_price_translate: processedData.auto_price_translate,
+        min_price: processedData.min_price,
+        vat: processedData.vat,
+        price_tolerance: processedData.price_tolerance,
+        created_by: processedData.created_by,
+        comments: processedData.comments,
       },
     });
     await logEvent({
@@ -234,6 +254,25 @@ export const updateProduct = async (
 
   let filePath = "";
 
+  const replaceCommasInObject = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => replaceCommasInObject(item));
+    } else if (typeof obj === "object" && obj !== null) {
+      const newObj: { [key: string]: any } = {};
+      for (const key in obj) {
+        newObj[key] = replaceCommasInObject(obj[key]);
+      }
+      return newObj;
+    } else if (typeof obj === "string") {
+      return obj.replace(/,/g, ".");
+    } else {
+      return obj;
+    }
+  };
+
+  // Replace commas with periods in the entire data object, including nested arrays/objects
+  const processedData = replaceCommasInObject(data);
+
   console.log(result.data);
 
   if (file) {
@@ -247,45 +286,45 @@ export const updateProduct = async (
       id: id,
     },
     data: {
-      name: data.name,
-      description: data.description,
-      category: data.category,
-      subcategory: data.subcategory,
-      sku: data.sku,
-      length: data.length,
-      width: data.width,
-      height: data.height,
-      quantity_in_package: data.pack_quantity,
-      actual_volume: data.actual_shape_volume,
-      quantity_needed_for_production: data.min_production_quantity,
-      sales_volume: data.sales_volume,
-      technological_volume: data.technological_volume,
-      eps_type: data.eps_type,
-      ean: data.ean,
-      weight: data.weight,
-      seasoning_time: data.seasoning_time,
-      manufacturer: data.manufacturer,
-      primary_unit: data.primary_unit,
-      first_helper_unit: data.first_helper_unit,
-      first_helper_unit_value: data.first_helper_unit_value,
-      second_helper_unit: data.second_helper_unit,
-      second_helper_unit_value: data.second_helper_unit_value,
-      is_sold: data.is_sold,
-      is_produced: data.is_produced,
-      is_internal: data.is_internal,
-      is_one_time: data.is_one_time,
-      is_entrusted: data.is_entrusted,
+      name: processedData.name,
+      description: processedData.description,
+      category: processedData.category,
+      subcategory: processedData.subcategory,
+      sku: processedData.sku,
+      length: processedData.length,
+      width: processedData.width,
+      height: processedData.height,
+      quantity_in_package: processedData.pack_quantity,
+      actual_volume: processedData.actual_shape_volume,
+      quantity_needed_for_production: processedData.min_production_quantity,
+      sales_volume: processedData.sales_volume,
+      technological_volume: processedData.technological_volume,
+      eps_type: processedData.eps_type,
+      ean: processedData.ean,
+      weight: processedData.weight,
+      seasoning_time: processedData.seasoning_time,
+      manufacturer: processedData.manufacturer,
+      primary_unit: processedData.primary_unit,
+      first_helper_unit: processedData.first_helper_unit,
+      first_helper_unit_value: processedData.first_helper_unit_value,
+      second_helper_unit: processedData.second_helper_unit,
+      second_helper_unit_value: processedData.second_helper_unit_value,
+      is_sold: processedData.is_sold,
+      is_produced: processedData.is_produced,
+      is_internal: processedData.is_internal,
+      is_one_time: processedData.is_one_time,
+      is_entrusted: processedData.is_entrusted,
       image_path: filePath,
-      raw_material_type: data.raw_material_type,
-      raw_material_granulation: data.raw_material_granulation,
-      packaging_weight: data.packaging_weight,
-      packaging_type: data.packaging_type,
-      price: data.price,
-      auto_price_translate: data.auto_price_translate,
-      min_price: data.min_price,
-      vat: data.vat,
-      price_tolerance: data.price_tolerance,
-      comments: data.comments,
+      raw_material_type: processedData.raw_material_type,
+      raw_material_granulation: processedData.raw_material_granulation,
+      packaging_weight: processedData.packaging_weight,
+      packaging_type: processedData.packaging_type,
+      price: processedData.price,
+      auto_price_translate: processedData.auto_price_translate,
+      min_price: processedData.min_price,
+      vat: processedData.vat,
+      price_tolerance: processedData.price_tolerance,
+      comments: processedData.comments,
     },
   });
 
