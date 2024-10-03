@@ -50,6 +50,7 @@ import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 
 import { ProductView } from "./productView";
+import { formatPrice } from "@/lib/utils";
 
 // TODO: drag and drop colums
 // import {
@@ -212,7 +213,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     accessorKey: "price",
     header: "Cena",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("price")}</div>
+      <div className="capitalize">{formatPrice(row.getValue("price"))}</div>
     ),
   },
 
