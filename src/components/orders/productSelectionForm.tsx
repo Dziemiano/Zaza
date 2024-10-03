@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ProductSelectionDialog from "./productSelectionDialog";
-import { set } from "date-fns";
+import { formatPrice } from "@/lib/utils";
 
 const quantityUnits = [
   { value: "m3", label: "m3" },
@@ -221,9 +221,9 @@ export default function ProductSelectionForm({
             onProductsSelected={handleProductsSelected}
           />
           <div className="font-semibold">
-            Suma netto: {calculateNettoTotal()} zł
+            Suma netto: {formatPrice(calculateNettoTotal())} zł
             <br />
-            Suma brutto: {calculateBruttoTotal()} zł
+            Suma brutto: {formatPrice(calculateBruttoTotal())} zł
           </div>
         </div>
         <div className="max-h-[300px] overflow-auto">
@@ -319,7 +319,7 @@ export default function ProductSelectionForm({
                         className="w-24"
                       />
                     </TableCell>
-                    <TableCell>{nettoValue} zł</TableCell>
+                    <TableCell>{formatPrice(nettoValue)} zł</TableCell>
                     <TableCell>
                       <Select
                         value={item.vat_percentage}
@@ -338,8 +338,8 @@ export default function ProductSelectionForm({
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>{bruttoCost} zł</TableCell>
-                    <TableCell>{bruttoValue} zł</TableCell>
+                    <TableCell>{formatPrice(bruttoCost)} zł</TableCell>
+                    <TableCell>{formatPrice(bruttoValue)} zł</TableCell>
                     <TableCell>
                       <Button
                         variant="destructive"
