@@ -261,9 +261,9 @@ export const CustomerForm = ({
                       <TabsTrigger value="payment">
                         Rodzaj płatności
                       </TabsTrigger>
-                      <TabsTrigger value="contact_person">
+                      {/* <TabsTrigger value="contact_person">
                         Osoba kontaktowa
-                      </TabsTrigger>
+                      </TabsTrigger> */}
                       <TabsTrigger value="salesman">
                         Przypisany handlowiec
                       </TabsTrigger>
@@ -923,6 +923,7 @@ export const CustomerForm = ({
                       variant="zaza"
                       className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                       size="sm"
+                      onClick={() => console.log(form)}
                     >
                       {editMode ? "Zapisz" : "Utwórz"}
                     </Button>
