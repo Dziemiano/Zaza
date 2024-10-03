@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ProductSelectionDialog from "./productSelectionDialog";
-import { ContactPersonFormElement } from "../customers/contactPersonFormElement";
+import { set } from "date-fns";
 
 const quantityUnits = [
   { value: "m3", label: "m3" },
@@ -46,88 +44,108 @@ export default function ProductSelectionForm({
     keyName: "key",
   });
 
+  const [test, setTest] = useState(true);
+
   useEffect(() => {
-    if (lineItems.length > 0 && fields.length === 0) {
+    if (lineItems.length > 0 && fields.length === 0 && test) {
       replace(lineItems);
+      setTest(false);
     }
   }, [lineItems, replace, fields.length]);
 
-  const handleProductsSelected = (selectedProducts) => {
-    const newLineItems = selectedProducts.map((product) => ({
-      product_id: product.id,
-      product_name: product.name,
-      quantity: "0",
-      quant_unit: product.primary_unit,
-      helper_quantity: "",
-      helper_quant_unit: "",
-      netto_cost: product.price,
-      brutto_cost: product.brutto_cost,
-      vat_percentage: product.vat,
-      vat_cost: product.vat_cost,
-      height: product.height,
-      length: product.length,
-      width: product.width,
-      quantity_in_package: product.quantity_in_package,
-    }));
-    append(newLineItems);
-  };
+  useEffect(() => {
+    setValue(`${name}.new.vat_percentage`, "23");
+  }, [setValue, name]);
 
-  const calculateM3 = (height, length, width) => {
+  const calculateM3 = useCallback((height, length, width) => {
     return (height * length * width) / 1000000000;
-  };
+  }, []);
 
-  const handleInputChange = (index, field, value) => {
-    const updatedItem = { ...fields[index], [field]: value };
-    const m3PerProduct = calculateM3(
-      updatedItem.height,
-      updatedItem.length,
-      updatedItem.width
-    );
-    const m3PerPackage = m3PerProduct * updatedItem.quantity_in_package;
+  const handleInputChange = useCallback(
+    (index, field, value) => {
+      const updatedItem = { ...fields[index], [field]: value };
+      const m3PerProduct = calculateM3(
+        updatedItem.height,
+        updatedItem.length,
+        updatedItem.width
+      );
+      const m3PerPackage = m3PerProduct * updatedItem.quantity_in_package;
 
-    if (field === "quantity" || field === "quant_unit") {
-      if (updatedItem.quant_unit === "m3") {
-        updatedItem.helper_quantity = value
-          ? Math.ceil(parseFloat(value) / m3PerPackage).toString()
-          : "";
-        updatedItem.helper_quant_unit = "opak";
-      } else if (updatedItem.quant_unit === "opak") {
-        updatedItem.helper_quantity = value
-          ? (parseFloat(value) * m3PerPackage).toFixed(3)
-          : "";
-        updatedItem.helper_quant_unit = "m3";
+      if (field === "quantity" || field === "quant_unit") {
+        if (updatedItem.quant_unit === "m3") {
+          updatedItem.helper_quantity =
+            value && m3PerPackage
+              ? Math.ceil(parseFloat(value) / m3PerPackage).toString()
+              : "";
+          updatedItem.helper_quant_unit = "opak";
+        } else if (updatedItem.quant_unit === "opak") {
+          updatedItem.helper_quantity =
+            value && m3PerPackage
+              ? (parseFloat(value) * m3PerPackage).toFixed(3)
+              : "";
+          updatedItem.helper_quant_unit = "m3";
+        }
+      } else if (field === "helper_quantity" || field === "helper_quant_unit") {
+        if (updatedItem.helper_quant_unit === "m3") {
+          updatedItem.quantity =
+            value && m3PerPackage
+              ? Math.ceil(parseFloat(value) / m3PerPackage).toString()
+              : "";
+          updatedItem.quant_unit = "opak";
+        } else if (updatedItem.helper_quant_unit === "opak") {
+          updatedItem.quantity =
+            value && m3PerPackage
+              ? (parseFloat(value) * m3PerPackage).toFixed(3)
+              : "";
+          updatedItem.quant_unit = "m3";
+        }
       }
-    } else if (field === "helper_quantity" || field === "helper_quant_unit") {
-      if (updatedItem.helper_quant_unit === "m3") {
-        updatedItem.quantity = value
-          ? Math.ceil(parseFloat(value) / m3PerPackage).toString()
-          : "";
-        updatedItem.quant_unit = "opak";
-      } else if (updatedItem.helper_quant_unit === "opak") {
-        updatedItem.quantity = value
-          ? (parseFloat(value) * m3PerPackage).toFixed(3)
-          : "";
-        updatedItem.quant_unit = "m3";
-      }
-    }
 
-    updatedItem.quantity = updatedItem.quantity.toString();
-    updatedItem.helper_quantity = updatedItem.helper_quantity.toString();
+      updatedItem.quantity = updatedItem.quantity.toString();
+      updatedItem.helper_quantity = updatedItem.helper_quantity.toString();
 
-    const nettoCost = parseFloat(updatedItem.netto_cost) || 0;
-    const vatPercentage = parseFloat(updatedItem.vat_percentage) || 0;
-    updatedItem.brutto_cost = (nettoCost * (1 + vatPercentage / 100)).toFixed(
-      2
-    );
+      const nettoCost = parseFloat(updatedItem.netto_cost) || 0;
+      const vatPercentage = parseFloat(updatedItem.vat_percentage) || 0;
+      updatedItem.brutto_cost = (nettoCost * (1 + vatPercentage / 100)).toFixed(
+        2
+      );
 
-    update(index, updatedItem);
-  };
+      update(index, updatedItem);
+    },
+    [fields, update, calculateM3]
+  );
 
-  const handleRemoveItem = (index) => {
-    remove(index);
-  };
+  const handleRemoveItem = useCallback(
+    (index) => {
+      remove(index);
+    },
+    [remove]
+  );
 
-  const calculateNettoTotal = () => {
+  const handleProductsSelected = useCallback(
+    (selectedProducts) => {
+      const newLineItems = selectedProducts.map((product) => ({
+        product_id: product.id,
+        product_name: product.name,
+        quantity: "0",
+        quant_unit: product.primary_unit,
+        helper_quantity: "",
+        helper_quant_unit: "",
+        netto_cost: product.price,
+        brutto_cost: product.brutto_cost,
+        vat_percentage: product.vat,
+        vat_cost: product.vat_cost,
+        height: product.height,
+        length: product.length,
+        width: product.width,
+        quantity_in_package: product.quantity_in_package,
+      }));
+      append(newLineItems);
+    },
+    [append]
+  );
+
+  const calculateNettoTotal = useCallback(() => {
     return fields
       .reduce((total, item) => {
         const quantity = parseFloat(item.quantity) || 0;
@@ -135,9 +153,9 @@ export default function ProductSelectionForm({
         return total + quantity * nettoPrice;
       }, 0)
       .toFixed(2);
-  };
+  }, [fields]);
 
-  const calculateBruttoTotal = () => {
+  const calculateBruttoTotal = useCallback(() => {
     return fields
       .reduce((total, item) => {
         const quantity = parseFloat(item.quantity) || 0;
@@ -147,37 +165,27 @@ export default function ProductSelectionForm({
         return total + quantity * bruttoPrice;
       }, 0)
       .toFixed(2);
-  };
+  }, [fields]);
 
-  const calculateVatTotal = () => {
-    return fields
-      .reduce((total, item) => {
-        const quantity = parseFloat(item.quantity) || 0;
-        const nettoPrice = parseFloat(item.netto_cost) || 0;
-        const vatPercentage = parseFloat(item.vat_percentage) || 0;
-        const discount = parseFloat(item.discount) || 0;
-        const nettoValue = quantity * nettoPrice * (1 - discount / 100);
-        return total + nettoValue * (vatPercentage / 100);
-      }, 0)
-      .toFixed(2);
-  };
-
-  const renderQuantitySelect = (item, index, field) => (
-    <Select
-      value={item[field]}
-      onValueChange={(value) => handleInputChange(index, field, value)}
-    >
-      <SelectTrigger className="w-[80px]">
-        <SelectValue placeholder="" />
-      </SelectTrigger>
-      <SelectContent>
-        {quantityUnits.map((unit) => (
-          <SelectItem key={unit.value} value={unit.value}>
-            {unit.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+  const renderQuantitySelect = useCallback(
+    (item, index, field) => (
+      <Select
+        value={item[field]}
+        onValueChange={(value) => handleInputChange(index, field, value)}
+      >
+        <SelectTrigger className="w-[80px]">
+          <SelectValue placeholder="" />
+        </SelectTrigger>
+        <SelectContent>
+          {quantityUnits.map((unit) => (
+            <SelectItem key={unit.value} value={unit.value}>
+              {unit.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    ),
+    [handleInputChange]
   );
 
   return (
