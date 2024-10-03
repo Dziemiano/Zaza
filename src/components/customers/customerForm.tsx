@@ -126,6 +126,7 @@ export const CustomerForm = ({
     const data = JSON.parse(JSON.stringify(values));
     setError("");
     setSuccess("");
+    console.log(form);
     startTransition(() => {
       if (customer) {
         updateCustomer(customer.id, data).then((response) => {
@@ -269,9 +270,9 @@ export const CustomerForm = ({
                       <TabsTrigger value="discount">
                         Limity i rabaty
                       </TabsTrigger>
-                      <TabsTrigger value="delivery">
+                      {/* <TabsTrigger value="delivery">
                         Filie i adresy dostaw
-                      </TabsTrigger>
+                      </TabsTrigger> */}
                       <TabsTrigger value="invoice">Dane do faktury</TabsTrigger>
                       {/* <TabsTrigger value="comments">Uwagi</TabsTrigger> */}
                     </TabsList>
