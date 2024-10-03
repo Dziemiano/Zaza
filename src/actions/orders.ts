@@ -357,3 +357,32 @@ export const updateOrder = async (
     success: "Order updated",
   };
 };
+
+export const updateOrderEmail = async (
+  data: {
+    id: string;
+    email_content: string;
+  },
+  fileF: any[] | FormData
+) => {
+  const result = OrderSchema.safeParse(Object.fromEntries(fileF.entries()));
+  const file = result.data?.file as File;
+  let filePath = "";
+  console.log(data);
+  if (file) {
+    await fs.mkdir("/tmp/documents", { recursive: true });
+    filePath = `/tmp/documents/${crypto.randomUUID()}-${file.name}`;
+    await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+  }
+  const order = await db.order.update({
+    where: { id: data.id },
+    data: {
+      email_content: data.email_content,
+      document_path: filePath,
+    },
+  });
+  revalidatePath("/orders");
+  return {
+    success: "Order updated",
+  };
+};
