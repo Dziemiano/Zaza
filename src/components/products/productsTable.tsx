@@ -330,8 +330,8 @@ export function ProductsTable({ products }: ProductsTableProps) {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Collapsible className="w-full">
-          <div className="w-full flex flex-row rounded-lg shadow shadow-black/30 p-2">
-            <CollapsibleTrigger className="flex flex-row w-full">
+          <div className="w-full flex flex-row flex-wrap rounded-lg shadow shadow-black/30 p-2">
+            <CollapsibleTrigger className="flex flex-row">
               <div className="w-8 h-8 mt-1 mr-3">
                 <svg
                   width="100%"
