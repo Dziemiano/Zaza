@@ -139,6 +139,13 @@ export default function ProductSelectionForm({
     [fields, update, calculateM3, products]
   );
 
+  const handleRemoveItem = useCallback(
+    (index) => {
+      remove(index);
+    },
+    [remove]
+  );
+
   const handleProductsSelected = useCallback(
     (selectedProducts) => {
       const newLineItems = selectedProducts.map((product) => ({
