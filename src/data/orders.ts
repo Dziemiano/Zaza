@@ -15,7 +15,7 @@ export const getAllOrders = async () => {
     const orders = await db.order.findMany({
       include: {
         customer: true,
-        lineItems: { include: { wz: true } },
+        lineItems: { include: { wz: true, product: true } },
         user: true,
         wz: {
           include: {

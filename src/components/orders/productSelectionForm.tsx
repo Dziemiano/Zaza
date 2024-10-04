@@ -64,12 +64,19 @@ export default function ProductSelectionForm({
   const handleInputChange = useCallback(
     (index, field, value) => {
       const updatedItem = { ...fields[index], [field]: value };
+      const product = products.find((p) => p.id === updatedItem.product_id);
+
+      if (!product) {
+        console.error("Product not found");
+        return;
+      }
+
       const m3PerProduct = calculateM3(
-        updatedItem.height,
-        updatedItem.length,
-        updatedItem.width
+        product.height,
+        product.length,
+        product.width
       );
-      const m3PerPackage = m3PerProduct * updatedItem.quantity_in_package;
+      const m3PerPackage = m3PerProduct * product.quantity_in_package;
 
       if (field === "quantity" || field === "quant_unit") {
         if (updatedItem.quant_unit === "m3") {
@@ -112,7 +119,7 @@ export default function ProductSelectionForm({
 
       update(index, updatedItem);
     },
-    [fields, update, calculateM3]
+    [fields, update, calculateM3, products]
   );
 
   const handleRemoveItem = useCallback(
