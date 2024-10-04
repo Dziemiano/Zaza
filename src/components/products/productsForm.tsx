@@ -1045,6 +1045,7 @@ export const ProductForm = ({
                     onClick={(e) => {
                       e.preventDefault(), onSubmit(form.getValues());
                     }}
+                    disabled={isLoading}
                   >
                     {editMode ? "Zapisz" : "Utwórz"}
                   </Button>
