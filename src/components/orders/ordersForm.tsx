@@ -63,6 +63,7 @@ import { OrderSchema } from "@/schemas";
 import { useEffect, useState, useTransition, memo } from "react";
 import { Input } from "../ui/input";
 import { Calendar } from "../ui/calendar";
+import { Spinner } from "../ui/spinner";
 
 import { createOrder } from "@/actions/orders";
 import { updateOrder } from "@/actions/orders";
@@ -76,7 +77,6 @@ import { ProductForm } from "../products/productsForm";
 import { FixedSizeList as List } from "react-window";
 import { CustomerForm } from "../customers/customerForm";
 import ProductSelectionForm from "./productSelectionForm";
-import { testNumberFormatter } from "@/lib/utils.test";
 
 export type OrderFormProps = {
   customers: any[];
@@ -102,6 +102,7 @@ export const OrderForm = ({
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [nipOpen, setNipOpen] = useState(false);
   const [nipStatus, setNipStatus] = useState<string | undefined>("");
   const [tempProducts, setTempProducts] = useState([]);
@@ -291,6 +292,8 @@ export const OrderForm = ({
   }, []);
 
   const onSubmit = (values: z.infer<typeof OrderSchema> & { id?: string }) => {
+    setIsLoading(true);
+
     //TODO rethink file upload
     let formData = new FormData();
     if (values.file) {
@@ -311,7 +314,7 @@ export const OrderForm = ({
           setIsConfirmDialogOpen(false);
           resetForm();
           setIsSuccessDialogOpen(true);
-        });
+        }).finally(() => setIsLoading(false));
       } else if (copyMode) {
         createOrder(data, formData)
           .then((response) => {
@@ -324,7 +327,7 @@ export const OrderForm = ({
           })
           .catch((error) => {
             setError(error.message);
-          });
+          }).finally(() => setIsLoading(false));
       } else {
         createOrder(data, formData)
           .then((response) => {
@@ -338,7 +341,7 @@ export const OrderForm = ({
           .catch((error) => {
             setError(error.message);
             console.log(error);
-          });
+          }).finally(() => setIsLoading(false));
       }
     });
   };
@@ -1283,6 +1286,7 @@ export const OrderForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Spinner isLoading={isLoading}/>
     </>
   );
 };
