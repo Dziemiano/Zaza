@@ -49,7 +49,7 @@ import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 
 import { CustomerView } from "./customerView";
-import { formatThousands } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 // TODO: drag and drop colums
 // import {
@@ -225,14 +225,18 @@ export const columns: ColumnDef<unknown, any>[] = [
     accessorKey: "credit_limit",
     header: "Limit kredytowy",
     cell: ({ row }) => (
-      <div className="capitalize">{formatThousands(row.getValue("credit_limit"))}</div>
+      <div className="capitalize">
+        {formatNumber(row.getValue("credit_limit"))}
+      </div>
     ),
   },
   {
     accessorKey: "max_discount",
     header: "Maksymalny rabat",
     cell: ({ row }) => (
-      <div className="capitalize">{formatThousands(row.getValue("max_discount"))}</div>
+      <div className="capitalize">
+        {formatNumber(row.getValue("max_discount"))}
+      </div>
     ),
   },
   {

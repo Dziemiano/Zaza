@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatPrice, formatThousands } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 export default function ProductSelectionDialog({
   products,
@@ -168,9 +168,11 @@ export default function ProductSelectionDialog({
                       </TableCell>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>
-                        {formatThousands(product.actual_volume)} {product.primary_unit}
+                        {formatNumber(product.actual_volume)} {product.primary_unit}
                       </TableCell>
-                      <TableCell>{formatPrice(product.price)} zł</TableCell>
+                      <TableCell>
+                        {formatNumber(product.price, true)} zł
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
