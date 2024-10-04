@@ -153,28 +153,35 @@ const booleanToYesNo = (value: boolean): string => {
 };
 
 export const columns: ColumnDef<unknown, any>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
+  {
+    id: "select",
+    header: ({ table }) => (
+      <div className="flex flex-row">
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+        <span className="font-small ml-1 min-w-5">{table.getSelectedRowModel().rows.length ? "(" + table.getSelectedRowModel().rows.length + ')' : "" }</span>
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div onClick={(e: React.MouseEvent) => {
+        e.stopPropagation();
+      }}>
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "symbol",
     id: "symbol",
@@ -364,6 +371,8 @@ export function CustomersTable({ customers, salesmen }: CustomersTableProps) {
     send_email_invoice: "Dokumenty na email",
   };
 
+  const tableRowsCount = table.getRowModel().rows.length;
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
@@ -449,6 +458,7 @@ export function CustomersTable({ customers, salesmen }: CustomersTableProps) {
           </CollapsibleContent>
         </Collapsible>
       </div>
+      <span className="font-small ml-1 min-w-5">{tableRowsCount} {tableRowsCount === 1 ? "wynik" : tableRowsCount <= 4 ? "wyniki" : "wyników"}</span>
       <div className="max-h-[500px] overflow-scroll no-scrollbar">
         <Table>
           <TableHeader>
