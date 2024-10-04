@@ -224,7 +224,7 @@ export const ProductView = ({
                     {formatNumber(volume(product))} m3
                   </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Wysokość'] after:ml-1">
-                    Objętość
+                    Objętość paczki
                   </label>
                 </div>
                 <div className="detail-item">

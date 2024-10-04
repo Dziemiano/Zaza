@@ -46,6 +46,7 @@ export default function ProductSelectionForm({
   });
 
   const [test, setTest] = useState(true);
+  const [m3FirstProvided, setM3FirstProvided] = useState({});
 
   useEffect(() => {
     if (lineItems.length > 0 && fields.length === 0 && test) {
@@ -79,55 +80,38 @@ export default function ProductSelectionForm({
       );
       const m3PerPackage = m3PerProduct * product.quantity_in_package;
 
-      const updateHelperQuantity = (mainQuantity, fromUnit, toUnit) => {
-        if (fromUnit === "m3" && toUnit === "opak") {
-          return mainQuantity && m3PerPackage
-            ? Math.ceil(parseFloat(mainQuantity) / m3PerPackage).toString()
-            : "0";
-        } else if (fromUnit === "opak" && toUnit === "m3") {
-          return mainQuantity && m3PerPackage
-            ? (parseFloat(mainQuantity) * m3PerPackage).toFixed(3)
-            : "0";
-        }
-        return "0";
+      const calculateHelperQuantity = (mainQuantity) => {
+        return mainQuantity && m3PerPackage
+          ? Math.ceil(parseFloat(mainQuantity) / m3PerPackage).toString()
+          : "";
       };
 
-      if (field === "quantity" || field === "quant_unit") {
-        if (
-          updatedItem.quant_unit === "m3" ||
-          updatedItem.quant_unit === "opak"
-        ) {
-          updatedItem.help_quant_unit =
-            updatedItem.quant_unit === "m3" ? "opak" : "m3";
-          updatedItem.helper_quantity = updateHelperQuantity(
-            updatedItem.quantity,
-            updatedItem.quant_unit,
-            updatedItem.help_quant_unit
+      if (field === "quantity" && updatedItem.quant_unit === "m3") {
+        if (!m3FirstProvided[index]) {
+          updatedItem.help_quant_unit = "opak";
+          updatedItem.helper_quantity = calculateHelperQuantity(
+            updatedItem.quantity
           );
-        } else {
-          updatedItem.help_quant_unit = "m3";
-          updatedItem.helper_quantity = "0";
+          setM3FirstProvided((prev) => ({ ...prev, [index]: true }));
         }
-      } else if (field === "helper_quantity" || field === "help_quant_unit") {
+      } else if (field === "quant_unit") {
         if (
-          updatedItem.help_quant_unit === "m3" ||
-          updatedItem.help_quant_unit === "opak"
+          updatedItem.quant_unit === "m3" &&
+          updatedItem.quantity !== "" &&
+          !m3FirstProvided[index]
         ) {
-          updatedItem.quant_unit =
-            updatedItem.help_quant_unit === "m3" ? "opak" : "m3";
-          updatedItem.quantity = updateHelperQuantity(
-            updatedItem.helper_quantity,
-            updatedItem.help_quant_unit,
-            updatedItem.quant_unit
+          updatedItem.help_quant_unit = "opak";
+          updatedItem.helper_quantity = calculateHelperQuantity(
+            updatedItem.quantity
           );
-        } else {
-          updatedItem.quant_unit = "m3";
-          updatedItem.quantity = "0";
+          setM3FirstProvided((prev) => ({ ...prev, [index]: true }));
+        } else if (updatedItem.quant_unit !== "m3") {
+          // Reset helper fields and m3FirstProvided flag when main unit is not m3
+          updatedItem.help_quant_unit = "";
+          updatedItem.helper_quantity = "";
+          setM3FirstProvided((prev) => ({ ...prev, [index]: false }));
         }
       }
-
-      updatedItem.quantity = updatedItem.quantity || "0";
-      updatedItem.helper_quantity = updatedItem.helper_quantity || "0";
 
       const nettoCost = parseFloat(updatedItem.netto_cost) || 0;
       const vatPercentage = parseFloat(updatedItem.vat_percentage) || 0;
@@ -137,14 +121,7 @@ export default function ProductSelectionForm({
 
       update(index, updatedItem);
     },
-    [fields, update, calculateM3, products]
-  );
-
-  const handleRemoveItem = useCallback(
-    (index) => {
-      remove(index);
-    },
-    [remove]
+    [fields, update, calculateM3, products, m3FirstProvided]
   );
 
   const handleProductsSelected = useCallback(
