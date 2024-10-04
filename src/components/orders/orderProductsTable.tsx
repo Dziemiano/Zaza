@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/table";
 
 import { Switch } from "../ui/switch";
+import { formatNumber } from "@/lib/utils";
 
 // TODO: drag and drop colums
 // import {
@@ -176,7 +177,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     header: "Ilość pomocnicza",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("helper_quantity")} {row.original.help_quant_unit}
+        {formatNumber(row.getValue("helper_quantity"))} {row.original.help_quant_unit}
       </div>
     ),
   },
@@ -186,7 +187,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     cell: ({ row }) => {
       return (
         <div className="capitalize">
-          {parseFloat(row.getValue("netto_cost")).toFixed(2)}
+          {formatNumber(row.getValue("netto_cost"), true)}
         </div>
       );
     },
@@ -196,7 +197,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     header: "Cena Brutto",
     cell: ({ row }) => (
       <div className="capitalize">
-        {parseFloat(row.getValue("brutto_cost")).toFixed(2)}
+        {formatNumber(row.getValue("brutto_cost"), true)}
       </div>
     ),
   },
@@ -207,7 +208,9 @@ export const columns: ColumnDef<unknown, any>[] = [
       const quantity = parseFloat(row.getValue("quantity"));
       const nettoCost = parseFloat(row.getValue("netto_cost"));
       const wartoscNetto = quantity * nettoCost;
-      return <div className="text-right">{wartoscNetto.toFixed(2)}</div>;
+      return (
+        <div className="text-right">{formatNumber(wartoscNetto, true)}</div>
+      );
     },
   },
   {
@@ -217,7 +220,9 @@ export const columns: ColumnDef<unknown, any>[] = [
       const quantity = parseFloat(row.getValue("quantity"));
       const bruttoCost = parseFloat(row.getValue("brutto_cost"));
       const wartoscBrutto = quantity * bruttoCost;
-      return <div className="text-right">{wartoscBrutto.toFixed(2)}</div>;
+      return (
+        <div className="text-right">{formatNumber(wartoscBrutto, true)}</div>
+      );
     },
   },
 
@@ -410,11 +415,11 @@ export function OrderProductsTable({ orders }: OrdersTableProps) {
               <TableCell className="text-right"></TableCell> {/* Cena Netto */}
               <TableCell className="text-right"></TableCell> {/* Cena Brutto */}
               <TableCell className="text-right">
-                Netto {totalWartoscNetto.toFixed(2)}
+                Netto {formatNumber(totalWartoscNetto, true)}
               </TableCell>{" "}
               {/* Wartość Netto */}
               <TableCell className="text-right">
-                Brutto {totalWartoscBrutto.toFixed(2)}
+                Brutto {formatNumber(totalWartoscBrutto, true)}
               </TableCell>{" "}
               {/* Wartość Brutto */}
               <TableCell></TableCell> {/* Actions */}

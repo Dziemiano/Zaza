@@ -127,14 +127,17 @@ export const columns: ColumnDef<unknown, any>[] = [
   {
     id: "select",
     header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
+      <div className="flex flex-row">
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+        <span className="font-small ml-1  min-w-5">{table.getSelectedRowModel().rows.length ? "(" + table.getSelectedRowModel().rows.length + ')' : "" }</span>
+      </div>
     ),
     cell: ({ row }) => (
       <Checkbox
@@ -410,12 +413,14 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
     lineItems: "Ilość m3",
   };
 
+  const tableRowsCount = table.getRowModel().rows.length;
+  
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
         <Collapsible className="w-full">
-          <div className="w-full flex flex-row rounded-lg shadow shadow-black/30 p-2">
-            <CollapsibleTrigger className="flex flex-row w-full">
+          <div className="w-full flex flex-row flex-wrap rounded-lg shadow shadow-black/30 p-2">
+            <CollapsibleTrigger className="flex flex-row">
               <div className="w-8 h-8 mt-1 mr-3">
                 <svg
                   width="100%"
@@ -495,6 +500,7 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
           </CollapsibleContent>
         </Collapsible>
       </div>
+      <span className="font-small ml-1">{tableRowsCount} {tableRowsCount === 1 ? "wynik" : tableRowsCount <= 4 ? "wyniki" : "wyników"}</span>
       <div className="max-h-[500px] overflow-auto">
         <div className="min-w-full inline-block align-middle">
           <div className="overflow-x-auto border rounded-lg">

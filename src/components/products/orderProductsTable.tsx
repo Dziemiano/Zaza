@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/table";
 
 import { Switch } from "../ui/switch";
+import { formatNumber } from "@/lib/utils";
 
 // TODO: drag and drop colums
 // import {
@@ -162,7 +163,9 @@ export const columns: ColumnDef<unknown, any>[] = [
     accessorKey: "brutto_cost",
     header: "Cena Brutto",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("brutto_cost")}</div>
+      <div className="capitalize">
+        {formatNumber(row.getValue("brutto_cost"), true)}
+      </div>
     ),
   },
 

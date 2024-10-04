@@ -10,6 +10,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductForm } from "./productsForm";
 import Link from "next/link";
+import { formatNumber } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -195,26 +196,32 @@ export const ProductView = ({
               </h2>
               <div className="details-grid grid grid-cols-4 gap-4">
                 <div className="detail-item">
-                  <span className="block font-medium">{product.length} mm</span>
+                  <span className="block font-medium">
+                    {formatNumber(product.length)} mm
+                  </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Długość'] after:ml-1">
                     Długość
                   </label>
                 </div>
                 <div className="detail-item">
-                  <span className="block font-medium">{product.width} mm</span>
+                  <span className="block font-medium">
+                    {formatNumber(product.width)} mm
+                  </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Szerokość'] after:ml-1">
                     Szerokość
                   </label>
                 </div>
                 <div className="detail-item">
-                  <span className="block font-medium">{product.height} mm</span>
+                  <span className="block font-medium">
+                    {formatNumber(product.height)} mm
+                  </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Wysokość'] after:ml-1">
                     Wysokość
                   </label>
                 </div>
                 <div>
                   <span className="block font-medium">
-                    {volume(product)} m3
+                    {formatNumber(volume(product))} m3
                   </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Wysokość'] after:ml-1">
                     Objętość
@@ -222,14 +229,16 @@ export const ProductView = ({
                 </div>
                 <div className="detail-item">
                   <span className="block font-medium">
-                    {product.quantity_in_package}
+                    {formatNumber(product.quantity_in_package)}
                   </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Wysokość'] after:ml-1">
                     Ilość w paczce
                   </label>
                 </div>
                 <div className="detail-item">
-                  <span className="block font-medium">{product.weight} kg</span>
+                  <span className="block font-medium">
+                    {formatNumber(product.weight)} kg
+                  </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Wysokość'] after:ml-1">
                     Waga
                   </label>
@@ -268,13 +277,17 @@ export const ProductView = ({
               </h2>
               <div className="details-grid grid grid-cols-4 gap-4">
                 <div className="detail-item">
-                  <span className="block font-medium">{product.price}</span>
+                  <span className="block font-medium">
+                    {formatNumber(product.price, true)}
+                  </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Cena domyślna'] after:ml-1">
                     Cena domyślna
                   </label>
                 </div>
                 <div className="detail-item">
-                  <span className="block font-medium">{product.min_price}</span>
+                  <span className="block font-medium">
+                    {formatNumber(product.min_price, true)}
+                  </span>
                   <label className="text-sm text-muted-foreground after:content-['/ Cena minimalna'] after:ml-1">
                     Cena minimalna
                   </label>
