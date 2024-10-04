@@ -5,24 +5,49 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatThousands = (number: number | string | null | undefined) => {
-  if (isNaN(number as number)) {
+export const formatNumber = (
+  number: number | string | null | undefined,
+  isPrice = false
+) => {
+  if (
+    number === null ||
+    number === "null" ||
+    number === undefined ||
+    number === "undefined"
+  ) {
+    return "";
+  }
+
+  if (number == Infinity || number === 'Infinity') {
+    return "Infinity";
+  }
+
+  if (isNaN(number as number) || number === "NaN") {
     return "-";
   }
-  if (number) {
-    const [integerPart, decimalPart] = number.toString().split(".");
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    return decimalPart
-      ? `${formattedInteger}.${decimalPart}`
-      : formattedInteger;
-  }
-  return "";
-};
 
-export const formatPrice = (number: number | string | null | undefined) => {
-  let price = number;
-  if (typeof price === "string") {
-    price = parseFloat(price).toFixed(2);
+  let numberAsNumber: string;
+  if (typeof number === "number") {
+    numberAsNumber = number.toString();
+  } else {
+    numberAsNumber = number;
   }
-  return formatThousands(price);
+
+  let [integerPart, decimalPart] = numberAsNumber.split(".");
+  
+
+  if (isPrice) {
+   const fixed = parseFloat(`0.${decimalPart}`).toFixed(2);
+    let [_, fixedDecimalPart] = fixed.toString().split(".");
+    decimalPart = fixedDecimalPart;
+
+  } else if (decimalPart && decimalPart.length > 4) {
+    const fixed = parseFloat(`0.${decimalPart}`).toFixed(4);
+    let [_, fixedDecimalPart] = fixed.toString().split(".");
+    decimalPart = fixedDecimalPart;
+  } 
+
+  integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+  return decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
 };
