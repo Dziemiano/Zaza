@@ -51,3 +51,4 @@ export const formatNumber = (
 
   return decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
 };
+
