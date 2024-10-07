@@ -190,6 +190,13 @@ export default function ProductSelectionForm({
     [handleInputChange]
   );
 
+  const handleRemoveItem = useCallback(
+    (index) => {
+      remove(index);
+    },
+    [remove]
+  );
+
   return (
     <Card className="w-full">
       <CardContent className="p-6">
@@ -321,7 +328,10 @@ export default function ProductSelectionForm({
                     <TableCell>
                       <Button
                         variant="destructive"
-                        onClick={() => handleRemoveItem(index)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleRemoveItem(index);
+                        }}
                       >
                         Usuń
                       </Button>
