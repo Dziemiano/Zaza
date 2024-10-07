@@ -49,7 +49,8 @@ export const WzLineItemsComponent = ({ lineItems }) => {
       ...fields[originalIndex],
       included_in_wz: checked,
       wz_quantity: checked ? fields[originalIndex].quantity : "",
-      helper_quantity: checked ? fields[originalIndex].quantity : "",
+      helper_quantity: checked ? fields[originalIndex].helper_quantity : "",
+      original_helper_quantity: fields[originalIndex].helper_quantity,
     });
   };
 
@@ -73,22 +74,23 @@ export const WzLineItemsComponent = ({ lineItems }) => {
 
   // New helper handlers
   const handleHelpQuantityChange = (originalIndex, value) => {
-    const originalQuantity = parseFloat(fields[originalIndex].quantity);
-    const newQuantity = parseFloat(value);
+    const originalHelperQuantity = parseFloat(
+      fields[originalIndex].original_helper_quantity
+    );
+    let newValue = value;
 
-    if (newQuantity > originalQuantity) {
-      update(originalIndex, {
-        ...fields[originalIndex],
-        helper_quantity: originalQuantity.toString(),
-      });
-    } else {
-      update(originalIndex, {
-        ...fields[originalIndex],
-        helper_quantity: value,
-      });
+    if (value !== "" && !isNaN(parseFloat(value))) {
+      const newQuantity = parseFloat(value);
+      if (newQuantity > originalHelperQuantity) {
+        newValue = originalHelperQuantity.toString();
+      }
     }
-  };
 
+    update(originalIndex, {
+      ...fields[originalIndex],
+      helper_quantity: newValue,
+    });
+  };
   const handleHelpUnitChange = (originalIndex, value) => {
     update(originalIndex, { ...fields[originalIndex], help_quant_unit: value });
   };
