@@ -237,7 +237,7 @@ export default function LogTable({ entity, entity_id }: LogTableProps) {
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="bg-white">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>

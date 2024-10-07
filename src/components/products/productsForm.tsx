@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "../ui/spinner";
 
 import { Switch } from "@/components/ui/switch";
 
@@ -69,6 +70,7 @@ export const ProductForm = ({
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -145,6 +147,8 @@ export const ProductForm = ({
   };
 
   const onSubmit = (values: z.infer<typeof ProductSchema>) => {
+    setIsLoading(true);
+
     let formData = new FormData();
 
     if (values.file) {
@@ -155,28 +159,34 @@ export const ProductForm = ({
 
     startTransition(() => {
       if (product && product.id) {
-        updateProduct(product.id, data, formData).then((response) => {
-          setSuccess(response?.success);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-        });
+        updateProduct(product.id, data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+          })
+          .finally(() => setIsLoading(false));
         console.log("Order updated successfully");
       } else if (oneTime) {
-        createProduct(data, formData).then((response) => {
-          setSuccess(response?.success);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-          onProductCreated(data);
-        });
+        createProduct(data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+            onProductCreated(data);
+          })
+          .finally(() => setIsLoading(false));
       } else {
-        createProduct(data, formData).then((response) => {
-          setSuccess(response?.success);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-        });
+        createProduct(data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+          })
+          .finally(() => setIsLoading(false));
       }
     });
   };
@@ -420,7 +430,7 @@ export const ProductForm = ({
                     <TabsTrigger value="comments">Uwagi</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="product" className="w-full h-[550px]">
+                  <TabsContent value="product" className="w-full">
                     <div className="flex flex-row mt-5 mb-5">
                       <div className="flex w-full items-center">
                         <FormField
@@ -1036,11 +1046,12 @@ export const ProductForm = ({
                   <Button
                     type="submit"
                     variant="zaza"
-                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
+                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex mt-2 mb-2"
                     size="sm"
                     onClick={(e) => {
                       e.preventDefault(), onSubmit(form.getValues());
                     }}
+                    disabled={isLoading}
                   >
                     {editMode ? "Zapisz" : "Utwórz"}
                   </Button>
@@ -1095,6 +1106,7 @@ export const ProductForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Spinner isLoading={isLoading} />
     </>
   );
 };

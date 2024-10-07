@@ -27,6 +27,8 @@ export const createWz = async (data: {
     order_id: string;
     wz_quantity: string;
     remaining_quantity: string;
+    helper_quantity: string;
+    help_quant_unit: string;
     wz_unit: string;
     price: number;
     vat: number;
@@ -60,6 +62,7 @@ export const createWz = async (data: {
     "Adjusted Issue Date:",
     adjustedIssueDate
   );
+  console.log(data);
   const result = await db.$transaction(async (tx) => {
     const wz = await tx.wz.create({
       data: {
@@ -90,6 +93,8 @@ export const createWz = async (data: {
           wz_id: wz.id,
           quantity: item.wz_quantity,
           quant_unit: item.wz_unit,
+          helper_quantity: item.helper_quantity,
+          help_quant_unit: item.help_quant_unit,
           included_in_wz: true,
         },
       });

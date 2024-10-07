@@ -44,7 +44,7 @@ export const OrderCompletionElement = ({ lineItems }) => {
           <h3 className="text-md font-semibold mb-4">Pozycje zrealizowane</h3>
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-white">
                 <TableHead>Nazwa produktu</TableHead>
                 <TableHead>Ilość</TableHead>
                 <TableHead>Jednostka</TableHead>
@@ -69,7 +69,7 @@ export const OrderCompletionElement = ({ lineItems }) => {
           <h3 className="text-md font-semibold mb-4">Pozycje do realizacji</h3>
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-white">
                 <TableHead>Nazwa produktu</TableHead>
                 <TableHead>Ilość</TableHead>
                 <TableHead>Jednostka</TableHead>
@@ -77,7 +77,7 @@ export const OrderCompletionElement = ({ lineItems }) => {
             </TableHeader>
             <TableBody>
               {remainingItems.map((item) => (
-                <TableRow key={item.id}>
+                <TableRow key={item.id} className="bg-white">
                   <TableCell>{item.product_name}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.quant_unit}</TableCell>

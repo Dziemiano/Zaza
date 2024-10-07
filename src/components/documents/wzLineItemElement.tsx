@@ -49,6 +49,8 @@ export const WzLineItemsComponent = ({ lineItems }) => {
       ...fields[originalIndex],
       included_in_wz: checked,
       wz_quantity: checked ? fields[originalIndex].quantity : "",
+      helper_quantity: checked ? fields[originalIndex].helper_quantity : "",
+      original_helper_quantity: fields[originalIndex].helper_quantity,
     });
   };
 
@@ -70,18 +72,43 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     update(originalIndex, { ...fields[originalIndex], wz_unit: value });
   };
 
+  // New helper handlers
+  const handleHelpQuantityChange = (originalIndex, value) => {
+    const originalHelperQuantity = parseFloat(
+      fields[originalIndex].original_helper_quantity
+    );
+    let newValue = value;
+
+    if (value !== "" && !isNaN(parseFloat(value))) {
+      const newQuantity = parseFloat(value);
+      if (newQuantity > originalHelperQuantity) {
+        newValue = originalHelperQuantity.toString();
+      }
+    }
+
+    update(originalIndex, {
+      ...fields[originalIndex],
+      helper_quantity: newValue,
+    });
+  };
+  const handleHelpUnitChange = (originalIndex, value) => {
+    update(originalIndex, { ...fields[originalIndex], help_quant_unit: value });
+  };
+
   return (
     <div className="mt-6">
       <h3 className="text-lg font-semibold mb-4">Pozycje dokumentu WZ</h3>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-white">
             <TableHead className="w-[50px]">Uwzględnij</TableHead>
             <TableHead>Nazwa produktu</TableHead>
             <TableHead>Ilość pozostała w zamówieniu</TableHead>
             <TableHead>Jednostka</TableHead>
             <TableHead>Ilość w WZ</TableHead>
             <TableHead>Jednostka WZ</TableHead>
+            <TableHead>Ilość pomocnicza</TableHead>
+            <TableHead>Jednostka pomocnicza</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -117,6 +144,36 @@ export const WzLineItemsComponent = ({ lineItems }) => {
                     value={item.wz_unit || ""}
                     onValueChange={(value) =>
                       handleUnitChange(originalIndex, value)
+                    }
+                    disabled={!item.included_in_wz}
+                  >
+                    <SelectTrigger className="w-[80px]">
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {quantityUnits.map((unit) => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Input
+                    value={item.helper_quantity || ""}
+                    onChange={(e) =>
+                      handleHelpQuantityChange(originalIndex, e.target.value)
+                    }
+                    disabled={!item.included_in_wz}
+                    className="w-20"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={item.help_quant_unit || ""}
+                    onValueChange={(value) =>
+                      handleHelpUnitChange(originalIndex, value)
                     }
                     disabled={!item.included_in_wz}
                   >

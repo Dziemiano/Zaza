@@ -58,6 +58,7 @@ import { OrderSchema, WzSchema } from "@/schemas";
 import { createWz } from "@/actions/documents";
 import { WzCheckPdf } from "./wznCheckPdf";
 import WzLineItemsComponent from "./wzLineItemElement";
+import { he } from "date-fns/locale";
 
 type WzDocFormProps = {
   editMode?: boolean;
@@ -148,6 +149,8 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
           wz_quantity: item.wz_quantity,
           remaining_quantity: remainingQuantity.toString(),
           wz_unit: item.wz_unit || item.quant_unit,
+          help_quant_unit: item.help_quant_unit,
+          helper_quantity: item.helper_quantity,
         };
       });
 

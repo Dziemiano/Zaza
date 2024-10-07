@@ -136,7 +136,11 @@ export const columns: ColumnDef<unknown, any>[] = [
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
-        <span className="font-small ml-1  min-w-5">{table.getSelectedRowModel().rows.length ? "(" + table.getSelectedRowModel().rows.length + ')' : "" }</span>
+        <span className="font-small ml-1  min-w-5">
+          {table.getSelectedRowModel().rows.length
+            ? "(" + table.getSelectedRowModel().rows.length + ")"
+            : ""}
+        </span>
       </div>
     ),
     cell: ({ row }) => (
@@ -414,7 +418,7 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
   };
 
   const tableRowsCount = table.getRowModel().rows.length;
-  
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
@@ -500,10 +504,17 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
           </CollapsibleContent>
         </Collapsible>
       </div>
-      <span className="font-small ml-1">{tableRowsCount} {tableRowsCount === 1 ? "wynik" : tableRowsCount <= 4 ? "wyniki" : "wyników"}</span>
-      <div className="max-h-[500px] overflow-auto">
+      <span className="font-small ml-1">
+        {tableRowsCount}{" "}
+        {tableRowsCount === 1
+          ? "wynik"
+          : tableRowsCount <= 4
+          ? "wyniki"
+          : "wyników"}
+      </span>
+      <div className="max-h-[550px] overflow-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="overflow-x-auto border rounded-lg">
+          <div className="overflow-auto border rounded-lg max-h-[500px]">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (

@@ -215,7 +215,7 @@ export default function ProductSelectionForm({
           <h3 className="mb-4 font-semibold">Wybrane produkty</h3>
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-white">
                 <TableHead>Nr.</TableHead>
                 <TableHead>Nazwa pozycji</TableHead>
                 <TableHead>Ilość</TableHead>
