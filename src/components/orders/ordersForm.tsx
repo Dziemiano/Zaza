@@ -63,6 +63,7 @@ import { OrderSchema } from "@/schemas";
 import { useEffect, useState, useTransition, memo } from "react";
 import { Input } from "../ui/input";
 import { Calendar } from "../ui/calendar";
+import { Spinner } from "../ui/spinner";
 
 import { createOrder } from "@/actions/orders";
 import { updateOrder } from "@/actions/orders";
@@ -76,7 +77,6 @@ import { ProductForm } from "../products/productsForm";
 import { FixedSizeList as List } from "react-window";
 import { CustomerForm } from "../customers/customerForm";
 import ProductSelectionForm from "./productSelectionForm";
-import { testNumberFormatter } from "@/lib/utils.test";
 
 export type OrderFormProps = {
   customers: any[];
@@ -102,6 +102,7 @@ export const OrderForm = ({
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [nipOpen, setNipOpen] = useState(false);
   const [nipStatus, setNipStatus] = useState<string | undefined>("");
   const [tempProducts, setTempProducts] = useState([]);
@@ -291,6 +292,8 @@ export const OrderForm = ({
   }, []);
 
   const onSubmit = (values: z.infer<typeof OrderSchema> & { id?: string }) => {
+    setIsLoading(true);
+
     //TODO rethink file upload
     let formData = new FormData();
     if (values.file) {
@@ -304,14 +307,16 @@ export const OrderForm = ({
 
     startTransition(() => {
       if (editMode) {
-        updateOrder(data, formData).then((response) => {
-          setSuccess(response?.success);
-          setTempProducts([]);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-          setIsSuccessDialogOpen(true);
-        });
+        updateOrder(data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setTempProducts([]);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+            setIsSuccessDialogOpen(true);
+          })
+          .finally(() => setIsLoading(false));
       } else if (copyMode) {
         createOrder(data, formData)
           .then((response) => {
@@ -324,7 +329,8 @@ export const OrderForm = ({
           })
           .catch((error) => {
             setError(error.message);
-          });
+          })
+          .finally(() => setIsLoading(false));
       } else {
         createOrder(data, formData)
           .then((response) => {
@@ -338,7 +344,8 @@ export const OrderForm = ({
           .catch((error) => {
             setError(error.message);
             console.log(error);
-          });
+          })
+          .finally(() => setIsLoading(false));
       }
     });
   };
@@ -464,7 +471,7 @@ export const OrderForm = ({
               className="space-y-6 flex flex-col w-full h-full justify-between"
             >
               <div className="flex flex-col content-between h-[700px] flex-grow overflow-y-auto">
-                <Tabs defaultValue="account" className="w-full h-full">
+                <Tabs defaultValue="account" className="w-full">
                   <TabsList>
                     <TabsTrigger value="customer">Dane Klienta</TabsTrigger>
                     {/* <TabsTrigger value="products">Produkty</TabsTrigger> */}
@@ -478,10 +485,7 @@ export const OrderForm = ({
                     <TabsTrigger value="comments">Uwagi</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent
-                    value="customer"
-                    className="w-full h-[550px] v-5"
-                  >
+                  <TabsContent value="customer" className="w-full v-5">
                     <div className="flex flex-row mt-6 mb-10">
                       <div className="flex flex-col mr-10">
                         <div className="text-black text-[28px] font-medium">
@@ -1213,9 +1217,9 @@ export const OrderForm = ({
                 <DialogFooter className="max-h-fit mt-auto">
                   <Button
                     type="submit"
-                    // disabled={!form.formState.isValid}
+                    disabled={isLoading}
                     variant="zaza"
-                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
+                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex mt-2 "
                     size="sm"
                   >
                     {editMode ? "Zapisz" : "Utwórz"}
@@ -1283,6 +1287,7 @@ export const OrderForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Spinner isLoading={isLoading} />
     </>
   );
 };
