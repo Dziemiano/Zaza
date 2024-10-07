@@ -63,7 +63,7 @@ export const OrderWzList = ({ order }: OrderWzListProps) => {
         </DialogHeader>
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-white">
               <TableHead>Nazwa produktu</TableHead>
               <TableHead>Jednostka WZ</TableHead>
             </TableRow>
