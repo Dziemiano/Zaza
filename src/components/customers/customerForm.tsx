@@ -59,6 +59,7 @@ import { CustomerSchema } from "@/schemas";
 import { useEffect, useState, useTransition } from "react";
 
 import { Input } from "../ui/input";
+import { Spinner } from "../ui/spinner";
 
 import { createCustomer, updateCustomer } from "@/actions/customer";
 import { ContactPersonFormElement } from "./contactPersonFormElement";
@@ -88,6 +89,7 @@ export const CustomerForm = ({
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -123,6 +125,8 @@ export const CustomerForm = ({
   });
 
   const onSubmit = (values: z.infer<typeof CustomerSchema>) => {
+    setIsLoading(true);
+
     const data = JSON.parse(JSON.stringify(values));
     setError("");
     setSuccess("");
@@ -134,7 +138,7 @@ export const CustomerForm = ({
           resetForm();
           setOpen(false);
           setIsConfirmDialogOpen(false);
-        });
+        }).finally(() => setIsLoading(false));
       } else {
         createCustomer(data)
           .then((response) => {
@@ -150,7 +154,7 @@ export const CustomerForm = ({
           })
           .catch((error) => {
             setError(error.message);
-          });
+          }).finally(() => setIsLoading(false));
       }
     });
   };
@@ -924,6 +928,7 @@ export const CustomerForm = ({
                       className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                       size="sm"
                       onClick={() => console.log(form)}
+                      disabled={isLoading}
                     >
                       {editMode ? "Zapisz" : "Utwórz"}
                     </Button>
@@ -1003,6 +1008,8 @@ export const CustomerForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Spinner isLoading={isLoading}/>
     </>
   );
 };

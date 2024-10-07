@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "../ui/spinner";
 
 import { Switch } from "@/components/ui/switch";
 
@@ -69,6 +70,7 @@ export const ProductForm = ({
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -145,6 +147,8 @@ export const ProductForm = ({
   };
 
   const onSubmit = (values: z.infer<typeof ProductSchema>) => {
+    setIsLoading(true);
+
     let formData = new FormData();
 
     if (values.file) {
@@ -160,7 +164,7 @@ export const ProductForm = ({
           setOpen(false);
           setIsConfirmDialogOpen(false);
           resetForm();
-        });
+        }).finally(() => setIsLoading(false));
         console.log("Order updated successfully");
       } else if (oneTime) {
         createProduct(data, formData).then((response) => {
@@ -169,14 +173,14 @@ export const ProductForm = ({
           setIsConfirmDialogOpen(false);
           resetForm();
           onProductCreated(data);
-        });
+        }).finally(() => setIsLoading(false));
       } else {
         createProduct(data, formData).then((response) => {
           setSuccess(response?.success);
           setOpen(false);
           setIsConfirmDialogOpen(false);
           resetForm();
-        });
+        }).finally(() => setIsLoading(false));
       }
     });
   };
@@ -1041,6 +1045,7 @@ export const ProductForm = ({
                     onClick={(e) => {
                       e.preventDefault(), onSubmit(form.getValues());
                     }}
+                    disabled={isLoading}
                   >
                     {editMode ? "Zapisz" : "Utwórz"}
                   </Button>
@@ -1095,6 +1100,7 @@ export const ProductForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Spinner isLoading={isLoading}/>
     </>
   );
 };
