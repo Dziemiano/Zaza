@@ -98,7 +98,7 @@ export const WzLineItemsComponent = ({ lineItems }) => {
       <h3 className="text-lg font-semibold mb-4">Pozycje dokumentu WZ</h3>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-white">
             <TableHead className="w-[50px]">Uwzględnij</TableHead>
             <TableHead>Nazwa produktu</TableHead>
             <TableHead>Ilość pozostała w zamówieniu</TableHead>
