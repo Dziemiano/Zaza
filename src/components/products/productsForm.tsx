@@ -159,28 +159,34 @@ export const ProductForm = ({
 
     startTransition(() => {
       if (product && product.id) {
-        updateProduct(product.id, data, formData).then((response) => {
-          setSuccess(response?.success);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-        }).finally(() => setIsLoading(false));
+        updateProduct(product.id, data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+          })
+          .finally(() => setIsLoading(false));
         console.log("Order updated successfully");
       } else if (oneTime) {
-        createProduct(data, formData).then((response) => {
-          setSuccess(response?.success);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-          onProductCreated(data);
-        }).finally(() => setIsLoading(false));
+        createProduct(data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+            onProductCreated(data);
+          })
+          .finally(() => setIsLoading(false));
       } else {
-        createProduct(data, formData).then((response) => {
-          setSuccess(response?.success);
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-          resetForm();
-        }).finally(() => setIsLoading(false));
+        createProduct(data, formData)
+          .then((response) => {
+            setSuccess(response?.success);
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+            resetForm();
+          })
+          .finally(() => setIsLoading(false));
       }
     });
   };
@@ -424,7 +430,7 @@ export const ProductForm = ({
                     <TabsTrigger value="comments">Uwagi</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="product" className="w-full h-[550px]">
+                  <TabsContent value="product" className="w-full">
                     <div className="flex flex-row mt-5 mb-5">
                       <div className="flex w-full items-center">
                         <FormField
@@ -1040,7 +1046,7 @@ export const ProductForm = ({
                   <Button
                     type="submit"
                     variant="zaza"
-                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
+                    className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex mt-2 mb-2"
                     size="sm"
                     onClick={(e) => {
                       e.preventDefault(), onSubmit(form.getValues());
@@ -1100,7 +1106,7 @@ export const ProductForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Spinner isLoading={isLoading}/>
+      <Spinner isLoading={isLoading} />
     </>
   );
 };

@@ -133,12 +133,14 @@ export const CustomerForm = ({
     console.log(form);
     startTransition(() => {
       if (customer) {
-        updateCustomer(customer.id, data).then((response) => {
-          setSuccess(response?.success);
-          resetForm();
-          setOpen(false);
-          setIsConfirmDialogOpen(false);
-        }).finally(() => setIsLoading(false));
+        updateCustomer(customer.id, data)
+          .then((response) => {
+            setSuccess(response?.success);
+            resetForm();
+            setOpen(false);
+            setIsConfirmDialogOpen(false);
+          })
+          .finally(() => setIsLoading(false));
       } else {
         createCustomer(data)
           .then((response) => {
@@ -154,7 +156,8 @@ export const CustomerForm = ({
           })
           .catch((error) => {
             setError(error.message);
-          }).finally(() => setIsLoading(false));
+          })
+          .finally(() => setIsLoading(false));
       }
     });
   };
@@ -281,7 +284,7 @@ export const CustomerForm = ({
                       {/* <TabsTrigger value="comments">Uwagi</TabsTrigger> */}
                     </TabsList>
 
-                    <TabsContent value="customer" className="w-full h-[550px]">
+                    <TabsContent value="customer" className="w-full">
                       <div className="text-xl mt-5">Dane postawowe</div>
                       <div className="flex flex-row  mt-5 mb-5 pb-4 border-b-2">
                         <div className="grid w-full mr-5 items-center gap-1.5">
@@ -925,7 +928,7 @@ export const CustomerForm = ({
                     <Button
                       type="submit"
                       variant="zaza"
-                      className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
+                      className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 mt-1 inline-flex"
                       size="sm"
                       onClick={() => console.log(form)}
                       disabled={isLoading}
@@ -1009,7 +1012,7 @@ export const CustomerForm = ({
         </DialogContent>
       </Dialog>
 
-      <Spinner isLoading={isLoading}/>
+      <Spinner isLoading={isLoading} />
     </>
   );
 };
