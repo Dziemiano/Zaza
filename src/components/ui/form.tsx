@@ -162,6 +162,21 @@ const FormMessage = React.forwardRef<
 })
 FormMessage.displayName = "FormMessage"
 
+const FormTabError = ({ fields }: { fields: string[] }) => {
+  const {
+    formState: { errors },
+  } = useFormContext();
+
+  const hasErrorInsideTab = (fields: string[]) =>
+    Object.keys(errors).some((e) => fields.includes(e));
+
+  return (
+    <span className="text-red-600 ml-1">
+      {hasErrorInsideTab(fields) ? "*" : ""}{" "}
+    </span>
+  );
+};
+
 export {
   useFormField,
   Form,
@@ -171,4 +186,5 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormTabError
 }

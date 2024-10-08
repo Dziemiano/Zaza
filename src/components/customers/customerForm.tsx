@@ -47,6 +47,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  FormTabError,
 } from "../ui/form";
 
 import * as z from "zod";
@@ -69,6 +70,37 @@ import { DeliveryFormElement } from "./deliveryFormElement";
 import { getCustomerFromGus } from "@/lib/regon";
 
 import Link from "next/link";
+
+const errorNames = {
+  customer: [
+    "name",
+    "nip",
+    "symbol",
+    "customer_type",
+    "documents_email",
+    "primary_email",
+    "phone_number",
+    "street",
+    "building",
+    "premises",
+    "city",
+    "postal_code",
+    "country",
+  ],
+  payment: ["payment_type"],
+  salesman: ["salesman_id"],
+  discount: ["max_discount", "credit_limit"],
+  invoice: [
+    "invoice_nip",
+    "invoice_name",
+    "invoice_street",
+    "invoice_building",
+    "invoice_premises",
+    "invoice_city",
+    "invoice_postal_code",
+    "invoice_country",
+  ],
+};
 
 export const CustomerForm = ({
   editMode,
@@ -264,23 +296,30 @@ export const CustomerForm = ({
                     <TabsList>
                       <TabsTrigger value="customer">
                         Dane kontaktowe
+                        <FormTabError fields={errorNames.customer} />
                       </TabsTrigger>
                       <TabsTrigger value="payment">
                         Rodzaj płatności
+                        <FormTabError fields={errorNames.payment} />
                       </TabsTrigger>
                       {/* <TabsTrigger value="contact_person">
                         Osoba kontaktowa
                       </TabsTrigger> */}
                       <TabsTrigger value="salesman">
                         Przypisany handlowiec
+                        <FormTabError fields={errorNames.salesman} />
                       </TabsTrigger>
                       <TabsTrigger value="discount">
                         Limity i rabaty
+                        <FormTabError fields={errorNames.discount} />
                       </TabsTrigger>
                       {/* <TabsTrigger value="delivery">
                         Filie i adresy dostaw
                       </TabsTrigger> */}
-                      <TabsTrigger value="invoice">Dane do faktury</TabsTrigger>
+                      <TabsTrigger value="invoice">
+                        Dane do faktury
+                        <FormTabError fields={errorNames.invoice} />
+                      </TabsTrigger>
                       {/* <TabsTrigger value="comments">Uwagi</TabsTrigger> */}
                     </TabsList>
 
@@ -288,7 +327,7 @@ export const CustomerForm = ({
                       <div className="text-xl mt-5">Dane postawowe</div>
                       <div className="flex flex-row  mt-5 mb-5 pb-4 border-b-2">
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Nazwa firmy*</Label>
+                          <Label>Nazwa firmy *</Label>
                           <FormField
                             control={form.control}
                             name="name"
@@ -307,7 +346,7 @@ export const CustomerForm = ({
                           />
                         </div>
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>NIP firmy*</Label>
+                          <Label>NIP firmy *</Label>
                           <FormField
                             control={form.control}
                             name="nip"
@@ -326,7 +365,7 @@ export const CustomerForm = ({
                           />
                         </div>
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Symbol*</Label>
+                          <Label>Symbol *</Label>
                           <FormField
                             control={form.control}
                             name="symbol"
@@ -345,7 +384,7 @@ export const CustomerForm = ({
                           />
                         </div>
                         <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                          <Label>Rodzaj klienta*</Label>
+                          <Label>Rodzaj klienta *</Label>
                           <FormField
                             control={form.control}
                             name="customer_type"

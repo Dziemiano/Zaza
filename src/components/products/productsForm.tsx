@@ -34,6 +34,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  FormTabError,
 } from "../ui/form";
 
 import * as z from "zod";
@@ -59,6 +60,34 @@ type ProductFormProps = {
   onProductCreated?: any;
   id?: string;
 };
+
+const errorNames = {
+  product: [
+    "name",
+    "category",
+    "sku",
+    "primary_unit",
+    "length",
+    "width",
+    "height",
+    "pack_quantity",
+    "actual_shape_volume",
+    "min_production_quantity",
+    "sales_volume",
+    "technological_volume",
+    "eps_type",
+    "weight",
+    "seasoning_time",
+    "manufacturer",
+    "ean",
+    "raw_material_type",
+    "raw_material_granulation",
+  ],
+  sales: ["price", "min_price", "vat", "price_tolerance"],
+  images: ["file"],
+  comments: ["comments"],
+};
+
 export const ProductForm = ({
   editMode,
   oneTime,
@@ -420,14 +449,22 @@ export const ProductForm = ({
               <div className="flex flex-col content-between h-[700px]">
                 <Tabs defaultValue="account" className="w-full h-full">
                   <TabsList>
-                    <TabsTrigger value="product">Produkt</TabsTrigger>
-                    <TabsTrigger value="sales">Sprzedaż</TabsTrigger>
+                    <TabsTrigger value="product">
+                      Produkt <FormTabError fields={errorNames.product} />
+                    </TabsTrigger>
+                    <TabsTrigger value="sales">
+                      Sprzedaż <FormTabError fields={errorNames.sales} />
+                    </TabsTrigger>
                     <TabsTrigger value="images">
                       Zdjęcia i dokumenty
+                      <FormTabError fields={errorNames.images} />
                     </TabsTrigger>
-                    <TabsTrigger value="visibility">Widocznośc</TabsTrigger>
+                    <TabsTrigger value="visibility">Widoczność</TabsTrigger>
                     <TabsTrigger value="recipes">Receptury</TabsTrigger>
-                    <TabsTrigger value="comments">Uwagi</TabsTrigger>
+                    <TabsTrigger value="comments">
+                      Uwagi
+                      <FormTabError fields={errorNames.comments} />
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="product" className="w-full">

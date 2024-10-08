@@ -49,6 +49,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  FormTabError,
 } from "../ui/form";
 
 import { Textarea } from "../ui/textarea";
@@ -87,6 +88,29 @@ export type OrderFormProps = {
   products: [];
   salesmen?: any[];
   copyMode?: boolean;
+};
+
+const orderErrorNames = {
+  customer: ["customer_id", "line_items", "nip"],
+  order: [
+    "status",
+    "foreign_id",
+    "wz_type",
+    "payment_deadline",
+    "proforma_payment_date",
+    "production_date",
+    "transport_cost",
+    "delivery_date",
+    "delivery_place_id",
+    "delivery_city",
+    "delivery_street",
+    "delivery_building",
+    "delivery_premises",
+    "delivery_zipcode",
+  ],
+  email: ["email_content"],
+  documents: ["file"],
+  comments: ["comments"],
 };
 
 export const OrderForm = ({
@@ -474,16 +498,27 @@ export const OrderForm = ({
               <div className="flex flex-col content-between h-[700px] flex-grow overflow-y-auto">
                 <Tabs defaultValue="account" className="w-full">
                   <TabsList>
-                    <TabsTrigger value="customer">Dane Klienta</TabsTrigger>
+                    <TabsTrigger value="customer">
+                      Dane Klienta
+                      <FormTabError fields={orderErrorNames.customer} />
+                    </TabsTrigger>
                     {/* <TabsTrigger value="products">Produkty</TabsTrigger> */}
                     <TabsTrigger value="order">
                       Szczegóły zamówienia
+                      <FormTabError fields={orderErrorNames.order} />
                     </TabsTrigger>
                     <TabsTrigger value="email">
                       Korespondencja z klientem
+                      <FormTabError fields={orderErrorNames.email} />
                     </TabsTrigger>
-                    <TabsTrigger value="documents">Dokumenty</TabsTrigger>
-                    <TabsTrigger value="comments">Uwagi</TabsTrigger>
+                    <TabsTrigger value="documents">
+                      Dokumenty
+                      <FormTabError fields={orderErrorNames.documents} />
+                    </TabsTrigger>
+                    <TabsTrigger value="comments">
+                      Uwagi
+                      <FormTabError fields={orderErrorNames.comments} />
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="customer" className="w-full v-5">
