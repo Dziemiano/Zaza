@@ -41,6 +41,14 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Category,
+  EpsTypes,
+  RawMaterials,
+  ShapeSubcategory,
+  StyrofeltSubcategory,
+  SlopeSubcategory,
+} from "@/types/product.types";
 
 import { useEffect, useState, useTransition } from "react";
 import { Input } from "../ui/input";
@@ -228,9 +236,13 @@ export const ProductForm = ({
     const height = form.getValues("height") || "";
 
     let firstThreeLetters;
-    if (["Kształtki", "Skos"].includes(category)) {
+    if (
+      ([Category.ShapedForms, Category.Slant] as string[]).includes(category)
+    ) {
       const subcategorySanitized =
-        subcategory === "Kątownik" ? "Katownik" : subcategory;
+        subcategory === ShapeSubcategory.AngleBracket
+          ? "Katownik"
+          : subcategory;
       firstThreeLetters = subcategorySanitized.slice(0, 3).toUpperCase();
     } else {
       firstThreeLetters = category.slice(0, 3).toUpperCase();
@@ -275,10 +287,10 @@ export const ProductForm = ({
     const dimensions = `${length}x${width}x${height}`;
 
     let skuEnding;
-    if (category === "Styropapa") {
-      if (subcategory === "Pojedyńczo") {
+    if (category === Category.Styrofoam) {
+      if (subcategory === StyrofeltSubcategory.OneSide) {
         skuEnding = "X1";
-      } else if (subcategory === "Podwójnie") {
+      } else if (subcategory === StyrofeltSubcategory.TwoSide) {
         skuEnding = "X2";
       } else {
         skuEnding = "XX";
@@ -315,71 +327,77 @@ export const ProductForm = ({
   ]);
 
   const category = [
-    { label: "Styropian", value: "styrofoam" },
-    { label: "Styropapa", value: "styrofelt" },
-    { label: "Surowiec", value: "raw material" },
-    { label: "Formatki", value: "sheets" },
-    { label: "Kształtki", value: "shaped forms" },
-    { label: "Transport", value: "transport" },
-    { label: "Granulat", value: "granulate" },
-    { label: "Wełna", value: "wool" },
-    { label: "Skos", value: "slant" },
-    { label: "Inne", value: "others" },
+    { label: Category.Styrofoam, value: "styrofoam" },
+    { label: Category.Styrofelt, value: "styrofelt" },
+    { label: Category.RawMaterial, value: "raw material" },
+    { label: Category.Sheets, value: "sheets" },
+    { label: Category.ShapedForms, value: "shaped forms" },
+    { label: Category.Transport, value: "transport" },
+    { label: Category.Granulate, value: "granulate" },
+    { label: Category.Wool, value: "wool" },
+    { label: Category.Slant, value: "slant" },
+    { label: Category.Others, value: "others" },
   ];
 
   const eps_types = [
-    { label: "EPS 045", value: "eps_045" },
-    { label: "EPS 045 S", value: "eps_045_s" },
-    { label: "EPS 042", value: "eps_042" },
-    { label: "EPS 042 S", value: "eps_042_s" },
-    { label: "EPS 040", value: "eps_040" },
-    { label: "EPS 040 S", value: "eps_040_s" },
-    { label: "EPS 070-038", value: "eps_070_038" },
-    { label: "EPS 070-038 S", value: "eps_070_038_s" },
-    { label: "EPS 080-038", value: "eps_080_038" },
-    { label: "EPS 080-038 S", value: "eps_080_038_s" },
-    { label: "EPS 100/17 S", value: "eps_100_017_s" },
-    { label: "EPS 100-037", value: "eps_100_037" },
-    { label: "EPS 100-035", value: "eps_100_035" },
-    { label: "EPS 120-035", value: "eps_120_035" },
-    { label: "EPS 150-035", value: "eps_150_035" },
-    { label: "EPS 200-034", value: "eps_200_034" },
-    { label: "EPS 100-035 AQUA", value: "eps_100_035_aqua" },
-    { label: "EPS 120-035 AQUA", value: "eps_120_035_aqua" },
-    { label: "EPS 150-035 AQUA", value: "eps_150_035_aqua" },
-    { label: "EPS 200-034 AQUA", value: "eps_200_034_aqua" },
-    { label: "EPS 031 GRAFIT", value: "eps_031_grafit" },
-    { label: "EPS 033 GRAFIT", value: "eps_033_grafit" },
-    { label: "EPS 100-030 GRAFIT", value: "eps_100_030_grafit" },
-    { label: "EPS T - Akustyczny", value: "eps_t_acustic" },
+    { label: EpsTypes.EPS045, value: "eps_045" },
+    { label: EpsTypes.EPS045S, value: "eps_045_s" },
+    { label: EpsTypes.EPS042, value: "eps_042" },
+    { label: EpsTypes.EPS042S, value: "eps_042_s" },
+    { label: EpsTypes.EPS040, value: "eps_040" },
+    { label: EpsTypes.EPS040S, value: "eps_040_s" },
+    { label: EpsTypes.EPS070038, value: "eps_070_038" },
+    { label: EpsTypes.EPS070038S, value: "eps_070_038_s" },
+    { label: EpsTypes.EPS080038, value: "eps_080_038" },
+    { label: EpsTypes.EPS080038S, value: "eps_080_038_s" },
+    { label: EpsTypes.EPS10017S, value: "eps_100_017_s" },
+    { label: EpsTypes.EPS100037, value: "eps_100_037" },
+    { label: EpsTypes.EPS100035, value: "eps_100_035" },
+    { label: EpsTypes.EPS120035, value: "eps_120_035" },
+    { label: EpsTypes.EPS150035, value: "eps_150_035" },
+    { label: EpsTypes.EPS200034, value: "eps_200_034" },
+    { label: EpsTypes.EPS100035AQUA, value: "eps_100_035_aqua" },
+    { label: EpsTypes.EPS120035AQUA, value: "eps_120_035_aqua" },
+    { label: EpsTypes.EPS150035AQUA, value: "eps_150_035_aqua" },
+    { label: EpsTypes.EPS200034AQUA, value: "eps_200_034_aqua" },
+    { label: EpsTypes.EPS031GRAFIT, value: "eps_031_grafit" },
+    { label: EpsTypes.EPS033GRAFIT, value: "eps_033_grafit" },
+    { label: EpsTypes.EPS100030GRAFIT, value: "eps_100_030_grafit" },
+    { label: EpsTypes.EPSTAcustic, value: "eps_t_acustic" },
   ];
 
   const raw_materials = [
-    { label: "Palny/niebudowlany", value: "flammable/non-construction" },
-    { label: "Niepalny/budowlany", value: "non-flammable/construction" },
-    { label: "Drobny", value: "fine" },
-    { label: "Gruby", value: "coarse" },
-    { label: "Spożywczy", value: "food-grade" },
-    { label: "Grafitowy", value: "graphite" },
+    {
+      label: RawMaterials.FlammableNonConstruction,
+      value: "flammable/non-construction",
+    },
+    {
+      label: RawMaterials.NonFlammableConstruction,
+      value: "non-flammable/construction",
+    },
+    { label: RawMaterials.Fine, value: "fine" },
+    { label: RawMaterials.Coarse, value: "coarse" },
+    { label: RawMaterials.FoodGrade, value: "food-grade" },
+    { label: RawMaterials.Graphite, value: "graphite" },
   ];
 
   const shape_subcategory = [
-    { label: "Kształtka", value: "shaped_form" },
-    { label: "Kątownik", value: "angle_bracket" },
-    { label: "Profil", value: "profile" },
-    { label: "Izoklin", value: "izoklin" },
-    { label: "Zatyczka", value: "plug" },
+    { label: ShapeSubcategory.ShapedForm, value: "shaped_form" },
+    { label: ShapeSubcategory.AngleBracket, value: "angle_bracket" },
+    { label: ShapeSubcategory.Profile, value: "profile" },
+    { label: ShapeSubcategory.Izoklin, value: "izoklin" },
+    { label: ShapeSubcategory.Plug, value: "plug" },
   ];
 
   const styrofelt_subcategory = [
-    { label: "Pojedyńczo", value: "one_side" },
-    { label: "Podwójnie", value: "two_side" },
+    { label: StyrofeltSubcategory.OneSide, value: "one_side" },
+    { label: StyrofeltSubcategory.TwoSide, value: "two_side" },
   ];
 
   const slope_subcategory = [
-    { label: "Skos", value: "slant" },
-    { label: "Spadek", value: "slope" },
-    { label: "Kontrspadek", value: "contraslope" },
+    { label: SlopeSubcategory.Slant, value: "slant" },
+    { label: SlopeSubcategory.Slope, value: "slope" },
+    { label: SlopeSubcategory.Contraslope, value: "contraslope" },
   ];
 
   return (
