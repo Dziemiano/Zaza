@@ -295,6 +295,7 @@ export const ProductForm = ({
     { label: "Granulat", value: "granulate" },
     { label: "Wełna", value: "wool" },
     { label: "Skos", value: "slant" },
+    { label: "Inthermo", value: "inthermo" },
     { label: "Inne", value: "others" },
   ];
 
