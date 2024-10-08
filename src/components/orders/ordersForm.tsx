@@ -77,6 +77,7 @@ import { ProductForm } from "../products/productsForm";
 import { FixedSizeList as List } from "react-window";
 import { CustomerForm } from "../customers/customerForm";
 import ProductSelectionForm from "./productSelectionForm";
+import { Status as StatusType } from "@/types/orders.types";
 
 export type OrderFormProps = {
   customers: any[];
@@ -356,27 +357,27 @@ export const OrderForm = ({
   };
 
   const statuses: Status[] = [
-    { label: "Złożone", value: "submitted" },
+    { label: StatusType.Submitted, value: "submitted" },
     {
-      label: "Oczekuje na zatwierdzenie przez BOK",
+      label: StatusType.Awaiting_approval_by_bok,
       value: "awaiting_approval_by_bok",
     },
-    { label: "Zatwierdzone przez BOK", value: "approved_by_bok" },
-    { label: "Oczekuje na płatność", value: "awaiting_payment" },
-    { label: "Płatność zatwierdzona", value: "payment_approved" },
-    { label: "W trakcie produkcji", value: "in_production" },
-    { label: "W trakcie kompletacji", value: "in_assembly" },
-    { label: "Gotowe do wysyłki", value: "ready_for_shipping" },
-    { label: "Wysłane", value: "shipped" },
-    { label: "Dostarczone", value: "delivered" },
-    { label: "Anulowane", value: "canceled" },
-    { label: "Zwrócone", value: "returned" },
-    { label: "Zamknięte", value: "closed" },
-    { label: "Oczekuje na odbiór", value: "awaiting_pickup" },
-    { label: "Odrzucone przez BOK", value: "rejected_by_bok" },
-    { label: "W trakcie weryfikacji", value: "under_verification" },
+    { label: StatusType.Approved_by_bok, value: "approved_by_bok" },
+    { label: StatusType.Awaiting_payment, value: "awaiting_payment" },
+    { label: StatusType.Payment_approved, value: "payment_approved" },
+    { label: StatusType.In_production, value: "in_production" },
+    { label: StatusType.In_assembly, value: "in_assembly" },
+    { label: StatusType.Ready_for_shipping, value: "ready_for_shipping" },
+    { label: StatusType.Shipped, value: "shipped" },
+    { label: StatusType.Delivered, value: "delivered" },
+    { label: StatusType.Canceled, value: "canceled" },
+    { label: StatusType.Returned, value: "returned" },
+    { label: StatusType.Closed, value: "closed" },
+    { label: StatusType.Awaiting_pickup, value: "awaiting_pickup" },
+    { label: StatusType.Rejected_by_bok, value: "rejected_by_bok" },
+    { label: StatusType.Under_verification, value: "under_verification" },
     {
-      label: "Oczekuje na dostępność surowców",
+      label: StatusType.Awaiting_raw_materials_availability,
       value: "awaiting_raw_materials_availability",
     },
   ];

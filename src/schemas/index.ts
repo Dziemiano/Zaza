@@ -1,3 +1,4 @@
+import { Status } from "@/types/orders.types";
 import { de } from "date-fns/locale";
 import * as z from "zod";
 
@@ -51,7 +52,9 @@ export const OrderSchema = z.object({
   id: z.string().optional(),
   foreign_id: z.string().min(4, "Numer obcy jest wymagany"),
   customer_id: z.string().optional(),
-  status: z.string(), // TODO: enum for statuses
+  status: z.nativeEnum(Status, {
+    errorMap: () => ({ message: "Wybierz status" }),
+  }),
   is_proforma: z.boolean().optional(),
   proforma_payment_date: z.date().optional().nullable(),
   wz_type: z.string().optional(),
