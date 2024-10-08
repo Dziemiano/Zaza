@@ -446,7 +446,7 @@ export const CustomerForm = ({
                       <div className="text-xl">Dane adresowe</div>
                       <div className="flex flex-row mt-5">
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Ulica*</Label>
+                          <Label>Ulica *</Label>
                           <FormField
                             control={form.control}
                             name="street"
@@ -465,7 +465,7 @@ export const CustomerForm = ({
                           />
                         </div>
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Nr budynku*</Label>
+                          <Label>Nr budynku *</Label>
                           <FormField
                             control={form.control}
                             name="building"
@@ -505,7 +505,7 @@ export const CustomerForm = ({
                       </div>
                       <div className="flex flex-row mt-5">
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Kod pocztowy*</Label>
+                          <Label>Kod pocztowy *</Label>
                           <FormField
                             control={form.control}
                             name="postal_code"
@@ -524,7 +524,7 @@ export const CustomerForm = ({
                           />
                         </div>
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Miejscowość*</Label>
+                          <Label>Miejscowość *</Label>
                           <FormField
                             control={form.control}
                             name="city"
@@ -543,10 +543,11 @@ export const CustomerForm = ({
                           />
                         </div>
                         <div className="grid w-full mr-5 items-center gap-1.5">
-                          <Label>Państwo*</Label>
+                          <Label>Państwo *</Label>
                           <FormField
                             control={form.control}
                             name="country"
+                            defaultValue="Polska"
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormControl>
@@ -758,6 +759,8 @@ export const CustomerForm = ({
                                   <Input
                                     className="w-full"
                                     disabled={isPending}
+                                    type="number"
+                                    step=".01"
                                     {...field}
                                   />
                                 </FormControl>
@@ -777,6 +780,8 @@ export const CustomerForm = ({
                                   <Input
                                     className="w-full"
                                     disabled={isPending}
+                                    type="number"
+                                    step=".01"
                                     {...field}
                                   />
                                 </FormControl>
@@ -936,6 +941,7 @@ export const CustomerForm = ({
                           <FormField
                             control={form.control}
                             name="invoice_country"
+                            defaultValue="Polska"
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormControl>

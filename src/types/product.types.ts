@@ -68,3 +68,11 @@ export enum RawMaterials {
   FoodGrade = "Spożywczy",
   Graphite = "Grafitowy",
 }
+
+export enum PrimaryUnit {
+  m2 = "m2",
+  m3 = "m3",
+  kg = "kg",
+  l = "l",
+  szt = "szt",
+}

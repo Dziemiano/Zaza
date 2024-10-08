@@ -566,7 +566,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row mt-5 mb-5 pb-4 border-b-2">
                       <SelectFormElement
-                        label="Kategoria produktu"
+                        label="Kategoria produktu *"
                         items={category}
                         form={form}
                         name="category"
@@ -596,7 +596,7 @@ export const ProductForm = ({
                         />
                       )}
                       <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                        <Label>Jednostka podstawowa</Label>
+                        <Label>Jednostka podstawowa *</Label>
                         <FormField
                           control={form.control}
                           name="primary_unit"
@@ -628,7 +628,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row mb-5 pb-4 border-b-2">
                       <div className="grid w-full mr-5 items-center gap-1.5 min-w-[300px]">
-                        <Label>Nazwa produktu</Label>
+                        <Label>Nazwa produktu *</Label>
                         <FormField
                           control={form.control}
                           name="name"
@@ -657,7 +657,7 @@ export const ProductForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={true}
                                   {...field}
                                 />
                               </FormControl>
@@ -670,7 +670,7 @@ export const ProductForm = ({
                     <div className="text-xl">Właściwości produktu</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Grubość</Label>
+                        <Label>Grubość *</Label>
                         <FormField
                           control={form.control}
                           name="height"
@@ -680,6 +680,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -689,7 +691,7 @@ export const ProductForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Szerokość</Label>
+                        <Label>Szerokość *</Label>
                         <FormField
                           control={form.control}
                           name="width"
@@ -699,6 +701,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -708,7 +712,7 @@ export const ProductForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Długość</Label>
+                        <Label>Długość *</Label>
                         <FormField
                           control={form.control}
                           name="length"
@@ -719,6 +723,8 @@ export const ProductForm = ({
                                   pattern="[0-9]+([,.][0-9]+)?"
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -728,7 +734,7 @@ export const ProductForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Ilość w paczce</Label>
+                        <Label>Ilość w paczce *</Label>
                         <FormField
                           control={form.control}
                           name="pack_quantity"
@@ -738,6 +744,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -757,6 +765,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -778,6 +788,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -797,6 +809,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -816,6 +830,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -831,7 +847,7 @@ export const ProductForm = ({
                         items={eps_types}
                       />
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Waga</Label>
+                        <Label>Waga (kg)</Label>
                         <FormField
                           control={form.control}
                           name="weight"
@@ -841,6 +857,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -852,7 +870,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Czas sezonowania</Label>
+                        <Label>Czas sezonowania (h)</Label>
                         <FormField
                           control={form.control}
                           name="seasoning_time"
@@ -862,6 +880,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1008,7 +1028,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row  mt-10 mb-5 pb-4 border-b-2">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Cena domyślna</Label>
+                        <Label>Cena domyślna *</Label>
                         <FormField
                           control={form.control}
                           name="price"
@@ -1018,6 +1038,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1037,6 +1059,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1056,6 +1080,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1074,6 +1100,8 @@ export const ProductForm = ({
                               <Input
                                 className="w-full"
                                 disabled={isPending}
+                                type="number"
+                                step=".01"
                                 {...field}
                               />
                               <FormMessage />
@@ -1103,9 +1131,6 @@ export const ProductForm = ({
                     variant="zaza"
                     className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex mt-2 mb-2"
                     size="sm"
-                    onClick={(e) => {
-                      e.preventDefault(), onSubmit(form.getValues());
-                    }}
                     disabled={isLoading}
                   >
                     {editMode ? "Zapisz" : "Utwórz"}
