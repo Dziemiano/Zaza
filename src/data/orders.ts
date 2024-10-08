@@ -10,6 +10,25 @@ export const getOrdersCount = async () => {
   }
 };
 
+export const getOrdersCountByMonth = async () => {
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  try {
+    const count = await db.order.count({
+      where: {
+        created_at: {
+          gte: firstDayOfMonth,
+          lte: lastDayOfMonth,
+        },
+      },
+    });
+    return count;
+  } catch (error) {
+    return null;
+  }
+};
 export const getAllOrders = async () => {
   try {
     const orders = await db.order.findMany({
