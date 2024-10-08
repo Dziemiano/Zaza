@@ -219,7 +219,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                 <div className="text-xl">Szczegóły dokumentu</div>
                 <div className="flex flex-row mt-5">
                   <div className="grid w-full mr-5 items-center gap-1.5">
-                    <Label>Status</Label>
+                    <Label>Status *</Label>
                     <FormField
                       control={form.control}
                       name="status"
@@ -267,7 +267,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                     />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>Data wystawienia</Label>
+                    <Label>Data wystawienia *</Label>
                     <FormField
                       control={form.control}
                       name="issue_date"
@@ -316,7 +316,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                     />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>Data wydania</Label>
+                    <Label>Data wydania *</Label>
                     <FormField
                       control={form.control}
                       name="out_date"
