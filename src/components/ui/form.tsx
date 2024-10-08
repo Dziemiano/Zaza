@@ -95,7 +95,7 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-destructive", className)}
+      className={cn(error && "text-destructive",  className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -149,18 +149,14 @@ const FormMessage = React.forwardRef<
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message) : children
 
-  if (!body) {
-    return null
-  }
-
   return (
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
+      className={cn("text-sm font-small text-destructive mt-1 h5  min-h-5 max-h-5", className)}
       {...props}
     >
-      {body}
+      {body || ' '}
     </p>
   )
 })
