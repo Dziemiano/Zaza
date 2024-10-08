@@ -43,6 +43,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
+import { Spinner } from "../ui/spinner";
 
 import * as z from "zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -70,6 +71,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
   const userId = useCurrentUser()?.id;
@@ -130,6 +132,8 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
   }, [formValues, order]);
 
   const onSubmit = (values: z.infer<typeof WzSchema>) => {
+    setIsLoading(true);
+
     const data = JSON.parse(JSON.stringify(values));
 
     const formLineItems = form.getValues("line_items");
@@ -169,15 +173,17 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
     };
 
     startTransition(() => {
-      createWz(wzData).then((response) => {
-        if (response.success) {
-          setSuccess(response.success);
-          setOpen(false);
-          resetForm();
-        } else {
-          setError("Failed to create WZ document");
-        }
-      });
+      createWz(wzData)
+        .then((response) => {
+          if (response.success) {
+            setSuccess(response.success);
+            setOpen(false);
+            resetForm();
+          } else {
+            setError("Failed to create WZ document");
+          }
+        })
+        .finally(() => setIsLoading(false));
     });
   };
 
@@ -551,6 +557,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                 variant="zaza"
                 className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                 size="sm"
+                disabled={isLoading}
               >
                 Utwórz
               </Button>
@@ -558,6 +565,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
           </form>
         </Form>
       </DialogContent>
+      <Spinner isLoading={isLoading} />
     </Dialog>
   );
 };
