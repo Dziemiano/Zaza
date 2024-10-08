@@ -35,9 +35,8 @@ export enum HelperUnit {
   t = "t",
 }
 
-export enum VatType {
-  V23 = "23",
-  V11 = "11.5",
-  V8 = "8",
-  V0 = "0",
+export enum PalletType {
+  Single = "Jednorazowa",
+  Euro = "EURO 1200x800",
+  Lemar = "LEMAR 1200x800",
 }

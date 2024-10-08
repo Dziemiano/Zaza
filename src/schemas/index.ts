@@ -1,5 +1,5 @@
 import { CustomerType, PaymentType } from "@/types/customer.types";
-import { Status, WZType, VatType, HelperUnit } from "@/types/orders.types";
+import { Status, WZType, HelperUnit, PalletType } from "@/types/orders.types";
 import {
   Category,
   EpsTypes,
@@ -71,11 +71,14 @@ export const LineItemSchema = z.object({
   quantity: nonNegNumberReq,
   quant_unit: z.string().optional().nullable(),
   helper_quantity: nonNegNumber,
-  help_quant_unit: z.nativeEnum(HelperUnit).optional().nullable(),
+  help_quant_unit: z
+    .union([z.string().length(0), z.nativeEnum(HelperUnit)])
+    .optional()
+    .nullable(),
   discount: z.string().optional().nullable(),
   netto_cost: nonNegNumber,
   brutto_cost: nonNegNumber,
-  vat_percentage: z.nativeEnum(VatType).optional().nullable(),
+  vat_percentage: z.string().optional().nullable(),
   vat_cost: z.string().optional().nullable(),
 });
 
@@ -347,8 +350,8 @@ export const ProductSchema = z.object({
     })
     .optional(),
   raw_material_granulation: z.string().nullable().optional(),
-  packaging_weight: z.string().nullable().optional(), //
-  packaging_type: z.string().nullable().optional(), //
+  packaging_weight: z.string().nullable().optional(),
+  packaging_type: z.string().nullable().optional(),
   price: nonNegNumberReq,
   auto_price_translate: z.boolean().optional().default(false),
   min_price: nonNegNumber,
@@ -375,7 +378,13 @@ export const ProductSchema = z.object({
 export const WzSchema = z.object({
   id: z.string().optional(),
   doc_number: z.string().optional(),
-  type: z.string(),
+  type: z
+    .nativeEnum(WZType, {
+      errorMap: () => ({ message: "Wybierz status" }),
+    })
+    .refine((val) => val !== undefined && val !== null, {
+      message: errors.required,
+    }),
   issue_date: z.date().optional(),
   unit_type: z.string().optional(),
   status: z.string().optional(),
@@ -385,8 +394,8 @@ export const WzSchema = z.object({
   driver: z.string().optional(),
   car: z.string().optional(),
   cargo_person: z.string().optional(),
-  pallet_type: z.string().optional(),
-  pallet_count: z.string().optional(),
+  pallet_type: z.nativeEnum(PalletType).optional().nullable(),
+  pallet_count: nonNegNumber,
   additional_info: z.string().optional(),
   created_by: z.string().optional(),
   line_items: z.array(LineItemSchema).optional(),

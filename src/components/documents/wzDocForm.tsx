@@ -261,6 +261,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                               </SelectGroup>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -507,6 +508,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                               </SelectGroup>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -522,6 +524,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                             <Input
                               className="w-full"
                               disabled={isPending}
+                              type="number"
                               {...field}
                             />
                           </FormControl>
