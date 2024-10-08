@@ -73,12 +73,12 @@ import { CommentSection } from "../reusable/commentsFormElement";
 import SelectFormElement from "../reusable/selectFormElement";
 import { checkNIP } from "@/actions/checkNIP";
 import Link from "next/link";
+import { Status as StatusType } from "@/types/orders.types";
 
 import { ProductForm } from "../products/productsForm";
 import { FixedSizeList as List } from "react-window";
 import { CustomerForm } from "../customers/customerForm";
 import ProductSelectionForm from "./productSelectionForm";
-import { Status as StatusType } from "@/types/orders.types";
 
 export type OrderFormProps = {
   customers: any[];
@@ -231,6 +231,7 @@ export const OrderForm = ({
       copyMode
     )
   );
+  const isPersonalCollect = form.watch("personal_collect");
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -376,7 +377,7 @@ export const OrderForm = ({
   };
 
   type Status = {
-    label: string;
+    label: StatusType;
     value: string;
   };
 
@@ -531,7 +532,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="nip"
                           render={({ field }) => (
-                            <FormItem className="flex flex-col mb-4">
+                            <FormItem className="flex flex-col mb-10">
                               <FormControl>
                                 <Input
                                   defaultValue={order?.customer.nip}
@@ -570,7 +571,7 @@ export const OrderForm = ({
                       </div>
                       <div className="flex flex-col w-5/12">
                         <div className="text-black text-[28px] font-medium">
-                          Klient
+                          Klient *
                         </div>
                         <FormField
                           control={form.control}
@@ -718,7 +719,7 @@ export const OrderForm = ({
                         />
                       )}
                       <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label>Typ WZ*</Label>
+                        <Label>Typ WZ</Label>
                         <FormField
                           control={form.control}
                           name="wz_type"
@@ -741,6 +742,7 @@ export const OrderForm = ({
                                   </SelectGroup>
                                 </SelectContent>
                               </Select>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
@@ -753,7 +755,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="is_paid"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
@@ -768,7 +770,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="is_proforma"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
@@ -783,7 +785,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="personal_collect"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={(value) => {
@@ -803,11 +805,11 @@ export const OrderForm = ({
                           control={form.control}
                           name="change_warehouse"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                disabled={!form.watch("personal_collect")}
+                                disabled={!isPersonalCollect}
                               />
                             </FormItem>
                           )}
@@ -823,10 +825,10 @@ export const OrderForm = ({
                               <Select
                                 disabled={
                                   !form.watch("change_warehouse") ||
-                                  !form.watch("personal_collect")
+                                  !isPersonalCollect
                                 }
                                 onValueChange={(value) => {
-                                  if (!form.watch("personal_collect")) {
+                                  if (!isPersonalCollect) {
                                     field.onChange("");
                                   } else {
                                     field.onChange(value);
@@ -1002,11 +1004,14 @@ export const OrderForm = ({
                           control={form.control}
                           name="transport_cost"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <FormControl>
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  defaultValue={"0"}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1064,7 +1069,7 @@ export const OrderForm = ({
                     <div className="text-xl mt-5">Dane do dostawy</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Ulica*</Label>
+                        <Label>Ulica</Label>
                         <FormField
                           control={form.control}
                           name="delivery_street"
@@ -1073,7 +1078,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1083,7 +1088,7 @@ export const OrderForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Nr budynku*</Label>
+                        <Label>Nr budynku</Label>
                         <FormField
                           control={form.control}
                           name="delivery_building"
@@ -1092,7 +1097,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1111,7 +1116,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1123,7 +1128,7 @@ export const OrderForm = ({
                     </div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Kod pocztowy*</Label>
+                        <Label>Kod pocztowy</Label>
                         <FormField
                           control={form.control}
                           name="delivery_zipcode"
@@ -1132,7 +1137,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1142,7 +1147,7 @@ export const OrderForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Miejscowość*</Label>
+                        <Label>Miejscowość</Label>
                         <FormField
                           control={form.control}
                           name="delivery_city"
@@ -1151,7 +1156,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1170,7 +1175,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>

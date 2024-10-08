@@ -1,5 +1,5 @@
 import { CustomerType, PaymentType } from "@/types/customer.types";
-import { Status } from "@/types/orders.types";
+import { Status, WZType, VatType, HelperUnit } from "@/types/orders.types";
 import {
   Category,
   EpsTypes,
@@ -68,48 +68,53 @@ export const LineItemSchema = z.object({
   order_id: z.string().optional().nullable(),
   product_id: z.string().optional().nullable(),
   product_name: z.string().optional().nullable(),
-  quantity: z
-    .string({
-      required_error: "Ilość jest wymagana",
-    })
-    .min(1, { message: "Ilość jest wymagana" })
-    .nullable(),
+  quantity: nonNegNumberReq,
   quant_unit: z.string().optional().nullable(),
-  helper_quantity: z.string().optional().nullable(),
-  help_quant_unit: z.string().optional().nullable(),
+  helper_quantity: nonNegNumber,
+  help_quant_unit: z.nativeEnum(HelperUnit).optional().nullable(),
   discount: z.string().optional().nullable(),
-  netto_cost: z.string().optional().nullable(),
-  brutto_cost: z.string().optional().nullable(),
-  vat_percentage: z.string().optional().nullable(),
+  netto_cost: nonNegNumber,
+  brutto_cost: nonNegNumber,
+  vat_percentage: z.nativeEnum(VatType).optional().nullable(),
   vat_cost: z.string().optional().nullable(),
 });
 
 export const OrderSchema = z.object({
   id: z.string().optional(),
-  foreign_id: z.string().min(4, "Numer obcy jest wymagany"),
-  customer_id: z.string().optional(),
+  foreign_id: z
+    .string({ required_error: errors.required })
+    .min(1, errors.required)
+    .min(4, errors.min(4)),
+  customer_id: z
+    .string({ required_error: errors.required })
+    .min(1, { message: errors.required }),
   status: z.nativeEnum(Status, {
     errorMap: () => ({ message: "Wybierz status" }),
   }),
   is_proforma: z.boolean().optional(),
   proforma_payment_date: z.date().optional().nullable(),
-  wz_type: z.string().optional(),
+  wz_type: z.nativeEnum(WZType).optional().nullable(),
   personal_collect: z.boolean().optional(),
-  delivery_date: z.date().optional(),
-  production_date: z.any().optional(),
-  payment_deadline: z.date().optional(),
-  delivery_place_id: z.any().optional(),
-  delivery_city: z.any().optional(),
-  delivery_street: z.any().optional(),
-  delivery_building: z.any().optional(),
-  delivery_premises: z.any().optional(),
-  delivery_zipcode: z.any().optional(),
-  delivery_contact_number: z.any().optional(),
+  production_date: z.date().optional(),
+  payment_deadline: z.date({ required_error: errors.required }),
+  delivery_date: z.date({ required_error: errors.required }),
+  delivery_place_id: z.string().optional(),
+  delivery_city: z.string().optional(),
+  delivery_street: z.string().optional(),
+  delivery_building: z.string().optional(),
+  delivery_premises: z.string().optional(),
+  delivery_zipcode: z.string().optional(),
+  delivery_contact_number: z
+    .string()
+    .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone),
   deliver_time: z.any().optional(),
-  delivery_contact: z.any().optional(),
+  delivery_contact: z
+    .string()
+    .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone)
+    .optional(),
   change_warehouse: z.any().optional(),
-  warehouse_to_transport: z.any().optional(),
-  transport_cost: z.any(),
+  warehouse_to_transport: z.string().optional(),
+  transport_cost: nonNegNumber,
   order_history: z.any().optional(),
   created_at: z.date().optional(),
   created_by: z.string().optional(),
@@ -117,10 +122,20 @@ export const OrderSchema = z.object({
   is_paid: z.boolean().optional(),
   email_content: z.string().optional().nullable(),
   document_path: z.any().optional(),
-  file: z.instanceof(File).optional(),
-  nip: z.string().optional(),
+  file: z.any().optional(),
+  nip: z
+    .string()
+    .refine((val) => !val || val.length === 10, "Numer powinien mieć 10 cyfr")
+    .refine(
+      (val) => !val || /^\d+$/.test(val),
+      "Numer powinien zawierać same cyfry"
+    )
+    .optional()
+    .nullable(),
   comments: z.any().optional(),
-  line_items: z.array(LineItemSchema).optional(),
+  line_items: z
+    .array(LineItemSchema)
+    .min(1, { message: "Wybierz przynajmniej jeden produkt" }),
   lineItems: z.array(LineItemSchema).optional(),
   user: z.any().optional(),
   customer: z.any().optional(),
@@ -177,7 +192,7 @@ export const CustomerSchema = z.object({
   nip: z
     .string({ required_error: errors.required })
     .min(1, errors.required)
-    .refine((val) => `${val}`.length === 10, "Numer powinien mieć 10 cyfr")
+    .refine((val) => val.length === 10, "Numer powinien mieć 10 cyfr")
     .refine((val) => /^\d+$/.test(val), "Numer powinien zawierać same cyfry")
     .nullable(),
   symbol: z
@@ -204,7 +219,7 @@ export const CustomerSchema = z.object({
     .nullable(),
   phone_number: z
     .string()
-    .refine((value) => phoneRegex.test(value ?? ""), errors.phone)
+    .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone)
     .optional()
     .nullable(),
   street: z

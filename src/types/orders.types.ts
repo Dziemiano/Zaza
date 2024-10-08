@@ -17,3 +17,27 @@ export enum Status {
   Under_verification = "W trakcie weryfikacji",
   Awaiting_raw_materials_availability = "Oczekuje na dostępność surowców",
 }
+
+export enum WZType {
+  WZS = "WZS",
+  WZU = "WZU",
+  WZN = "WZN",
+}
+
+export enum HelperUnit {
+  m3 = "m3",
+  m2 = "m2",
+  opak = "opak",
+  mb = "mb",
+  kpl = "kpl",
+  kg = "kg",
+  szt = "szt",
+  t = "t",
+}
+
+export enum VatType {
+  V23 = "23",
+  V11 = "11.5",
+  V8 = "8",
+  V0 = "0",
+}
