@@ -5,7 +5,7 @@ import fs from "fs/promises";
 
 import { OrderSchema } from "@/schemas";
 import { revalidatePath } from "next/cache";
-import { getOrdersCount } from "@/data/orders";
+import { getOrdersCount, getOrdersCountByMonth } from "@/data/orders";
 import { randomUUID } from "crypto";
 import { logEvent } from "@/actions/logs";
 
@@ -59,14 +59,18 @@ export const createOrder = async (
 
   const orderCount = await getOrdersCount();
 
+  const orderCountByMonth = await getOrdersCountByMonth();
+
+  console.log("month", orderCountByMonth);
+
   const id =
-    orderCount !== null
-      ? `${orderCount + 1}/${
+    orderCountByMonth !== null
+      ? `${orderCountByMonth + 1}/${
           new Date().getMonth() + 1
         }/${new Date().getFullYear()}`
       : "";
 
-  console.log(id);
+  console.log("id", id);
 
   const replaceCommasInObject = (obj: any): any => {
     if (Array.isArray(obj)) {
