@@ -64,8 +64,8 @@ export const createOrder = async (
   console.log("month", orderCountByMonth);
 
   const id =
-    orderCountByMonth !== null
-      ? `${orderCountByMonth + 1}/${
+    orderCount !== null
+      ? `${orderCount + 1}/${
           new Date().getMonth() + 1
         }/${new Date().getFullYear()}`
       : "";
