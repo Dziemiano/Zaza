@@ -49,6 +49,7 @@ import {
   StyrofeltSubcategory,
   SlopeSubcategory,
 } from "@/types/product.types";
+import { parseNumbersForSubmit } from "@/lib/utils";
 
 import { useEffect, useState, useTransition } from "react";
 import { Input } from "../ui/input";
@@ -95,6 +96,24 @@ const errorNames = {
   images: ["file"],
   comments: ["comments"],
 };
+
+const valuesToParseForSubmit = [
+  "height",
+  "length",
+  "width",
+  "height",
+  "pack_quantity",
+  "actual_shape_volume",
+  "min_production_quantity",
+  "sales_volume",
+  "technological_volume",
+  "weight",
+  "seasoning_time",
+  "price",
+  "min_price",
+  "vat",
+  "price_tolerance",
+];
 
 export const ProductForm = ({
   editMode,
@@ -192,7 +211,10 @@ export const ProductForm = ({
       formData.append("file", values.file);
     }
 
-    const data = JSON.parse(JSON.stringify(values));
+    const data = parseNumbersForSubmit(
+      valuesToParseForSubmit,
+      JSON.parse(JSON.stringify(values))
+    );
 
     startTransition(() => {
       if (product && product.id) {

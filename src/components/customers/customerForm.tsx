@@ -2,7 +2,7 @@
 
 import { Button } from "../ui/button";
 
-import { cn } from "@/lib/utils";
+import { cn, parseNumbersForSubmit } from "@/lib/utils";
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
@@ -102,6 +102,8 @@ const errorNames = {
   ],
 };
 
+const valuesToParseForSubmit = ["credit_limit", "max_discount"];
+
 export const CustomerForm = ({
   editMode,
   userId,
@@ -159,7 +161,11 @@ export const CustomerForm = ({
   const onSubmit = (values: z.infer<typeof CustomerSchema>) => {
     setIsLoading(true);
 
-    const data = JSON.parse(JSON.stringify(values));
+    const data = parseNumbersForSubmit(
+      valuesToParseForSubmit,
+      JSON.parse(JSON.stringify(values))
+    );
+
     setError("");
     setSuccess("");
     console.log(form);
