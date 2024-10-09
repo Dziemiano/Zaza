@@ -24,7 +24,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type CommentCategory = "general" | "transport" | "warehouse";
+enum CommentTypes {
+  general = "Ogólne",
+  transport = "Dla transportu",
+  warehouse = "Dla magazynu",
+  production = "Dla produkcji",
+}
+
+type CommentCategory = keyof typeof CommentTypes;
 
 type Comment = {
   id: string;
@@ -41,9 +48,24 @@ type CommentSectionProps = {
 };
 
 const predefinedComments: Record<CommentCategory, string[]> = {
-  general: ["Uwaga zawiera styropian", "Pocieranie niewskazane"],
-  transport: ["Ostrożnie przy transporcie"],
-  warehouse: ["Uwaga, delikatna zawartość"],
+  general: [
+    "Uwaga zawiera styropian",
+    "Pocieranie niewskazane",
+    "Gotówka do odbioru",
+  ],
+  transport: [
+    "Ostrożnie przy transporcie",
+    "Towar na solówce",
+    "Dzwonić godzinę przed dostawą",
+  ],
+  warehouse: ["Uwaga, delikatna zawartość", "Bez palet"],
+  production: [
+    "Bez etykiet",
+    "Balotować",
+    "Zapakować w białą folię",
+    "Zapakować w zieloną folię + etykieta",
+    "Bez Palet",
+  ],
 };
 
 export const CommentSection = ({
@@ -75,6 +97,7 @@ export const CommentSection = ({
       general: [],
       transport: [],
       warehouse: [],
+      production: [],
     };
     watchedComments.forEach((comment: Comment) => {
       if (grouped[comment.type]) {
@@ -168,18 +191,14 @@ export const CommentSection = ({
             setOpenAccordionItems(value as CommentCategory[])
           }
         >
-          <AccordionItem value="general">
-            <AccordionTrigger>Uwagi ogólne</AccordionTrigger>
-            <AccordionContent>{renderComments("general")}</AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="transport">
-            <AccordionTrigger>Uwagi dla transportu</AccordionTrigger>
-            <AccordionContent>{renderComments("transport")}</AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="warehouse">
-            <AccordionTrigger>Uwagi dla magazynu</AccordionTrigger>
-            <AccordionContent>{renderComments("warehouse")}</AccordionContent>
-          </AccordionItem>
+          {Object.entries(CommentTypes).map(([key, val]) => (
+            <AccordionItem value={key}>
+              <AccordionTrigger>{val}</AccordionTrigger>
+              <AccordionContent>
+                {renderComments(key as CommentCategory)}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
         </Accordion>
 
         {!viewOnly && (
@@ -194,9 +213,9 @@ export const CommentSection = ({
                 <SelectValue placeholder="Wybierz kategorię" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="general">Ogólne</SelectItem>
-                <SelectItem value="transport">Dla transportu</SelectItem>
-                <SelectItem value="warehouse">Dla magazynu</SelectItem>
+                {Object.entries(CommentTypes).map(([key, val]) => (
+                  <SelectItem value={key}>{val}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
