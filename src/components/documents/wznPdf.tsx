@@ -98,12 +98,21 @@ const formatDate = (dateString: string): string => {
 };
 
 const calculateTotalM3 = (lineItems) => {
-  return lineItems
-    .reduce((total, item) => {
-      const quantity = parseFloat(item.quantity) || 0;
-      return total + quantity;
-    }, 0)
-    .toFixed(4);
+  console.log("Calculating total m3");
+  let total = 0;
+
+  lineItems.forEach((item, index) => {
+    if (item.quant_unit === "m3") {
+      const quantity = parseFloat(item.quantity);
+      if (isNaN(quantity)) {
+        console.warn(`Invalid quantity for item ${index + 1}:`, item.quantity);
+      } else {
+        total += quantity;
+      }
+    }
+  });
+  const roundedTotal = parseFloat(total.toFixed(4));
+  return roundedTotal;
 };
 
 const date = new Date().toLocaleDateString("pl-PL");
