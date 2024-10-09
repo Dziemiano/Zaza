@@ -19,6 +19,7 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 
 import { FormError } from "./formError";
 import { FormSuccess } from "./formSuccess";
@@ -32,6 +33,7 @@ export const NewPasswordForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),
@@ -41,14 +43,17 @@ export const NewPasswordForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
+    setIsLoading(true);
     setError("");
     setSuccess("");
 
     startTransition(() => {
-      newPassword(values, token).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-      });
+      newPassword(values, token)
+        .then((data) => {
+          setError(data?.error);
+          setSuccess(data?.success);
+        })
+        .finally(() => setIsLoading(false));
     });
   };
   return (
@@ -84,9 +89,12 @@ export const NewPasswordForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button type="submit">Reset password</Button>
+          <Button type="submit" disabled={isLoading}>
+            Reset password
+          </Button>
         </form>
       </Form>
+      <Spinner isLoading={isLoading} />
     </CardWrapper>
   );
 };

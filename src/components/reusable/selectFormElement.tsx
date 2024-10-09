@@ -40,7 +40,7 @@ const SelectFormElement = ({
         control={form.control}
         name={name}
         render={({ field }) => (
-          <FormItem className="flex flex-row">
+          <FormItem className="flex flex-col">
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger className="w-full">

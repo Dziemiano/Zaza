@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,3 +50,22 @@ export const formatNumber = (
 
   return decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
 };
+
+
+/*
+ *  Created to match schema.prisma types
+ */
+
+export function parseNumbersForSubmit<T extends z.ZodTypeAny>(
+  values: string[],
+  data: z.infer<T>
+) {
+  const parsedData = data;
+  values.forEach((key: string) => {
+    if (typeof parsedData[key] === "number") {
+      parsedData[key] = parsedData[key].toString();
+    }
+  });
+  return parsedData;
+}
+
