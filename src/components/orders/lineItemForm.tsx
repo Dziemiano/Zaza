@@ -32,7 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { z } from "zod";
 import { FixedSizeList as List } from "react-window";
 
@@ -245,19 +245,24 @@ export function LineItemFormElement({
                   <Input
                     value={`${index + 1} | ${
                       formField.value.product_name
-                    } | Ilość: ${formField.value.quantity} ${
+                    } | Ilość: ${formatNumber(formField.value.quantity)} ${
                       formField.value.quant_unit
                     } | Ilość pomocnicza: ${
-                      formField.value.helper_quantity || "nie dotyczy"
-                    } ${formField.value.help_quant_unit || ""} | Rabat: ${
+                      formatNumber(formField.value.helper_quantity) ||
+                      "nie dotyczy"
+                    } ${
+                      formField.value.help_quant_unit || ""
+                    } | Rabat: ${formatNumber(
                       formField.value.discount
-                    } | Cenna netto: ${
+                    )} | Cenna netto: ${formatNumber(
                       formField.value.netto_cost
-                    } | Cena brutto: ${
+                    )} | Cena brutto: ${formatNumber(
                       formField.value.brutto_cost
-                    } | Stawka VAT: ${
+                    )} | Stawka VAT: ${formatNumber(
                       formField.value.vat_percentage
-                    }% | Wartość VAT: ${formField.value.vat_cost}`}
+                    )}% | Wartość VAT: ${formatNumber(
+                      formField.value.vat_cost
+                    )}`}
                     readOnly
                   />
                 )}

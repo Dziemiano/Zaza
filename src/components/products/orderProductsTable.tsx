@@ -144,7 +144,7 @@ export const columns: ColumnDef<unknown, any>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="lowercase">{row.getValue("quantity")}</div>
+      <div className="lowercase">{formatNumber(row.getValue("quantity"))}</div>
     ),
   },
   {
@@ -156,7 +156,7 @@ export const columns: ColumnDef<unknown, any>[] = [
     accessorKey: "volume",
     header: "Objętość",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("volume")}</div>
+      <div className="capitalize">{formatNumber(row.getValue("volume"))}</div>
     ),
   },
   {

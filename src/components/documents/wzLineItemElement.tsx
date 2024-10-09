@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatNumber } from "@/lib/utils";
 
 const quantityUnits = [
   { value: "m3", label: "m3" },
@@ -127,7 +128,7 @@ export const WzLineItemsComponent = ({ lineItems }) => {
                   />
                 </TableCell>
                 <TableCell>{item.product_name}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{formatNumber(item.quantity)}</TableCell>
                 <TableCell>{item.quant_unit}</TableCell>
                 <TableCell>
                   <Input
