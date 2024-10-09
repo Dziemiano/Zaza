@@ -23,21 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-enum CommentTypes {
-  general = "Ogólne",
-  transport = "Dla transportu",
-  warehouse = "Dla magazynu",
-  production = "Dla produkcji",
-}
-
-type CommentCategory = keyof typeof CommentTypes;
-
-type Comment = {
-  id: string;
-  type: CommentCategory;
-  body: string;
-};
+import { CommentCategory, CommentTypes, Comment } from "@/types/orders.types";
 
 type CommentSectionProps = {
   control?: Control<any>;
