@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 export const formatNumber = (
   number: number | string | null | undefined,
   isPrice = false
-) => {
+): string => {
   if (
     number === null ||
     number === "null" ||
@@ -51,6 +51,7 @@ export const formatNumber = (
   return decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
 };
 
+
 /*
  *  Created to match schema.prisma types
  */
@@ -67,3 +68,4 @@ export function parseNumbersForSubmit<T extends z.ZodTypeAny>(
   });
   return parsedData;
 }
+

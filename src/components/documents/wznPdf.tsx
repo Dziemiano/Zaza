@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/utils";
 import {
   Page,
   Text,
@@ -178,7 +179,9 @@ const renderTable = (unitType, lineItems) => {
               <Text style={styles.tableCell}>{item.product_name}</Text>
             </View>
             <View style={[styles.tableCol, { width: "33%" }]}>
-              <Text style={styles.tableCell}>{item.helper_quantity}</Text>
+              <Text style={styles.tableCell}>
+                {formatNumber(item.helper_quantity)}
+              </Text>
             </View>
             <View style={[styles.tableCol, { width: "14%" }]}>
               <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
@@ -219,13 +222,17 @@ const renderTable = (unitType, lineItems) => {
               <Text style={styles.tableCell}>{item.product_name}</Text>
             </View>
             <View style={[styles.tableCol, { width: "17%" }]}>
-              <Text style={styles.tableCell}>{item.quantity}</Text>
+              <Text style={styles.tableCell}>
+                {formatNumber(item.quantity)}
+              </Text>
             </View>
             <View style={[styles.tableCol, { width: "7%" }]}>
               <Text style={styles.tableCell}>{item.quant_unit}</Text>
             </View>
             <View style={[styles.tableCol, { width: "17%" }]}>
-              <Text style={styles.tableCell}>{item.helper_quantity}</Text>
+              <Text style={styles.tableCell}>
+                {formatNumber(item.helper_quantity)}
+              </Text>
             </View>
             <View style={[styles.tableCol, { width: "6%" }]}>
               <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
@@ -237,7 +244,7 @@ const renderTable = (unitType, lineItems) => {
             <Text style={styles.tableCell}>Suma m³</Text>
           </View>
           <View style={[styles.tableCol, { width: "47%" }]}>
-            <Text style={styles.tableCell}>{totalM3}</Text>
+            <Text style={styles.tableCell}>{formatNumber(totalM3)}</Text>
           </View>
         </View>
       </View>
