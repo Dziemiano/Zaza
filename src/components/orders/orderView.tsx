@@ -57,6 +57,7 @@ interface OrderType {
     general: string[];
     transport: string[];
     warehouse: string[];
+    production: string[];
   };
 }
 

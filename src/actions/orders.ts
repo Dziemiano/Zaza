@@ -9,8 +9,6 @@ import { getOrdersCount, getOrdersCountByMonth } from "@/data/orders";
 import { randomUUID } from "crypto";
 import { logEvent } from "@/actions/logs";
 
-type CommentCategory = "general" | "transport" | "warehouse";
-
 export const createOrder = async (
   data: {
     transport_cost: string;
