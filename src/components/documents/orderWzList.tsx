@@ -75,7 +75,6 @@ export const OrderWzList = ({ order }: OrderWzListProps) => {
                   <TableCell>
                     {item.type}
                     {item.doc_number}
-                    {index}
                   </TableCell>
                   <TableCell>
                     <WzCheckPdf wzData={order} index={index} />
