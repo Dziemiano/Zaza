@@ -225,6 +225,11 @@ export const columns: ColumnDef<unknown, any>[] = [
     cell: ({ row }) => <div>{row.getValue("status")}</div>,
   },
   {
+    accessorKey: "created_at",
+    header: "Data utworzenia",
+    cell: ({ row }) => <div>{formatDate(row.getValue("created_at"))}</div>,
+  },
+  {
     accessorKey: "is_proforma",
     header: "Proforma",
     cell: ({ row }) => (
