@@ -23,13 +23,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CommentCategory, CommentTypes, Comment } from "@/types/orders.types";
+import {
+  CommentOrderTypes,
+  CommentOrderCategory,
+  CommentProductCategory,
+  CommentProductTypes,
+  Comment,
+  CommentCategory,
+} from "@/types/orders.types";
 
 type CommentSectionProps = {
   name: string;
+  isProduct?: boolean;
 };
 
-const predefinedComments: Record<CommentCategory, string[]> = {
+const predefinedOrderComments: Record<CommentOrderCategory, string[]> = {
   general: [
     "Uwaga zawiera styropian",
     "Pocieranie niewskazane",
@@ -50,7 +58,11 @@ const predefinedComments: Record<CommentCategory, string[]> = {
   ],
 };
 
-export const CommentSection = ({ name }: CommentSectionProps) => {
+const predefinedProductComments: Record<CommentProductCategory, string[]> = {
+  general: [],
+};
+
+export const CommentSection = ({ name, isProduct }: CommentSectionProps) => {
   const [commentBody, setCommentBody] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<CommentCategory>("general");
@@ -60,17 +72,26 @@ export const CommentSection = ({ name }: CommentSectionProps) => {
     CommentCategory[]
   >([]);
 
+  const commentSuggestions:
+    | Record<CommentOrderCategory, string[]>
+    | Record<CommentProductCategory, string[]> = useMemo(() => {
+    return isProduct ? predefinedProductComments : predefinedOrderComments;
+  }, [isProduct]);
+
+  const categories = useMemo(() => {
+    return Object.entries(isProduct ? CommentProductTypes : CommentOrderTypes);
+  }, [isProduct]);
+
   const { control, setValue, watch } = useFormContext();
 
-  const watchedComments = watch(name, []);
+  const watchedComments: Comment[] = watch(name, []);
 
   const groupedComments = useMemo(() => {
-    const grouped: Record<CommentCategory, Comment[]> = {
-      general: [],
-      transport: [],
-      warehouse: [],
-      production: [],
-    };
+    const grouped = {} as Record<CommentCategory, Comment[]>;
+
+    Object.keys(commentSuggestions).forEach((key: string) => {
+      grouped[key as CommentCategory] = [];
+    });
     watchedComments.forEach((comment: Comment) => {
       if (grouped[comment.type]) {
         grouped[comment.type].push(comment);
@@ -109,7 +130,7 @@ export const CommentSection = ({ name }: CommentSectionProps) => {
 
   const renderComments = (category: CommentCategory) => (
     <div className="space-y-2">
-      {groupedComments[category].map((comment) => (
+      {groupedComments[category]?.map((comment) => (
         <div key={comment.id} className="flex items-center space-x-2">
           <FormField
             control={control}
@@ -151,7 +172,7 @@ export const CommentSection = ({ name }: CommentSectionProps) => {
           }
           className="basis-2/5"
         >
-          {Object.entries(CommentTypes).map(([key, val]) => (
+          {categories.map(([key, val]) => (
             <AccordionItem value={key}>
               <AccordionTrigger>{val}</AccordionTrigger>
               <AccordionContent>
@@ -174,7 +195,7 @@ export const CommentSection = ({ name }: CommentSectionProps) => {
                 <SelectValue placeholder="Wybierz kategorię" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(CommentTypes).map(([key, val]) => (
+                {categories.map(([key, val]) => (
                   <SelectItem value={key}>{val}</SelectItem>
                 ))}
               </SelectContent>
@@ -187,7 +208,8 @@ export const CommentSection = ({ name }: CommentSectionProps) => {
                 <SelectValue placeholder="Wybierz predefiniowaną uwagę" />
               </SelectTrigger>
               <SelectContent>
-                {predefinedComments[selectedCategory].map((comment, index) => (
+                {/* @ts-ignore */}
+                {commentSuggestions[selectedCategory].map((comment, index) => (
                   <SelectItem
                     key={`${selectedCategory}-${index}`}
                     value={comment}
