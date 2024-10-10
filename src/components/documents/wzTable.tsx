@@ -49,6 +49,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { WzCheckPdf } from "./wznCheckPdf";
+import { formatNumber } from "@/lib/utils";
 
 type LineItem = {
   id: string;
@@ -100,20 +101,22 @@ const LineItemsTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => {
           <TableRow key={item.id}>
             <TableCell>{item.product_name}</TableCell>
             <TableCell>
-              {parseFloat(item.quantity).toFixed(4)} {item.quant_unit}
+              {formatNumber(item.quantity)} {item.quant_unit}
             </TableCell>
             <TableCell>
               {isNaN(parseFloat(item.helper_quantity))
                 ? "NaN"
-                : parseFloat(item.helper_quantity).toFixed(4)}
+                : formatNumber(item.helper_quantity)}
               {item.help_quant_unit}
             </TableCell>
-            <TableCell>{parseFloat(item.netto_cost).toFixed(2)}</TableCell>
+            <TableCell>{formatNumber(item.netto_cost)}</TableCell>
             <TableCell>
-              {(item.quantity * parseFloat(item.netto_cost)).toFixed(2)}
+              {formatNumber(item.quantity * parseFloat(item.netto_cost))}
             </TableCell>
-            <TableCell>{item.brutto_cost}</TableCell>
-            <TableCell>{item.quantity * item.brutto_cost}</TableCell>
+            <TableCell>{formatNumber(item.brutto_cost)}</TableCell>
+            <TableCell>
+              {formatNumber(item.quantity * item.brutto_cost)}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

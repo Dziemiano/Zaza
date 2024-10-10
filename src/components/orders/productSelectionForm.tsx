@@ -38,7 +38,12 @@ export default function ProductSelectionForm({
   products,
   lineItems = [],
 }) {
-  const { control, setValue, getValues } = useFormContext();
+  const {
+    control,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useFormContext();
   const { fields, append, remove, replace, update } = useFieldArray({
     control,
     name,
@@ -200,6 +205,11 @@ export default function ProductSelectionForm({
   return (
     <Card className="w-full">
       <CardContent className="p-6">
+        {errors.line_items?.message && (
+          <p className="text-sm font-small text-destructive mt-1 h5  min-h-5 max-h-5">
+            {errors.line_items.message as string}
+          </p>
+        )}
         <div className="mb-4 flex justify-between items-center">
           <ProductSelectionDialog
             products={products}
@@ -265,6 +275,9 @@ export default function ProductSelectionForm({
                           handleInputChange(index, "quantity", e.target.value)
                         }
                         className="w-20"
+                        type="number"
+                        step=".01"
+                        min="0"
                       />
                     </TableCell>
                     <TableCell>
@@ -281,6 +294,9 @@ export default function ProductSelectionForm({
                           )
                         }
                         className="w-20"
+                        type="number"
+                        step=".01"
+                        min="0"
                       />
                     </TableCell>
                     <TableCell>
@@ -293,6 +309,9 @@ export default function ProductSelectionForm({
                           handleInputChange(index, "netto_cost", e.target.value)
                         }
                         className="w-24"
+                        type="number"
+                        step=".01"
+                        min="0"
                       />
                     </TableCell>
                     <TableCell>
@@ -302,6 +321,9 @@ export default function ProductSelectionForm({
                           handleInputChange(index, "discount", e.target.value)
                         }
                         className="w-24"
+                        type="number"
+                        step=".01"
+                        min="0"
                       />
                     </TableCell>
                     <TableCell>{formatNumber(nettoValue, true)} zł</TableCell>

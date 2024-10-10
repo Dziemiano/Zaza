@@ -8,13 +8,14 @@ import { revalidatePath } from "next/cache";
 import { getOrdersCount, getOrdersCountByMonth } from "@/data/orders";
 import { randomUUID } from "crypto";
 import { logEvent } from "@/actions/logs";
+import { Status } from "@/types/orders.types";
 
 export const createOrder = async (
   data: {
     transport_cost: string;
     foreign_id: any;
     customer_id: any;
-    status: any;
+    status: Status;
     is_proforma: any;
     proforma_payment_date: any;
     wz_type: any;
@@ -46,8 +47,6 @@ export const createOrder = async (
   const file = result.data?.file as File;
 
   let filePath = "";
-
-  console.log(data);
 
   if (file) {
     await fs.mkdir("/tmp/documents", { recursive: true });
