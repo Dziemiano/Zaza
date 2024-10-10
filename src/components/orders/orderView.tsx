@@ -18,10 +18,11 @@ import { WzDocForm } from "../documents/wzDocForm";
 import Link from "next/link";
 import { OrderCheckPdf } from "../documents/orderCheckPdf";
 import { EmailContentForm } from "./emailContentForm";
-import { CommentSection } from "../reusable/commentsFormElement";
+import { CommentSectionView } from "../reusable/commentsViewElement";
 import { LogDialog } from "../reusable/logsDialog";
 import OrderCompletionElement from "./orderCompletionElement";
 import { OrderWzList } from "../documents/orderWzList";
+import { Comment } from "@/types/orders.types";
 
 interface OrderType {
   id: string;
@@ -53,12 +54,7 @@ interface OrderType {
     firstname: string;
     lastname: string;
   };
-  comments: {
-    general: string[];
-    transport: string[];
-    warehouse: string[];
-    production: string[];
-  };
+  comments: Comment[];
 }
 
 export interface OrderViewProps {
@@ -316,11 +312,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
             </TabsContent>
 
             <TabsContent value="comments">
-              <CommentSection
-                name="comments"
-                comments={order?.comments}
-                viewOnly={true}
-              />
+              <CommentSectionView comments={order?.comments} />
             </TabsContent>
           </Tabs>
           <DialogFooter className="max-h-fit mt-auto">

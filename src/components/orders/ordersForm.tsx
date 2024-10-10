@@ -1206,11 +1206,7 @@ export const OrderForm = ({
 
                   <TabsContent value="comments" className="p-5">
                     <div className="flex flex-row mt-10">
-                      <CommentSection
-                        control={form.control}
-                        setValue={form.setValue}
-                        name="comments"
-                      />
+                      <CommentSection name="comments" />
                     </div>
                   </TabsContent>
                 </Tabs>
