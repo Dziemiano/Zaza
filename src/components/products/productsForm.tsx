@@ -1035,7 +1035,7 @@ export const ProductForm = ({
 
                   <TabsContent value="comments">
                     <div className="flex flex-row mt-10">
-                      <CommentSection name="comments" />
+                      <CommentSection name="comments" isProduct={true} />
                     </div>
                   </TabsContent>
                 </Tabs>

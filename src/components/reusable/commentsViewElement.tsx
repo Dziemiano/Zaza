@@ -7,24 +7,36 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CommentCategory, CommentTypes, Comment } from "@/types/orders.types";
+import {
+  CommentOrderTypes,
+  CommentProductTypes,
+  Comment,
+  CommentCategory,
+} from "@/types/orders.types";
 
 type CommentSectionProps = {
   comments?: Comment[];
+  isProduct?: boolean;
 };
 
-export const CommentSectionView = ({ comments = [] }: CommentSectionProps) => {
+export const CommentSectionView = ({
+  comments = [],
+  isProduct,
+}: CommentSectionProps) => {
   const [openAccordionItems, setOpenAccordionItems] = useState<
     CommentCategory[]
   >([]);
 
+  const categories = useMemo(() => {
+    return Object.entries(isProduct ? CommentProductTypes : CommentOrderTypes);
+  }, [isProduct]);
+
   const groupedComments = useMemo(() => {
-    const grouped: Record<CommentCategory, Comment[]> = {
-      general: [],
-      transport: [],
-      warehouse: [],
-      production: [],
-    };
+    const grouped = {} as Record<CommentCategory, Comment[]>;
+
+    comments.forEach((comment: Comment) => {
+      grouped[comment.type] = [];
+    });
     comments.forEach((comment: Comment) => {
       if (grouped[comment.type]) {
         grouped[comment.type].push(comment);
@@ -35,7 +47,7 @@ export const CommentSectionView = ({ comments = [] }: CommentSectionProps) => {
 
   const renderComments = (category: CommentCategory) => (
     <div className="space-y-2">
-      {groupedComments[category].map((comment) => (
+      {groupedComments[category]?.map((comment) => (
         <div key={comment.id} className="flex items-center space-x-2">
           <span>{comment.body}</span>
         </div>
@@ -53,7 +65,7 @@ export const CommentSectionView = ({ comments = [] }: CommentSectionProps) => {
             setOpenAccordionItems(value as CommentCategory[])
           }
         >
-          {Object.entries(CommentTypes).map(([key, val]) => (
+          {categories.map(([key, val]) => (
             <AccordionItem value={key}>
               <AccordionTrigger>{val}</AccordionTrigger>
               <AccordionContent>
