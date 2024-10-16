@@ -199,7 +199,7 @@ model LineItem {
   is_used         Boolean?
   order           Order    @relation(fields: [order_id], references: [id], onDelete: NoAction)
   product         Product  @relation(fields: [product_id], references: [id], onDelete: NoAction)
-  wz              Wz?      @relation(fields: [wz_id], references: [id], onDelete: NoAction)
+  wz              Wz?      @relation(fields: [wz_id], references: [id], onDelete: SetNull)
 
   @@unique([id, order_id])
   @@index([order_id], map: "LineItem_order_id_fkey")
