@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Control, UseFormSetValue, useWatch } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -14,7 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -23,37 +23,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type CommentCategory = "general" | "transport" | "warehouse";
-
-type Comment = {
-  id: string;
-  type: CommentCategory;
-  body: string;
-};
+import {
+  CommentOrderTypes,
+  CommentOrderCategory,
+  CommentProductCategory,
+  CommentProductTypes,
+  Comment,
+  CommentCategory,
+} from "@/types/orders.types";
 
 type CommentSectionProps = {
-  control?: Control<any>;
-  setValue?: UseFormSetValue<any>;
   name: string;
-  viewOnly?: boolean;
-  comments?: Comment[];
+  isProduct?: boolean;
 };
 
-const predefinedComments: Record<CommentCategory, string[]> = {
-  general: ["Uwaga zawiera styropian", "Pocieranie niewskazane"],
-  transport: ["Ostrożnie przy transporcie"],
-  warehouse: ["Uwaga, delikatna zawartość"],
+const predefinedOrderComments: Record<CommentOrderCategory, string[]> = {
+  general: [
+    "Uwaga zawiera styropian",
+    "Pocieranie niewskazane",
+    "Gotówka do odbioru [kwota]",
+  ],
+  transport: [
+    "Ostrożnie przy transporcie",
+    "Towar na solówce",
+    "Dzwonić godzinę przed dostawą",
+  ],
+  warehouse: ["Uwaga, delikatna zawartość", "Bez palet"],
+  production: [
+    "Bez etykiet",
+    "Balotować",
+    "Zapakować w białą folię",
+    "Zapakować w zieloną folię + etykieta",
+    "Bez Palet",
+  ],
 };
 
-export const CommentSection = ({
-  control,
-  setValue,
-  name,
-  viewOnly = false,
-  comments = [],
-}: CommentSectionProps) => {
-  const [newCommentBody, setNewCommentBody] = useState("");
+const predefinedProductComments: Record<CommentProductCategory, string[]> = {
+  general: [],
+};
+
+export const CommentSection = ({ name, isProduct }: CommentSectionProps) => {
+  const [commentBody, setCommentBody] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<CommentCategory>("general");
   const [lastAddedCategory, setLastAddedCategory] =
@@ -62,27 +72,33 @@ export const CommentSection = ({
     CommentCategory[]
   >([]);
 
-  const watchedComments = viewOnly
-    ? comments
-    : useWatch({
-        control,
-        name,
-        defaultValue: [],
-      });
+  const commentSuggestions:
+    | Record<CommentOrderCategory, string[]>
+    | Record<CommentProductCategory, string[]> = useMemo(() => {
+    return isProduct ? predefinedProductComments : predefinedOrderComments;
+  }, [isProduct]);
+
+  const categories = useMemo(() => {
+    return Object.entries(isProduct ? CommentProductTypes : CommentOrderTypes);
+  }, [isProduct]);
+
+  const { control, setValue, watch } = useFormContext();
+
+  const watchedComments: Comment[] = watch(name, []);
 
   const groupedComments = useMemo(() => {
-    const grouped: Record<CommentCategory, Comment[]> = {
-      general: [],
-      transport: [],
-      warehouse: [],
-    };
+    const grouped = {} as Record<CommentCategory, Comment[]>;
+
+    Object.keys(commentSuggestions).forEach((key: string) => {
+      grouped[key as CommentCategory] = [];
+    });
     watchedComments.forEach((comment: Comment) => {
       if (grouped[comment.type]) {
         grouped[comment.type].push(comment);
       }
     });
     return grouped;
-  }, [viewOnly, comments, watchedComments]);
+  }, [watchedComments]);
 
   useEffect(() => {
     if (lastAddedCategory) {
@@ -94,65 +110,52 @@ export const CommentSection = ({
     }
   }, [lastAddedCategory]);
 
-  const addCustomComment = () => {
-    if (!viewOnly && newCommentBody.trim()) {
-      const newComment = {
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type: selectedCategory,
-        body: newCommentBody.trim(),
-      };
-      setValue(name, [...watchedComments, newComment]);
-      setNewCommentBody("");
-      setLastAddedCategory(selectedCategory);
-    }
-  };
-
-  const addPredefinedComment = (commentBody: string) => {
+  const saveComment = () => {
     if (
-      !viewOnly &&
-      !watchedComments.some((c: Comment) => c.body === commentBody)
+      commentBody.trim() &&
+      !watchedComments.some(
+        (c: Comment) => c.body === commentBody && c.type === selectedCategory
+      )
     ) {
       const newComment = {
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         type: selectedCategory,
-        body: commentBody,
+        body: commentBody.trim(),
       };
       setValue(name, [...watchedComments, newComment]);
+      setCommentBody("");
       setLastAddedCategory(selectedCategory);
     }
   };
 
   const renderComments = (category: CommentCategory) => (
     <div className="space-y-2">
-      {groupedComments[category].map((comment) => (
+      {groupedComments[category]?.map((comment) => (
         <div key={comment.id} className="flex items-center space-x-2">
-          {!viewOnly && (
-            <FormField
-              control={control}
-              name={`${name}.${comment.id}`}
-              render={({ field }) => (
-                <FormItem className="flex items-center space-x-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={true}
-                      onCheckedChange={(checked) => {
-                        if (!checked) {
-                          setValue(
-                            name,
-                            watchedComments.filter(
-                              (c: Comment) => c.id !== comment.id
-                            )
-                          );
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal">{comment.body}</FormLabel>
-                </FormItem>
-              )}
-            />
-          )}
-          {viewOnly && <span>{comment.body}</span>}
+          <FormField
+            control={control}
+            name={`${name}.${comment.id}`}
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={true}
+                    onCheckedChange={(checked) => {
+                      if (!checked) {
+                        setValue(
+                          name,
+                          watchedComments.filter(
+                            (c: Comment) => c.id !== comment.id
+                          )
+                        );
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal">{comment.body}</FormLabel>
+              </FormItem>
+            )}
+          />
         </div>
       ))}
     </div>
@@ -160,30 +163,28 @@ export const CommentSection = ({
 
   return (
     <Card className="w-full">
-      <CardContent className="pt-6 space-y-4">
+      <CardContent className="pt-6 space-y-4 flex flex-row gap-1 justify-between">
         <Accordion
           type="multiple"
           value={openAccordionItems}
           onValueChange={(value) =>
             setOpenAccordionItems(value as CommentCategory[])
           }
+          className="basis-2/5"
         >
-          <AccordionItem value="general">
-            <AccordionTrigger>Uwagi ogólne</AccordionTrigger>
-            <AccordionContent>{renderComments("general")}</AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="transport">
-            <AccordionTrigger>Uwagi dla transportu</AccordionTrigger>
-            <AccordionContent>{renderComments("transport")}</AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="warehouse">
-            <AccordionTrigger>Uwagi dla magazynu</AccordionTrigger>
-            <AccordionContent>{renderComments("warehouse")}</AccordionContent>
-          </AccordionItem>
+          {categories.map(([key, val]) => (
+            <AccordionItem value={key}>
+              <AccordionTrigger>{val}</AccordionTrigger>
+              <AccordionContent>
+                {renderComments(key as CommentCategory)}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
         </Accordion>
 
-        {!viewOnly && (
-          <div className="space-y-2">
+        <div className="space-y-2 basis-1/2 flex flex-wrap">
+          <div className="basis-1/2 pr-1">
+            <label>Rodzaj uwagi *</label>
             <Select
               value={selectedCategory}
               onValueChange={(value: CommentCategory) =>
@@ -194,18 +195,21 @@ export const CommentSection = ({
                 <SelectValue placeholder="Wybierz kategorię" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="general">Ogólne</SelectItem>
-                <SelectItem value="transport">Dla transportu</SelectItem>
-                <SelectItem value="warehouse">Dla magazynu</SelectItem>
+                {categories.map(([key, val]) => (
+                  <SelectItem value={key}>{val}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-
-            <Select onValueChange={addPredefinedComment}>
+          </div>
+          <div className="basis-1/2" style={{ marginTop: 0 }}>
+            <label>Gotowe uwagi</label>
+            <Select onValueChange={(text: string) => setCommentBody(text)}>
               <SelectTrigger>
                 <SelectValue placeholder="Wybierz predefiniowaną uwagę" />
               </SelectTrigger>
               <SelectContent>
-                {predefinedComments[selectedCategory].map((comment, index) => (
+                {/* @ts-ignore */}
+                {commentSuggestions[selectedCategory].map((comment, index) => (
                   <SelectItem
                     key={`${selectedCategory}-${index}`}
                     value={comment}
@@ -215,24 +219,22 @@ export const CommentSection = ({
                 ))}
               </SelectContent>
             </Select>
-
-            <div className="flex space-x-2">
-              <Input
-                value={newCommentBody}
-                onChange={(e) => setNewCommentBody(e.target.value)}
-                placeholder="Dodaj nową uwagę"
-              />
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  addCustomComment();
-                }}
-              >
-                Dodaj własną uwagę
-              </Button>
-            </div>
           </div>
-        )}
+          <Textarea
+            value={commentBody}
+            onChange={(e) => setCommentBody(e.target.value)}
+            placeholder="Dodaj nową uwagę"
+            className="w-full"
+          />
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              saveComment();
+            }}
+          >
+            Dodaj uwagę
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
