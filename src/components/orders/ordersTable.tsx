@@ -98,6 +98,7 @@ export type Order = {
   created_by: string;
   is_paid: boolean;
   customer: {};
+  wz: any[];
 };
 
 export type Payment = {
@@ -292,6 +293,15 @@ export const columns: ColumnDef<unknown, any>[] = [
     header: "Typ WZ",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("wz_type")}</div>
+    ),
+  },
+  {
+    accessorKey: "wz",
+    header: "Wystawiono WZ",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("wz")?.length > 0 ? "Tak" : "Nie"}
+      </div>
     ),
   },
   {
