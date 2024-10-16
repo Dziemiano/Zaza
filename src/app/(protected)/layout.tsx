@@ -1,6 +1,11 @@
 import { SignOutButton } from "@/components/dashboard/signOutButton";
 import Link from "next/link";
-const MainLayout = ({ children }: { children: React.ReactNode }) => {
+import { auth } from "@/auth";
+import { getUserById } from "@/data/user";
+const MainLayout = async ({ children }: { children: React.ReactNode }) => {
+  const session = await auth();
+  const userId = session?.user.id;
+  const userData = await getUserById(userId);
   return (
     <div>
       <div className="flex gap-5 justify-between px-5 py-3 font-medium bg-white rounded-lg max-md:flex-wrap">
@@ -18,7 +23,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/8447ddda278f925ab068e1e4328e88bc25e9770cd0307f0357ac82768ed2368c?"
                 className="shrink-0 w-3.5 aspect-square"
               />
-              <div>Jan Kowalski</div>
+              <div>
+                {userData?.firstname} {userData?.lastname}
+              </div>
             </div>
             <img
               loading="lazy"
