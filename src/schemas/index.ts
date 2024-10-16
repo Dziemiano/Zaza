@@ -82,49 +82,65 @@ export const LineItemSchema = z.object({
   vat_cost: z.string().optional().nullable(),
 });
 
+export const CommentSchema = z.object({
+  id: z.string().nullable(),
+  type: z.string().nullable(),
+  body: z.string().nullable(),
+  order_id: z.string().optional().nullable(),
+  product_id: z.string().optional().nullable(),
+  customer_id: z.string().optional().nullable(),
+});
+
 export const OrderSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().optional().nullable(),
   foreign_id: z
     .string({ required_error: errors.required })
     .min(1, errors.required)
-    .min(4, errors.min(4)),
+    .min(4, errors.min(4))
+    .nullable(),
   customer_id: z
     .string({ required_error: errors.required })
-    .min(1, { message: errors.required }),
-  status: z.nativeEnum(Status, {
-    errorMap: () => ({ message: "Wybierz status" }),
-  }),
-  is_proforma: z.boolean().optional(),
+    .min(1, { message: errors.required })
+    .nullable(),
+  status: z
+    .nativeEnum(Status, {
+      errorMap: () => ({ message: "Wybierz status" }),
+    })
+    .nullable(),
+  is_proforma: z.boolean().optional().nullable(),
   proforma_payment_date: z.date().optional().nullable(),
   wz_type: z.nativeEnum(WZType).optional().nullable(),
-  personal_collect: z.boolean().optional(),
-  production_date: z.date().optional(),
-  payment_deadline: z.date({ required_error: errors.required }),
-  delivery_date: z.date({ required_error: errors.required }),
-  delivery_place_id: z.string().optional(),
-  delivery_city: z.string().optional(),
-  delivery_street: z.string().optional(),
-  delivery_building: z.string().optional(),
-  delivery_premises: z.string().optional(),
-  delivery_zipcode: z.string().optional(),
+  personal_collect: z.boolean().optional().nullable(),
+  production_date: z.date().optional().nullable(),
+  payment_deadline: z.date({ required_error: errors.required }).nullable(),
+  delivery_date: z.date({ required_error: errors.required }).nullable(),
+  delivery_place_id: z.string().optional().nullable(),
+  delivery_city: z.string().optional().nullable(),
+  delivery_street: z.string().optional().nullable(),
+  delivery_building: z.string().optional().nullable(),
+  delivery_premises: z.string().optional().nullable(),
+  delivery_zipcode: z.string().optional().nullable(),
   delivery_contact_number: z
     .string()
-    .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone),
-  deliver_time: z.any().optional(),
+    .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone)
+    .optional()
+    .nullable(),
+  deliver_time: z.date().optional().nullable(),
   delivery_contact: z
     .string()
     .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone)
-    .optional(),
-  change_warehouse: z.any().optional(),
-  warehouse_to_transport: z.string().optional(),
+    .optional()
+    .nullable(),
+  change_warehouse: z.boolean().optional().nullable(),
+  warehouse_to_transport: z.string().optional().nullable(),
   transport_cost: nonNegNumber,
-  order_history: z.any().optional(),
-  created_at: z.date().optional(),
-  created_by: z.string().optional(),
-  created_by_id: z.string().optional(),
-  is_paid: z.boolean().optional(),
+  order_history: z.string().optional().nullable(),
+  created_at: z.date().optional().nullable(),
+  created_by: z.string().optional().nullable(),
+  created_by_id: z.string().optional().nullable(),
+  is_paid: z.boolean().optional().nullable(),
   email_content: z.string().optional().nullable(),
-  document_path: z.any().optional(),
+  document_path: z.string().optional().nullable(),
   file: z.any().optional(),
   nip: z
     .string()
@@ -135,13 +151,18 @@ export const OrderSchema = z.object({
     )
     .optional()
     .nullable(),
-  comments: z.any().optional(),
+  comments: z.array(CommentSchema).optional().nullable(),
   line_items: z
     .array(LineItemSchema)
     .min(1, { message: "Wybierz przynajmniej jeden produkt" }),
-  lineItems: z.array(LineItemSchema).optional(),
-  user: z.any().optional(),
-  customer: z.any().optional(),
+  lineItems: z.array(LineItemSchema).optional().nullable(),
+  user: z.any().optional().nullable(),
+  customer: z.any().optional().nullable(),
+});
+
+export const OrderSchemaEdit = OrderSchema.extend({
+  transport_cost: nonNegNumberReq,
+  created_at: z.date().nullable(),
 });
 
 export const ContactPersonSchema = z.object({
@@ -201,7 +222,7 @@ export const CustomerSchema = z.object({
   symbol: z
     .string({ required_error: errors.required })
     .min(1, errors.required)
-    .max(20, errors.max(20))
+    .max(40, errors.max(40))
     .nullable(),
   name: z
     .string({ required_error: errors.required })
@@ -293,15 +314,19 @@ export const CustomerSchema = z.object({
 });
 
 export const ProductSchema = z.object({
-  id: z.string().optional(),
-  name: z.string({ required_error: errors.required }).min(1, errors.required),
+  id: z.string().optional().nullable(),
+  name: z
+    .string({ required_error: errors.required })
+    .min(1, errors.required)
+    .nullable(),
   category: z
     .nativeEnum(Category, {
       errorMap: () => ({ message: "Wybierz status" }),
     })
     .refine((val) => val !== undefined && val !== null, {
       message: errors.required,
-    }),
+    })
+    .nullable(),
   subcategory: z
     .union([
       z.nativeEnum(ShapeSubcategory),
@@ -312,19 +337,22 @@ export const ProductSchema = z.object({
     .nullable(),
   sku: z
     .string({ required_error: errors.required })
-    .min(1, "SKU jest wymagane"),
-  primary_unit: z.nativeEnum(PrimaryUnit, {
-    errorMap: () => ({ message: "Wybierz jednostkę" }),
-  }),
+    .min(1, "SKU jest wymagane")
+    .nullable(),
+  primary_unit: z
+    .nativeEnum(PrimaryUnit, {
+      errorMap: () => ({ message: "Wybierz jednostkę" }),
+    })
+    .nullable(),
   first_helper_unit: z.string().optional().nullable(),
   first_helper_unit_value: z.string().optional().nullable(),
   second_helper_unit: z.string().optional().nullable(),
   second_helper_unit_value: z.string().optional().nullable(),
-  is_sold: z.boolean(),
-  is_produced: z.boolean(),
-  is_internal: z.boolean(),
-  is_one_time: z.boolean(),
-  is_entrusted: z.boolean(),
+  is_sold: z.boolean().nullable(),
+  is_produced: z.boolean().nullable(),
+  is_internal: z.boolean().nullable(),
+  is_one_time: z.boolean().nullable(),
+  is_entrusted: z.boolean().nullable(),
   length: nonNegNumberReq,
   width: nonNegNumberReq,
   height: nonNegNumberReq,
@@ -337,9 +365,11 @@ export const ProductSchema = z.object({
     .nativeEnum(EpsTypes, {
       errorMap: () => ({ message: "Wybierz rodzaj" }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   weight: nonNegNumber,
-  seasoning_time: nonNegNumber,
+  // seasoning_time: nonNegNumber,
+  seasoning_time: z.string().nullable().optional(),
   manufacturer: z.string().nullable().optional(),
   ean: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
@@ -348,7 +378,8 @@ export const ProductSchema = z.object({
     .nativeEnum(RawMaterials, {
       errorMap: () => ({ message: "Wybierz rodzaj" }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   raw_material_granulation: z.string().nullable().optional(),
   packaging_weight: z.string().nullable().optional(),
   packaging_type: z.string().nullable().optional(),
@@ -370,33 +401,34 @@ export const ProductSchema = z.object({
     .max(100, "Max 100")
     .optional()
     .nullable(),
-  comments: z.any().optional(),
-  created_by: z.string().optional(),
-  created_at: z.date().optional(),
+  comments: z.any().optional().nullable(),
+  created_by: z.string().optional().nullable(),
+  created_at: z.date().optional().nullable(),
 });
 
 export const WzSchema = z.object({
-  id: z.string().optional(),
-  doc_number: z.string().optional(),
+  id: z.string().optional().nullable(),
+  doc_number: z.string().optional().nullable(),
   type: z
     .nativeEnum(WZType, {
       errorMap: () => ({ message: "Wybierz status" }),
     })
     .refine((val) => val !== undefined && val !== null, {
       message: errors.required,
-    }),
-  issue_date: z.date({ required_error: errors.required }),
-  unit_type: z.string().optional(),
-  status: z.string({ required_error: errors.required }),
-  created_at: z.date().optional(),
-  out_date: z.date({ required_error: errors.required }),
-  order_id: z.string().optional(),
-  driver: z.string().optional(),
-  car: z.string().optional(),
-  cargo_person: z.string().optional(),
+    })
+    .nullable(),
+  issue_date: z.date({ required_error: errors.required }).nullable(),
+  unit_type: z.string().optional().nullable(),
+  status: z.string({ required_error: errors.required }).nullable(),
+  created_at: z.date().optional().nullable(),
+  out_date: z.date({ required_error: errors.required }).nullable(),
+  order_id: z.string().optional().nullable(),
+  driver: z.string().optional().nullable(),
+  car: z.string().optional().nullable(),
+  cargo_person: z.string().optional().nullable(),
   pallet_type: z.nativeEnum(PalletType).optional().nullable(),
   pallet_count: nonNegNumber,
-  additional_info: z.string().optional(),
-  created_by: z.string().optional(),
-  line_items: z.array(LineItemSchema).optional(),
+  additional_info: z.string().optional().nullable(),
+  created_by: z.string().optional().nullable(),
+  line_items: z.array(LineItemSchema).optional().nullable(),
 });

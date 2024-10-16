@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "../ui/button";
 
-import { cn } from "@/lib/utils";
+import { cn, parseNumbersForSubmit } from "@/lib/utils";
 
 import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
 import {
@@ -59,7 +59,7 @@ import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { OrderSchema } from "@/schemas";
+import { OrderSchema, OrderSchemaEdit } from "@/schemas";
 
 import { useEffect, useState, useTransition, memo } from "react";
 import { Input } from "../ui/input";
@@ -113,6 +113,14 @@ const orderErrorNames = {
   comments: ["comments"],
 };
 
+const valuesToParseForSubmit = [
+  "line_items.quantity",
+  "line_items.helper_quantity",
+  "line_items.netto_cost",
+  "line_items.brutto_cost",
+  "line_items.vat_percentage",
+];
+
 export const OrderForm = ({
   customers,
   user,
@@ -162,7 +170,7 @@ export const OrderForm = ({
         personal_collect: false,
         is_paid: false,
         is_proforma: false,
-        transport_cost: "0",
+        transport_cost: 0,
         foreign_id: "",
         status: undefined,
         wz_type: undefined,
@@ -191,7 +199,7 @@ export const OrderForm = ({
         is_paid: false,
         is_proforma: false,
         line_items: [],
-        transport_cost: "0",
+        transport_cost: 0,
         status: "Oczekuje na zatwierdzenie przez BOK",
       };
     } else {
@@ -201,14 +209,14 @@ export const OrderForm = ({
         is_paid: false,
         is_proforma: false,
         line_items: [],
-        transport_cost: "0",
+        transport_cost: 0,
       };
     }
     setDefaultValues(initialValues);
   }, [copyMode, editMode, order, user]);
 
   const form = useForm<z.infer<typeof OrderSchema>>({
-    resolver: zodResolver(OrderSchema),
+    resolver: zodResolver(editMode ? OrderSchemaEdit : OrderSchema),
     reValidateMode: "onChange",
     defaultValues,
   });
@@ -326,7 +334,10 @@ export const OrderForm = ({
       formData.append("file", values.file);
     }
 
-    const data = JSON.parse(JSON.stringify(values));
+    const data = parseNumbersForSubmit(
+      valuesToParseForSubmit,
+      JSON.parse(JSON.stringify(values))
+    );
 
     setError("");
     setSuccess("");
@@ -341,6 +352,9 @@ export const OrderForm = ({
             setIsConfirmDialogOpen(false);
             resetForm();
             setIsSuccessDialogOpen(true);
+          })
+          .catch((error) => {
+            setError(error.message);
           })
           .finally(() => setIsLoading(false));
       } else if (copyMode) {
@@ -1009,7 +1023,7 @@ export const OrderForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
-                                  defaultValue={"0"}
+                                  defaultValue={0}
                                   type="number"
                                   step=".01"
                                   {...field}
@@ -1190,7 +1204,7 @@ export const OrderForm = ({
                   <TabsContent value="email" className="p-5">
                     <div>
                       <h1>Korespondencja z klientem</h1>
-                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <div className="grid w-full items-center gap-1.5">
                         <Label>Treść korespondencji</Label>
                         <FormField
                           control={form.control}
@@ -1201,7 +1215,7 @@ export const OrderForm = ({
                                 <Textarea
                                   {...field}
                                   placeholder="Wpisz treść emaila"
-                                  className="min-h-[300px] min-w-[500px]"
+                                  className="min-h-[300px] min-w-[500px] w-full"
                                 ></Textarea>
                               </FormControl>
                               <FormMessage />
