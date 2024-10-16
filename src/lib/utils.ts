@@ -51,7 +51,6 @@ export const formatNumber = (
   return decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
 };
 
-
 /*
  *  Created to match schema.prisma types
  */
@@ -61,11 +60,18 @@ export function parseNumbersForSubmit<T extends z.ZodTypeAny>(
   data: z.infer<T>
 ) {
   const parsedData = data;
-  values.forEach((key: string) => {
-    if (typeof parsedData[key] === "number") {
+  values.forEach((value: string) => {
+    const [key, secondKey] = value.split(".");
+
+    if (key === "line_items" && secondKey) {
+      parsedData[key].forEach((item, index) => {
+        if (typeof item[secondKey] === "number") {
+          parsedData[key][index][secondKey] = item[secondKey].toString();
+        }
+      });
+    } else if (typeof parsedData[key] === "number") {
       parsedData[key] = parsedData[key].toString();
     }
   });
   return parsedData;
 }
-

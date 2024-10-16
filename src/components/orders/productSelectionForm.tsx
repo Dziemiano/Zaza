@@ -283,7 +283,7 @@ export default function ProductSelectionForm({
                     <TableCell>{item.product_name}</TableCell>
                     <TableCell>
                       <Input
-                        value={item.quantity.toString()}
+                        value={item.quantity?.toString()}
                         onChange={(e) =>
                           handleInputChange(index, "quantity", e.target.value)
                         }
@@ -293,7 +293,7 @@ export default function ProductSelectionForm({
                             : ""
                         }`}
                         type="number"
-                        step=".001"
+                        step=".0001"
                         min="0"
                       />
                       {displayCellError(itemErrors?.quantity)}
@@ -317,7 +317,7 @@ export default function ProductSelectionForm({
                             : ""
                         }`}
                         type="number"
-                        step=".01"
+                        step=".0001"
                         min="0"
                       />
                       {displayCellError(itemErrors?.helper_quantity)}

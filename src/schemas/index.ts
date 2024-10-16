@@ -82,8 +82,17 @@ export const LineItemSchema = z.object({
   vat_cost: z.string().optional().nullable(),
 });
 
+export const CommentSchema = z.object({
+  id: z.string().nullable(),
+  type: z.string().nullable(),
+  body: z.string().nullable(),
+  order_id: z.string().optional().nullable(),
+  product_id: z.string().optional().nullable(),
+  customer_id: z.string().optional().nullable(),
+});
+
 export const OrderSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().optional().nullable(),
   foreign_id: z
     .string({ required_error: errors.required })
     .min(1, errors.required)
@@ -116,22 +125,22 @@ export const OrderSchema = z.object({
     .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone)
     .optional()
     .nullable(),
-  deliver_time: z.any().optional(),
+  deliver_time: z.date().optional().nullable(),
   delivery_contact: z
     .string()
     .refine((val) => !val || phoneRegex.test(val ?? ""), errors.phone)
     .optional()
     .nullable(),
-  change_warehouse: z.any().optional().nullable(),
+  change_warehouse: z.boolean().optional().nullable(),
   warehouse_to_transport: z.string().optional().nullable(),
   transport_cost: nonNegNumber,
-  order_history: z.any().optional().nullable(),
+  order_history: z.string().optional().nullable(),
   created_at: z.date().optional().nullable(),
   created_by: z.string().optional().nullable(),
   created_by_id: z.string().optional().nullable(),
   is_paid: z.boolean().optional().nullable(),
   email_content: z.string().optional().nullable(),
-  document_path: z.any().optional().nullable(),
+  document_path: z.string().optional().nullable(),
   file: z.any().optional(),
   nip: z
     .string()
@@ -142,13 +151,18 @@ export const OrderSchema = z.object({
     )
     .optional()
     .nullable(),
-  comments: z.any().optional().nullable(),
+  comments: z.array(CommentSchema).optional().nullable(),
   line_items: z
     .array(LineItemSchema)
     .min(1, { message: "Wybierz przynajmniej jeden produkt" }),
   lineItems: z.array(LineItemSchema).optional().nullable(),
   user: z.any().optional().nullable(),
   customer: z.any().optional().nullable(),
+});
+
+export const OrderSchemaEdit = OrderSchema.extend({
+  transport_cost: nonNegNumberReq,
+  created_at: z.date().nullable(),
 });
 
 export const ContactPersonSchema = z.object({
@@ -354,7 +368,8 @@ export const ProductSchema = z.object({
     .optional()
     .nullable(),
   weight: nonNegNumber,
-  seasoning_time: nonNegNumber,
+  // seasoning_time: nonNegNumber,
+  seasoning_time: z.string().nullable().optional(),
   manufacturer: z.string().nullable().optional(),
   ean: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
