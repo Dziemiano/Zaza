@@ -98,13 +98,13 @@ export const EmailContentForm = ({ order }: EmailContentFormProps) => {
                 control={form.control}
                 name="email_content"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="h-full">
                     <FormControl>
                       <Textarea
                         {...field}
                         disabled={!editMode}
                         placeholder="Wpisz treść emaila"
-                        className="min-h-[200px] w-full resize-none"
+                        className="min-h-[200px] h-[95%] w-full resize-none"
                       />
                     </FormControl>
                     <FormMessage />

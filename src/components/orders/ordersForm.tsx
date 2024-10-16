@@ -1190,7 +1190,7 @@ export const OrderForm = ({
                   <TabsContent value="email" className="p-5">
                     <div>
                       <h1>Korespondencja z klientem</h1>
-                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <div className="grid w-full items-center gap-1.5">
                         <Label>Treść korespondencji</Label>
                         <FormField
                           control={form.control}
@@ -1201,7 +1201,7 @@ export const OrderForm = ({
                                 <Textarea
                                   {...field}
                                   placeholder="Wpisz treść emaila"
-                                  className="min-h-[300px] min-w-[500px]"
+                                  className="min-h-[300px] min-w-[500px] w-full"
                                 ></Textarea>
                               </FormControl>
                               <FormMessage />
