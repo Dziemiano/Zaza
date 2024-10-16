@@ -106,7 +106,8 @@ export const OrderSchema = z.object({
     .nativeEnum(Status, {
       errorMap: () => ({ message: "Wybierz status" }),
     })
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   is_proforma: z.boolean().optional().nullable(),
   proforma_payment_date: z.date().optional().nullable(),
   wz_type: z.nativeEnum(WZType).optional().nullable(),
@@ -262,12 +263,17 @@ export const CustomerSchema = z.object({
     .string({ required_error: errors.required })
     .min(1, { message: errors.required })
     .nullable(),
-  payment_type: z.nativeEnum(PaymentType).optional().nullable(),
+  payment_type: z
+    .nativeEnum(PaymentType)
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   customer_type: z
     .nativeEnum(CustomerType, {
       errorMap: () => ({ message: errors.required }),
     })
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   payment_punctuality: z.string().optional().nullable(),
   salesman: z.object({ id: z.string() }).optional().nullable(),
   branch: z.array(CompanyBranchSchema).optional().default([]).nullable(),
@@ -321,7 +327,8 @@ export const ProductSchema = z.object({
     .refine((val) => val !== undefined && val !== null, {
       message: errors.required,
     })
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   subcategory: z
     .union([
       z.nativeEnum(ShapeSubcategory),
@@ -329,7 +336,8 @@ export const ProductSchema = z.object({
       z.nativeEnum(SlopeSubcategory),
     ])
     .optional()
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   sku: z
     .string({ required_error: errors.required })
     .min(1, "SKU jest wymagane")
@@ -338,7 +346,8 @@ export const ProductSchema = z.object({
     .nativeEnum(PrimaryUnit, {
       errorMap: () => ({ message: "Wybierz jednostkę" }),
     })
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   first_helper_unit: z.string().optional().nullable(),
   first_helper_unit_value: z.string().optional().nullable(),
   second_helper_unit: z.string().optional().nullable(),
@@ -361,7 +370,8 @@ export const ProductSchema = z.object({
       errorMap: () => ({ message: "Wybierz rodzaj" }),
     })
     .optional()
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   weight: nonNegNumber,
   // seasoning_time: nonNegNumber,
   seasoning_time: z.string().nullable().optional(),
@@ -374,7 +384,8 @@ export const ProductSchema = z.object({
       errorMap: () => ({ message: "Wybierz rodzaj" }),
     })
     .optional()
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   raw_material_granulation: z.string().nullable().optional(),
   packaging_weight: z.string().nullable().optional(),
   packaging_type: z.string().nullable().optional(),
@@ -411,7 +422,8 @@ export const WzSchema = z.object({
     .refine((val) => val !== undefined && val !== null, {
       message: errors.required,
     })
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
   issue_date: z.date({ required_error: errors.required }).nullable(),
   unit_type: z.string().optional().nullable(),
   status: z.string({ required_error: errors.required }).nullable(),
@@ -421,7 +433,7 @@ export const WzSchema = z.object({
   driver: z.string().optional().nullable(),
   car: z.string().optional().nullable(),
   cargo_person: z.string().optional().nullable(),
-  pallet_type: z.nativeEnum(PalletType).optional().nullable(),
+  pallet_type: z.nativeEnum(PalletType).optional().nullable().or(z.literal("")),
   pallet_count: nonNegNumber,
   additional_info: z.string().optional().nullable(),
   created_by: z.string().optional().nullable(),
