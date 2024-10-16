@@ -902,6 +902,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  // type="number"
+                                  // step=".01"
                                   {...field}
                                 />
                               </FormControl>
