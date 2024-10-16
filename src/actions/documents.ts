@@ -4,6 +4,7 @@ import db from "@/db/db";
 import { revalidatePath } from "next/cache";
 import { getWzCountByType } from "@/data/documents";
 import { logEvent } from "./logs";
+import { postOptimaDocument } from "@/lib/optima";
 
 export const createWz = async (data: {
   type: string;
@@ -40,13 +41,11 @@ export const createWz = async (data: {
   if (isNaN(issueDate.getTime())) {
     throw new Error("Invalid issue_date provided");
   }
-
-  const adjustedIssueDate = new Date(
-    issueDate.getTime() - issueDate.getTimezoneOffset() * 60000
-  );
+  const adjustedIssueDate = new Date(issueDate.getTime() + 2 * 60 * 60 * 1000);
 
   console.log("Original Issue Date:", issueDate);
   console.log("Adjusted Issue Date:", adjustedIssueDate);
+  console.log("out_date:", data.out_date);
 
   const documentCount = await getWzCountByType(data.type, adjustedIssueDate);
 
