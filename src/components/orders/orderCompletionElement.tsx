@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatNumber } from "@/lib/utils";
 
 const quantityUnits = [
   { value: "m3", label: "m3" },
@@ -55,7 +56,7 @@ export const OrderCompletionElement = ({ lineItems }) => {
               {deliveredItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.product_name}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>{formatNumber(item.quantity)}</TableCell>
                   <TableCell>{item.quant_unit}</TableCell>
                   <TableCell>
                     {item.wz.type} {item.wz.doc_number}
@@ -79,7 +80,7 @@ export const OrderCompletionElement = ({ lineItems }) => {
               {remainingItems.map((item) => (
                 <TableRow key={item.id} className="bg-white">
                   <TableCell>{item.product_name}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>{formatNumber(item.quantity)}</TableCell>
                   <TableCell>{item.quant_unit}</TableCell>
                 </TableRow>
               ))}

@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "../ui/button";
 
-import { cn } from "@/lib/utils";
+import { cn, parseNumbersForSubmit } from "@/lib/utils";
 
 import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react";
 import {
@@ -49,6 +49,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  FormTabError,
 } from "../ui/form";
 
 import { Textarea } from "../ui/textarea";
@@ -72,6 +73,7 @@ import { CommentSection } from "../reusable/commentsFormElement";
 import SelectFormElement from "../reusable/selectFormElement";
 import { checkNIP } from "@/actions/checkNIP";
 import Link from "next/link";
+import { Status as StatusType } from "@/types/orders.types";
 
 import { ProductForm } from "../products/productsForm";
 import { FixedSizeList as List } from "react-window";
@@ -87,6 +89,37 @@ export type OrderFormProps = {
   salesmen?: any[];
   copyMode?: boolean;
 };
+
+const orderErrorNames = {
+  customer: ["customer_id", "line_items", "nip"],
+  order: [
+    "status",
+    "foreign_id",
+    "wz_type",
+    "payment_deadline",
+    "proforma_payment_date",
+    "production_date",
+    "transport_cost",
+    "delivery_date",
+    "delivery_place_id",
+    "delivery_city",
+    "delivery_street",
+    "delivery_building",
+    "delivery_premises",
+    "delivery_zipcode",
+  ],
+  email: ["email_content"],
+  documents: ["file"],
+  comments: ["comments"],
+};
+
+const valuesToParseForSubmit = [
+  "line_items.quantity",
+  "line_items.helper_quantity",
+  "line_items.netto_cost",
+  "line_items.brutto_cost",
+  "line_items.vat_percentage",
+];
 
 export const OrderForm = ({
   customers,
@@ -137,7 +170,7 @@ export const OrderForm = ({
         personal_collect: false,
         is_paid: false,
         is_proforma: false,
-        transport_cost: "0",
+        transport_cost: 0,
         foreign_id: "",
         status: undefined,
         wz_type: undefined,
@@ -166,7 +199,7 @@ export const OrderForm = ({
         is_paid: false,
         is_proforma: false,
         line_items: [],
-        transport_cost: "0",
+        transport_cost: 0,
         status: "Oczekuje na zatwierdzenie przez BOK",
       };
     } else {
@@ -176,7 +209,7 @@ export const OrderForm = ({
         is_paid: false,
         is_proforma: false,
         line_items: [],
-        transport_cost: "0",
+        transport_cost: 0,
       };
     }
     setDefaultValues(initialValues);
@@ -206,6 +239,7 @@ export const OrderForm = ({
       copyMode
     )
   );
+  const isPersonalCollect = form.watch("personal_collect");
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -300,7 +334,10 @@ export const OrderForm = ({
       formData.append("file", values.file);
     }
 
-    const data = JSON.parse(JSON.stringify(values));
+    const data = parseNumbersForSubmit(
+      valuesToParseForSubmit,
+      JSON.parse(JSON.stringify(values))
+    );
 
     setError("");
     setSuccess("");
@@ -315,6 +352,9 @@ export const OrderForm = ({
             setIsConfirmDialogOpen(false);
             resetForm();
             setIsSuccessDialogOpen(true);
+          })
+          .catch((error) => {
+            setError(error.message);
           })
           .finally(() => setIsLoading(false));
       } else if (copyMode) {
@@ -351,32 +391,32 @@ export const OrderForm = ({
   };
 
   type Status = {
-    label: string;
+    label: StatusType;
     value: string;
   };
 
   const statuses: Status[] = [
-    { label: "Złożone", value: "submitted" },
+    { label: StatusType.Submitted, value: "submitted" },
     {
-      label: "Oczekuje na zatwierdzenie przez BOK",
+      label: StatusType.Awaiting_approval_by_bok,
       value: "awaiting_approval_by_bok",
     },
-    { label: "Zatwierdzone przez BOK", value: "approved_by_bok" },
-    { label: "Oczekuje na płatność", value: "awaiting_payment" },
-    { label: "Płatność zatwierdzona", value: "payment_approved" },
-    { label: "W trakcie produkcji", value: "in_production" },
-    { label: "W trakcie kompletacji", value: "in_assembly" },
-    { label: "Gotowe do wysyłki", value: "ready_for_shipping" },
-    { label: "Wysłane", value: "shipped" },
-    { label: "Dostarczone", value: "delivered" },
-    { label: "Anulowane", value: "canceled" },
-    { label: "Zwrócone", value: "returned" },
-    { label: "Zamknięte", value: "closed" },
-    { label: "Oczekuje na odbiór", value: "awaiting_pickup" },
-    { label: "Odrzucone przez BOK", value: "rejected_by_bok" },
-    { label: "W trakcie weryfikacji", value: "under_verification" },
+    { label: StatusType.Approved_by_bok, value: "approved_by_bok" },
+    { label: StatusType.Awaiting_payment, value: "awaiting_payment" },
+    { label: StatusType.Payment_approved, value: "payment_approved" },
+    { label: StatusType.In_production, value: "in_production" },
+    { label: StatusType.In_assembly, value: "in_assembly" },
+    { label: StatusType.Ready_for_shipping, value: "ready_for_shipping" },
+    { label: StatusType.Shipped, value: "shipped" },
+    { label: StatusType.Delivered, value: "delivered" },
+    { label: StatusType.Canceled, value: "canceled" },
+    { label: StatusType.Returned, value: "returned" },
+    { label: StatusType.Closed, value: "closed" },
+    { label: StatusType.Awaiting_pickup, value: "awaiting_pickup" },
+    { label: StatusType.Rejected_by_bok, value: "rejected_by_bok" },
+    { label: StatusType.Under_verification, value: "under_verification" },
     {
-      label: "Oczekuje na dostępność surowców",
+      label: StatusType.Awaiting_raw_materials_availability,
       value: "awaiting_raw_materials_availability",
     },
   ];
@@ -473,16 +513,27 @@ export const OrderForm = ({
               <div className="flex flex-col content-between h-[700px] flex-grow overflow-y-auto">
                 <Tabs defaultValue="account" className="w-full">
                   <TabsList>
-                    <TabsTrigger value="customer">Dane Klienta</TabsTrigger>
+                    <TabsTrigger value="customer">
+                      Dane Klienta
+                      <FormTabError fields={orderErrorNames.customer} />
+                    </TabsTrigger>
                     {/* <TabsTrigger value="products">Produkty</TabsTrigger> */}
                     <TabsTrigger value="order">
                       Szczegóły zamówienia
+                      <FormTabError fields={orderErrorNames.order} />
                     </TabsTrigger>
                     <TabsTrigger value="email">
                       Korespondencja z klientem
+                      <FormTabError fields={orderErrorNames.email} />
                     </TabsTrigger>
-                    <TabsTrigger value="documents">Dokumenty</TabsTrigger>
-                    <TabsTrigger value="comments">Uwagi</TabsTrigger>
+                    <TabsTrigger value="documents">
+                      Dokumenty
+                      <FormTabError fields={orderErrorNames.documents} />
+                    </TabsTrigger>
+                    <TabsTrigger value="comments">
+                      Uwagi
+                      <FormTabError fields={orderErrorNames.comments} />
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="customer" className="w-full v-5">
@@ -495,7 +546,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="nip"
                           render={({ field }) => (
-                            <FormItem className="flex flex-col mb-4">
+                            <FormItem className="flex flex-col mb-10">
                               <FormControl>
                                 <Input
                                   defaultValue={order?.customer.nip}
@@ -534,7 +585,7 @@ export const OrderForm = ({
                       </div>
                       <div className="flex flex-col w-5/12">
                         <div className="text-black text-[28px] font-medium">
-                          Klient
+                          Klient *
                         </div>
                         <FormField
                           control={form.control}
@@ -682,7 +733,7 @@ export const OrderForm = ({
                         />
                       )}
                       <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label>Typ WZ*</Label>
+                        <Label>Typ WZ</Label>
                         <FormField
                           control={form.control}
                           name="wz_type"
@@ -705,6 +756,7 @@ export const OrderForm = ({
                                   </SelectGroup>
                                 </SelectContent>
                               </Select>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
@@ -717,7 +769,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="is_paid"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
@@ -732,7 +784,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="is_proforma"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
@@ -747,7 +799,7 @@ export const OrderForm = ({
                           control={form.control}
                           name="personal_collect"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={(value) => {
@@ -767,11 +819,11 @@ export const OrderForm = ({
                           control={form.control}
                           name="change_warehouse"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                disabled={!form.watch("personal_collect")}
+                                disabled={!isPersonalCollect}
                               />
                             </FormItem>
                           )}
@@ -787,10 +839,10 @@ export const OrderForm = ({
                               <Select
                                 disabled={
                                   !form.watch("change_warehouse") ||
-                                  !form.watch("personal_collect")
+                                  !isPersonalCollect
                                 }
                                 onValueChange={(value) => {
-                                  if (!form.watch("personal_collect")) {
+                                  if (!isPersonalCollect) {
                                     field.onChange("");
                                   } else {
                                     field.onChange(value);
@@ -966,11 +1018,14 @@ export const OrderForm = ({
                           control={form.control}
                           name="transport_cost"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row">
+                            <FormItem className="flex flex-col">
                               <FormControl>
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  defaultValue={0}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1028,7 +1083,7 @@ export const OrderForm = ({
                     <div className="text-xl mt-5">Dane do dostawy</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Ulica*</Label>
+                        <Label>Ulica</Label>
                         <FormField
                           control={form.control}
                           name="delivery_street"
@@ -1037,7 +1092,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1047,7 +1102,7 @@ export const OrderForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Nr budynku*</Label>
+                        <Label>Nr budynku</Label>
                         <FormField
                           control={form.control}
                           name="delivery_building"
@@ -1056,7 +1111,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1075,7 +1130,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1087,7 +1142,7 @@ export const OrderForm = ({
                     </div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Kod pocztowy*</Label>
+                        <Label>Kod pocztowy</Label>
                         <FormField
                           control={form.control}
                           name="delivery_zipcode"
@@ -1096,7 +1151,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1106,7 +1161,7 @@ export const OrderForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Miejscowość*</Label>
+                        <Label>Miejscowość</Label>
                         <FormField
                           control={form.control}
                           name="delivery_city"
@@ -1115,7 +1170,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1134,7 +1189,7 @@ export const OrderForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={isPersonalCollect || isPending}
                                   {...field}
                                 />
                               </FormControl>
@@ -1149,7 +1204,7 @@ export const OrderForm = ({
                   <TabsContent value="email" className="p-5">
                     <div>
                       <h1>Korespondencja z klientem</h1>
-                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <div className="grid w-full items-center gap-1.5">
                         <Label>Treść korespondencji</Label>
                         <FormField
                           control={form.control}
@@ -1160,7 +1215,7 @@ export const OrderForm = ({
                                 <Textarea
                                   {...field}
                                   placeholder="Wpisz treść emaila"
-                                  className="min-h-[300px] min-w-[500px]"
+                                  className="min-h-[300px] min-w-[500px] w-full"
                                 ></Textarea>
                               </FormControl>
                               <FormMessage />

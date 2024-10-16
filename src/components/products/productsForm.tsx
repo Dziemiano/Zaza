@@ -34,12 +34,22 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  FormTabError,
 } from "../ui/form";
 
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Category,
+  EpsTypes,
+  RawMaterials,
+  ShapeSubcategory,
+  StyrofeltSubcategory,
+  SlopeSubcategory,
+} from "@/types/product.types";
+import { parseNumbersForSubmit } from "@/lib/utils";
 
 import { useEffect, useState, useTransition } from "react";
 import { Input } from "../ui/input";
@@ -59,6 +69,52 @@ type ProductFormProps = {
   onProductCreated?: any;
   id?: string;
 };
+
+const errorNames = {
+  product: [
+    "name",
+    "category",
+    "sku",
+    "primary_unit",
+    "length",
+    "width",
+    "height",
+    "pack_quantity",
+    "actual_shape_volume",
+    "min_production_quantity",
+    "sales_volume",
+    "technological_volume",
+    "eps_type",
+    "weight",
+    "seasoning_time",
+    "manufacturer",
+    "ean",
+    "raw_material_type",
+    "raw_material_granulation",
+  ],
+  sales: ["price", "min_price", "vat", "price_tolerance"],
+  images: ["file"],
+  comments: ["comments"],
+};
+
+const valuesToParseForSubmit = [
+  "height",
+  "length",
+  "width",
+  "height",
+  "pack_quantity",
+  "actual_shape_volume",
+  "min_production_quantity",
+  "sales_volume",
+  "technological_volume",
+  "weight",
+  "seasoning_time",
+  "price",
+  "min_price",
+  "vat",
+  "price_tolerance",
+];
+
 export const ProductForm = ({
   editMode,
   oneTime,
@@ -155,7 +211,10 @@ export const ProductForm = ({
       formData.append("file", values.file);
     }
 
-    const data = JSON.parse(JSON.stringify(values));
+    const data = parseNumbersForSubmit(
+      valuesToParseForSubmit,
+      JSON.parse(JSON.stringify(values))
+    );
 
     startTransition(() => {
       if (product && product.id) {
@@ -199,9 +258,13 @@ export const ProductForm = ({
     const height = form.getValues("height") || "";
 
     let firstThreeLetters;
-    if (["Kształtki", "Skos"].includes(category)) {
+    if (
+      ([Category.ShapedForms, Category.Slant] as string[]).includes(category)
+    ) {
       const subcategorySanitized =
-        subcategory === "Kątownik" ? "Katownik" : subcategory;
+        subcategory === ShapeSubcategory.AngleBracket
+          ? "Katownik"
+          : subcategory;
       firstThreeLetters = subcategorySanitized.slice(0, 3).toUpperCase();
     } else {
       firstThreeLetters = category.slice(0, 3).toUpperCase();
@@ -246,10 +309,10 @@ export const ProductForm = ({
     const dimensions = `${length}x${width}x${height}`;
 
     let skuEnding;
-    if (category === "Styropapa") {
-      if (subcategory === "Pojedyńczo") {
+    if (category === Category.Styrofoam) {
+      if (subcategory === StyrofeltSubcategory.OneSide) {
         skuEnding = "X1";
-      } else if (subcategory === "Podwójnie") {
+      } else if (subcategory === StyrofeltSubcategory.TwoSide) {
         skuEnding = "X2";
       } else {
         skuEnding = "XX";
@@ -286,71 +349,77 @@ export const ProductForm = ({
   ]);
 
   const category = [
-    { label: "Styropian", value: "styrofoam" },
-    { label: "Styropapa", value: "styrofelt" },
-    { label: "Surowiec", value: "raw material" },
-    { label: "Formatki", value: "sheets" },
-    { label: "Kształtki", value: "shaped forms" },
-    { label: "Transport", value: "transport" },
-    { label: "Granulat", value: "granulate" },
-    { label: "Wełna", value: "wool" },
-    { label: "Skos", value: "slant" },
-    { label: "Inne", value: "others" },
+    { label: Category.Styrofoam, value: "styrofoam" },
+    { label: Category.Styrofelt, value: "styrofelt" },
+    { label: Category.RawMaterial, value: "raw material" },
+    { label: Category.Sheets, value: "sheets" },
+    { label: Category.ShapedForms, value: "shaped forms" },
+    { label: Category.Transport, value: "transport" },
+    { label: Category.Granulate, value: "granulate" },
+    { label: Category.Wool, value: "wool" },
+    { label: Category.Slant, value: "slant" },
+    { label: Category.Others, value: "others" },
   ];
 
   const eps_types = [
-    { label: "EPS 045", value: "eps_045" },
-    { label: "EPS 045 S", value: "eps_045_s" },
-    { label: "EPS 042", value: "eps_042" },
-    { label: "EPS 042 S", value: "eps_042_s" },
-    { label: "EPS 040", value: "eps_040" },
-    { label: "EPS 040 S", value: "eps_040_s" },
-    { label: "EPS 070-038", value: "eps_070_038" },
-    { label: "EPS 070-038 S", value: "eps_070_038_s" },
-    { label: "EPS 080-038", value: "eps_080_038" },
-    { label: "EPS 080-038 S", value: "eps_080_038_s" },
-    { label: "EPS 100/17 S", value: "eps_100_017_s" },
-    { label: "EPS 100-037", value: "eps_100_037" },
-    { label: "EPS 100-035", value: "eps_100_035" },
-    { label: "EPS 120-035", value: "eps_120_035" },
-    { label: "EPS 150-035", value: "eps_150_035" },
-    { label: "EPS 200-034", value: "eps_200_034" },
-    { label: "EPS 100-035 AQUA", value: "eps_100_035_aqua" },
-    { label: "EPS 120-035 AQUA", value: "eps_120_035_aqua" },
-    { label: "EPS 150-035 AQUA", value: "eps_150_035_aqua" },
-    { label: "EPS 200-034 AQUA", value: "eps_200_034_aqua" },
-    { label: "EPS 031 GRAFIT", value: "eps_031_grafit" },
-    { label: "EPS 033 GRAFIT", value: "eps_033_grafit" },
-    { label: "EPS 100-030 GRAFIT", value: "eps_100_030_grafit" },
-    { label: "EPS T - Akustyczny", value: "eps_t_acustic" },
+    { label: EpsTypes.EPS045, value: "eps_045" },
+    { label: EpsTypes.EPS045S, value: "eps_045_s" },
+    { label: EpsTypes.EPS042, value: "eps_042" },
+    { label: EpsTypes.EPS042S, value: "eps_042_s" },
+    { label: EpsTypes.EPS040, value: "eps_040" },
+    { label: EpsTypes.EPS040S, value: "eps_040_s" },
+    { label: EpsTypes.EPS070038, value: "eps_070_038" },
+    { label: EpsTypes.EPS070038S, value: "eps_070_038_s" },
+    { label: EpsTypes.EPS080038, value: "eps_080_038" },
+    { label: EpsTypes.EPS080038S, value: "eps_080_038_s" },
+    { label: EpsTypes.EPS10017S, value: "eps_100_017_s" },
+    { label: EpsTypes.EPS100037, value: "eps_100_037" },
+    { label: EpsTypes.EPS100035, value: "eps_100_035" },
+    { label: EpsTypes.EPS120035, value: "eps_120_035" },
+    { label: EpsTypes.EPS150035, value: "eps_150_035" },
+    { label: EpsTypes.EPS200034, value: "eps_200_034" },
+    { label: EpsTypes.EPS100035AQUA, value: "eps_100_035_aqua" },
+    { label: EpsTypes.EPS120035AQUA, value: "eps_120_035_aqua" },
+    { label: EpsTypes.EPS150035AQUA, value: "eps_150_035_aqua" },
+    { label: EpsTypes.EPS200034AQUA, value: "eps_200_034_aqua" },
+    { label: EpsTypes.EPS031GRAFIT, value: "eps_031_grafit" },
+    { label: EpsTypes.EPS033GRAFIT, value: "eps_033_grafit" },
+    { label: EpsTypes.EPS100030GRAFIT, value: "eps_100_030_grafit" },
+    { label: EpsTypes.EPSTAcustic, value: "eps_t_acustic" },
   ];
 
   const raw_materials = [
-    { label: "Palny/niebudowlany", value: "flammable/non-construction" },
-    { label: "Niepalny/budowlany", value: "non-flammable/construction" },
-    { label: "Drobny", value: "fine" },
-    { label: "Gruby", value: "coarse" },
-    { label: "Spożywczy", value: "food-grade" },
-    { label: "Grafitowy", value: "graphite" },
+    {
+      label: RawMaterials.FlammableNonConstruction,
+      value: "flammable/non-construction",
+    },
+    {
+      label: RawMaterials.NonFlammableConstruction,
+      value: "non-flammable/construction",
+    },
+    { label: RawMaterials.Fine, value: "fine" },
+    { label: RawMaterials.Coarse, value: "coarse" },
+    { label: RawMaterials.FoodGrade, value: "food-grade" },
+    { label: RawMaterials.Graphite, value: "graphite" },
   ];
 
   const shape_subcategory = [
-    { label: "Kształtka", value: "shaped_form" },
-    { label: "Kątownik", value: "angle_bracket" },
-    { label: "Profil", value: "profile" },
-    { label: "Izoklin", value: "izoklin" },
-    { label: "Zatyczka", value: "plug" },
+    { label: ShapeSubcategory.ShapedForm, value: "shaped_form" },
+    { label: ShapeSubcategory.AngleBracket, value: "angle_bracket" },
+    { label: ShapeSubcategory.Profile, value: "profile" },
+    { label: ShapeSubcategory.Izoklin, value: "izoklin" },
+    { label: ShapeSubcategory.Plug, value: "plug" },
   ];
 
   const styrofelt_subcategory = [
-    { label: "Pojedyńczo", value: "one_side" },
-    { label: "Podwójnie", value: "two_side" },
+    { label: StyrofeltSubcategory.OneSide, value: "one_side" },
+    { label: StyrofeltSubcategory.TwoSide, value: "two_side" },
   ];
 
   const slope_subcategory = [
-    { label: "Skos", value: "slant" },
-    { label: "Spadek", value: "slope" },
-    { label: "Kontrspadek", value: "contraslope" },
+    { label: SlopeSubcategory.Slant, value: "slant" },
+    { label: SlopeSubcategory.Slope, value: "slope" },
+    { label: SlopeSubcategory.Contraslope, value: "contraslope" },
   ];
 
   return (
@@ -420,14 +489,22 @@ export const ProductForm = ({
               <div className="flex flex-col content-between h-[700px]">
                 <Tabs defaultValue="account" className="w-full h-full">
                   <TabsList>
-                    <TabsTrigger value="product">Produkt</TabsTrigger>
-                    <TabsTrigger value="sales">Sprzedaż</TabsTrigger>
+                    <TabsTrigger value="product">
+                      Produkt <FormTabError fields={errorNames.product} />
+                    </TabsTrigger>
+                    <TabsTrigger value="sales">
+                      Sprzedaż <FormTabError fields={errorNames.sales} />
+                    </TabsTrigger>
                     <TabsTrigger value="images">
                       Zdjęcia i dokumenty
+                      <FormTabError fields={errorNames.images} />
                     </TabsTrigger>
-                    <TabsTrigger value="visibility">Widocznośc</TabsTrigger>
+                    <TabsTrigger value="visibility">Widoczność</TabsTrigger>
                     <TabsTrigger value="recipes">Receptury</TabsTrigger>
-                    <TabsTrigger value="comments">Uwagi</TabsTrigger>
+                    <TabsTrigger value="comments">
+                      Uwagi
+                      <FormTabError fields={errorNames.comments} />
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="product" className="w-full">
@@ -511,7 +588,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row mt-5 mb-5 pb-4 border-b-2">
                       <SelectFormElement
-                        label="Kategoria produktu"
+                        label="Kategoria produktu *"
                         items={category}
                         form={form}
                         name="category"
@@ -541,7 +618,7 @@ export const ProductForm = ({
                         />
                       )}
                       <div className="grid w-full mr-5 min-w-64 items-center gap-1.5">
-                        <Label>Jednostka podstawowa</Label>
+                        <Label>Jednostka podstawowa *</Label>
                         <FormField
                           control={form.control}
                           name="primary_unit"
@@ -573,7 +650,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row mb-5 pb-4 border-b-2">
                       <div className="grid w-full mr-5 items-center gap-1.5 min-w-[300px]">
-                        <Label>Nazwa produktu</Label>
+                        <Label>Nazwa produktu *</Label>
                         <FormField
                           control={form.control}
                           name="name"
@@ -602,7 +679,7 @@ export const ProductForm = ({
                               <FormControl>
                                 <Input
                                   className="w-full"
-                                  disabled={isPending}
+                                  disabled={true}
                                   {...field}
                                 />
                               </FormControl>
@@ -615,7 +692,7 @@ export const ProductForm = ({
                     <div className="text-xl">Właściwości produktu</div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Grubość</Label>
+                        <Label>Grubość *</Label>
                         <FormField
                           control={form.control}
                           name="height"
@@ -625,6 +702,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -634,7 +713,7 @@ export const ProductForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Szerokość</Label>
+                        <Label>Szerokość *</Label>
                         <FormField
                           control={form.control}
                           name="width"
@@ -644,6 +723,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -653,7 +734,7 @@ export const ProductForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Długość</Label>
+                        <Label>Długość *</Label>
                         <FormField
                           control={form.control}
                           name="length"
@@ -664,6 +745,8 @@ export const ProductForm = ({
                                   pattern="[0-9]+([,.][0-9]+)?"
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -673,7 +756,7 @@ export const ProductForm = ({
                         />
                       </div>
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Ilość w paczce</Label>
+                        <Label>Ilość w paczce *</Label>
                         <FormField
                           control={form.control}
                           name="pack_quantity"
@@ -683,6 +766,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -702,6 +787,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -723,6 +810,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -742,6 +831,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -761,6 +852,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -776,7 +869,7 @@ export const ProductForm = ({
                         items={eps_types}
                       />
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Waga</Label>
+                        <Label>Waga (kg)</Label>
                         <FormField
                           control={form.control}
                           name="weight"
@@ -786,6 +879,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".0001"
                                   {...field}
                                 />
                               </FormControl>
@@ -797,7 +892,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row mt-5">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Czas sezonowania</Label>
+                        <Label>Czas sezonowania (h)</Label>
                         <FormField
                           control={form.control}
                           name="seasoning_time"
@@ -807,6 +902,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  // type="number"
+                                  // step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -953,7 +1050,7 @@ export const ProductForm = ({
                     </div>
                     <div className="flex flex-row  mt-10 mb-5 pb-4 border-b-2">
                       <div className="grid w-full mr-5 items-center gap-1.5">
-                        <Label>Cena domyślna</Label>
+                        <Label>Cena domyślna *</Label>
                         <FormField
                           control={form.control}
                           name="price"
@@ -963,6 +1060,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -982,6 +1081,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1001,6 +1102,8 @@ export const ProductForm = ({
                                 <Input
                                   className="w-full"
                                   disabled={isPending}
+                                  type="number"
+                                  step=".01"
                                   {...field}
                                 />
                               </FormControl>
@@ -1019,6 +1122,8 @@ export const ProductForm = ({
                               <Input
                                 className="w-full"
                                 disabled={isPending}
+                                type="number"
+                                step=".01"
                                 {...field}
                               />
                               <FormMessage />
@@ -1048,9 +1153,6 @@ export const ProductForm = ({
                     variant="zaza"
                     className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex mt-2 mb-2"
                     size="sm"
-                    onClick={(e) => {
-                      e.preventDefault(), onSubmit(form.getValues());
-                    }}
                     disabled={isLoading}
                   >
                     {editMode ? "Zapisz" : "Utwórz"}

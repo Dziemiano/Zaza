@@ -19,6 +19,7 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 
 import { FormError } from "./formError";
 import { FormSuccess } from "./formSuccess";
@@ -29,6 +30,7 @@ export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -40,14 +42,17 @@ export const RegisterForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+    setIsLoading(true);
     setError("");
     setSuccess("");
 
     startTransition(() => {
-      register(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-      });
+      register(values)
+        .then((data) => {
+          setError(data?.error);
+          setSuccess(data?.success);
+        })
+        .finally(() => setIsLoading(false));
     });
   };
   return (
@@ -124,9 +129,12 @@ export const RegisterForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button type="submit">Utwórz konto</Button>
+          <Button type="submit" disabled={isLoading}>
+            Utwórz konto
+          </Button>
         </form>
       </Form>
+      <Spinner isLoading={isLoading} />
     </CardWrapper>
   );
 };

@@ -43,6 +43,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
+import { Spinner } from "../ui/spinner";
 
 import * as z from "zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -70,6 +71,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
   const userId = useCurrentUser()?.id;
@@ -130,6 +132,8 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
   }, [formValues, order]);
 
   const onSubmit = (values: z.infer<typeof WzSchema>) => {
+    setIsLoading(true);
+
     const data = JSON.parse(JSON.stringify(values));
 
     const formLineItems = form.getValues("line_items");
@@ -169,15 +173,17 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
     };
 
     startTransition(() => {
-      createWz(wzData).then((response) => {
-        if (response.success) {
-          setSuccess(response.success);
-          setOpen(false);
-          resetForm();
-        } else {
-          setError("Failed to create WZ document");
-        }
-      });
+      createWz(wzData)
+        .then((response) => {
+          if (response.success) {
+            setSuccess(response.success);
+            setOpen(false);
+            resetForm();
+          } else {
+            setError("Failed to create WZ document");
+          }
+        })
+        .finally(() => setIsLoading(false));
     });
   };
 
@@ -213,7 +219,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                 <div className="text-xl">Szczegóły dokumentu</div>
                 <div className="flex flex-row mt-5">
                   <div className="grid w-full mr-5 items-center gap-1.5">
-                    <Label>Status</Label>
+                    <Label>Status *</Label>
                     <FormField
                       control={form.control}
                       name="status"
@@ -255,12 +261,13 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                               </SelectGroup>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>Data wystawienia</Label>
+                    <Label>Data wystawienia *</Label>
                     <FormField
                       control={form.control}
                       name="issue_date"
@@ -309,7 +316,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                     />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>Data wydania</Label>
+                    <Label>Data wydania *</Label>
                     <FormField
                       control={form.control}
                       name="out_date"
@@ -501,6 +508,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                               </SelectGroup>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -516,6 +524,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                             <Input
                               className="w-full"
                               disabled={isPending}
+                              type="number"
                               {...field}
                             />
                           </FormControl>
@@ -551,6 +560,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                 variant="zaza"
                 className="w-[186px] h-7 px-3 py-2 bg-white rounded-lg shadow justify-center items-center gap-2.5 inline-flex"
                 size="sm"
+                disabled={isLoading}
               >
                 Utwórz
               </Button>
@@ -558,6 +568,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
           </form>
         </Form>
       </DialogContent>
+      <Spinner isLoading={isLoading} />
     </Dialog>
   );
 };

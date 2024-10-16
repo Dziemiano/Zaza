@@ -8,6 +8,7 @@ import {
   Font,
   Image,
 } from "@react-pdf/renderer";
+import { formatNumber } from "@/lib/utils";
 
 Font.register({
   family: "Roboto",
@@ -226,13 +227,17 @@ const OrderPdf = (wzData: any) => {
                 <Text style={styles.tableCell}>{item.product_name}</Text>
               </View>
               <View style={[styles.tableCol, { width: "17%" }]}>
-                <Text style={styles.tableCell}>{item.quantity}</Text>
+                <Text style={styles.tableCell}>
+                  {formatNumber(item.quantity)}
+                </Text>
               </View>
               <View style={[styles.tableCol, { width: "7%" }]}>
                 <Text style={styles.tableCell}>{item.quant_unit}</Text>
               </View>
               <View style={[styles.tableCol, { width: "17%" }]}>
-                <Text style={styles.tableCell}>{item.helper_quantity}</Text>
+                <Text style={styles.tableCell}>
+                  {formatNumber(item.helper_quantity)}
+                </Text>
               </View>
               <View style={[styles.tableCol, { width: "6%" }]}>
                 <Text style={styles.tableCell}>{item.help_quant_unit}</Text>

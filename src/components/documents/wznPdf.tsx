@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/utils";
 import {
   Page,
   Text,
@@ -97,12 +98,21 @@ const formatDate = (dateString: string): string => {
 };
 
 const calculateTotalM3 = (lineItems) => {
-  return lineItems
-    .reduce((total, item) => {
-      const quantity = parseFloat(item.quantity) || 0;
-      return total + quantity;
-    }, 0)
-    .toFixed(4);
+  console.log("Calculating total m3");
+  let total = 0;
+
+  lineItems.forEach((item, index) => {
+    if (item.quant_unit === "m3") {
+      const quantity = parseFloat(item.quantity);
+      if (isNaN(quantity)) {
+        console.warn(`Invalid quantity for item ${index + 1}:`, item.quantity);
+      } else {
+        total += quantity;
+      }
+    }
+  });
+  const roundedTotal = parseFloat(total.toFixed(4));
+  return roundedTotal;
 };
 
 const date = new Date().toLocaleDateString("pl-PL");
@@ -178,7 +188,9 @@ const renderTable = (unitType, lineItems) => {
               <Text style={styles.tableCell}>{item.product_name}</Text>
             </View>
             <View style={[styles.tableCol, { width: "33%" }]}>
-              <Text style={styles.tableCell}>{item.helper_quantity}</Text>
+              <Text style={styles.tableCell}>
+                {formatNumber(item.helper_quantity)}
+              </Text>
             </View>
             <View style={[styles.tableCol, { width: "14%" }]}>
               <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
@@ -219,13 +231,17 @@ const renderTable = (unitType, lineItems) => {
               <Text style={styles.tableCell}>{item.product_name}</Text>
             </View>
             <View style={[styles.tableCol, { width: "17%" }]}>
-              <Text style={styles.tableCell}>{item.quantity}</Text>
+              <Text style={styles.tableCell}>
+                {formatNumber(item.quantity)}
+              </Text>
             </View>
             <View style={[styles.tableCol, { width: "7%" }]}>
               <Text style={styles.tableCell}>{item.quant_unit}</Text>
             </View>
             <View style={[styles.tableCol, { width: "17%" }]}>
-              <Text style={styles.tableCell}>{item.helper_quantity}</Text>
+              <Text style={styles.tableCell}>
+                {formatNumber(item.helper_quantity)}
+              </Text>
             </View>
             <View style={[styles.tableCol, { width: "6%" }]}>
               <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
@@ -237,7 +253,7 @@ const renderTable = (unitType, lineItems) => {
             <Text style={styles.tableCell}>Suma m³</Text>
           </View>
           <View style={[styles.tableCol, { width: "47%" }]}>
-            <Text style={styles.tableCell}>{totalM3}</Text>
+            <Text style={styles.tableCell}>{formatNumber(totalM3)}</Text>
           </View>
         </View>
       </View>

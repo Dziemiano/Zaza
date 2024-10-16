@@ -18,6 +18,7 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import { FormError } from "./formError";
 import { FormSuccess } from "./formSuccess";
 
@@ -28,6 +29,7 @@ export const LoginForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -38,15 +40,18 @@ export const LoginForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setIsLoading(true);
     setError("");
     setSuccess("");
 
     startTransition(() => {
-      login(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-        setOpen(true);
-      });
+      login(values)
+        .then((data) => {
+          setError(data?.error);
+          setSuccess(data?.success);
+          setOpen(true);
+        })
+        .finally(() => setIsLoading(false));
     });
   };
   return (
@@ -106,6 +111,7 @@ export const LoginForm = () => {
             <Button
               className="mt-4 text-black text-lg w-48  h-10  py-3 bg-white rounded-lg shadow "
               type="submit"
+              disabled={isLoading}
             >
               Zaloguj się
             </Button>
@@ -156,6 +162,7 @@ export const LoginForm = () => {
           </Dialog> */}
         </form>
       </Form>
+      <Spinner isLoading={isLoading} />
     </CardWrapper>
   );
 };

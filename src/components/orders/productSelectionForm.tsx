@@ -38,7 +38,12 @@ export default function ProductSelectionForm({
   products,
   lineItems = [],
 }) {
-  const { control, setValue, getValues } = useFormContext();
+  const {
+    control,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useFormContext();
   const { fields, append, remove, replace, update } = useFieldArray({
     control,
     name,
@@ -197,9 +202,21 @@ export default function ProductSelectionForm({
     [remove]
   );
 
+  const displayCellError = (err: { message: string }) =>
+    err?.message && (
+      <p className="text-xs mr-1 leading-none text-destructive">
+        {err.message}
+      </p>
+    );
+
   return (
     <Card className="w-full">
       <CardContent className="p-6">
+        {errors.line_items?.message && (
+          <p className="text-sm font-small text-destructive mt-1 h5  min-h-5 max-h-5">
+            {errors.line_items.message as string}
+          </p>
+        )}
         <div className="mb-4 flex justify-between items-center">
           <ProductSelectionDialog
             products={products}
@@ -222,7 +239,7 @@ export default function ProductSelectionForm({
                 <TableHead>Jednostka</TableHead>
                 <TableHead>Ilość pomocnicza</TableHead>
                 <TableHead>Jednostka pomocnicza</TableHead>
-                <TableHead>Cena netto</TableHead>
+                <TableHead>Cena netto *</TableHead>
                 <TableHead>Rabat</TableHead>
                 <TableHead>Wartość netto</TableHead>
                 <TableHead>VAT</TableHead>
@@ -254,18 +271,32 @@ export default function ProductSelectionForm({
                     : parseFloat(item.netto_cost) *
                       (1 + parseFloat(item.vat_percentage) / 100)
                 ).toFixed(2);
+
+                const itemErrors =
+                  errors.line_items &&
+                  Array.isArray(errors.line_items) &&
+                  errors.line_items[index];
+
                 return (
                   <TableRow key={item.id}>
                     <TableCell>{String(index + 1).padStart(2, "0")}</TableCell>
                     <TableCell>{item.product_name}</TableCell>
                     <TableCell>
                       <Input
-                        value={item.quantity.toString()}
+                        value={item.quantity?.toString()}
                         onChange={(e) =>
                           handleInputChange(index, "quantity", e.target.value)
                         }
-                        className="w-20"
+                        className={`w-20 ${
+                          itemErrors?.quantity
+                            ? "text-red-500 border-red-500"
+                            : ""
+                        }`}
+                        type="number"
+                        step=".0001"
+                        min="0"
                       />
+                      {displayCellError(itemErrors?.quantity)}
                     </TableCell>
                     <TableCell>
                       {renderQuantitySelect(item, index, "quant_unit")}
@@ -280,8 +311,16 @@ export default function ProductSelectionForm({
                             e.target.value
                           )
                         }
-                        className="w-20"
+                        className={`w-20 ${
+                          itemErrors?.helper_quantity
+                            ? "text-red-500 border-red-500"
+                            : ""
+                        }`}
+                        type="number"
+                        step=".0001"
+                        min="0"
                       />
+                      {displayCellError(itemErrors?.helper_quantity)}
                     </TableCell>
                     <TableCell>
                       {renderQuantitySelect(item, index, "help_quant_unit")}
@@ -292,8 +331,16 @@ export default function ProductSelectionForm({
                         onChange={(e) =>
                           handleInputChange(index, "netto_cost", e.target.value)
                         }
-                        className="w-24"
+                        className={`w-24 ${
+                          itemErrors?.netto_cost
+                            ? "text-red-500 border-red-500"
+                            : ""
+                        }`}
+                        type="number"
+                        step=".01"
+                        min="0"
                       />
+                      {displayCellError(itemErrors?.netto_cost)}
                     </TableCell>
                     <TableCell>
                       <Input
@@ -302,6 +349,9 @@ export default function ProductSelectionForm({
                           handleInputChange(index, "discount", e.target.value)
                         }
                         className="w-24"
+                        type="number"
+                        step=".01"
+                        min="0"
                       />
                     </TableCell>
                     <TableCell>{formatNumber(nettoValue, true)} zł</TableCell>

@@ -15,6 +15,8 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
+
 import {
   Dialog,
   DialogContent,
@@ -34,6 +36,7 @@ export const PasswordResetForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof ResetSchema>>({
     resolver: zodResolver(ResetSchema),
@@ -43,13 +46,17 @@ export const PasswordResetForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof ResetSchema>) => {
+    setIsLoading(true);
+
     setError("");
     setSuccess("");
     startTransition(() => {
-      reset(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-      });
+      reset(values)
+        .then((data) => {
+          setError(data?.error);
+          setSuccess(data?.success);
+        })
+        .finally(() => setIsLoading(false));
     });
   };
   return (
@@ -92,11 +99,14 @@ export const PasswordResetForm = () => {
             <FormError message={error} />
             <FormSuccess message={success} />
             <DialogFooter>
-              <Button type="submit">Reset password</Button>
+              <Button type="submit" disabled={isLoading}>
+                Reset password
+              </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
+      <Spinner isLoading={isLoading} />
     </Dialog>
   );
 };
