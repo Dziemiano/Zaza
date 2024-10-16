@@ -160,11 +160,6 @@ export const OrderSchema = z.object({
   customer: z.any().optional().nullable(),
 });
 
-export const OrderSchemaEdit = OrderSchema.extend({
-  transport_cost: nonNegNumberReq,
-  created_at: z.date().nullable(),
-});
-
 export const ContactPersonSchema = z.object({
   id: z.string().optional(),
   firstname: z.string().optional(),

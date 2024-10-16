@@ -59,7 +59,7 @@ import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { OrderSchema, OrderSchemaEdit } from "@/schemas";
+import { OrderSchema } from "@/schemas";
 
 import { useEffect, useState, useTransition, memo } from "react";
 import { Input } from "../ui/input";
@@ -216,7 +216,7 @@ export const OrderForm = ({
   }, [copyMode, editMode, order, user]);
 
   const form = useForm<z.infer<typeof OrderSchema>>({
-    resolver: zodResolver(editMode ? OrderSchemaEdit : OrderSchema),
+    resolver: zodResolver(OrderSchema),
     reValidateMode: "onChange",
     defaultValues,
   });
