@@ -70,6 +70,8 @@ import { DeliveryFormElement } from "./deliveryFormElement";
 import { getCustomerFromGus } from "@/lib/regon";
 
 import Link from "next/link";
+import { useToast } from "@/hooks/useToast";
+import { ToastVariants } from "../ui/toast";
 
 const errorNames = {
   customer: [
@@ -119,16 +121,13 @@ export const CustomerForm = ({
   addByNip?: boolean;
   nip?: string;
 }) => {
-  //TODO error handling
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [isError, setIsError] = useState<boolean>(false);
   const [fetchCustomerError, setFetchCustomerError] = useState<boolean>(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof CustomerSchema>>({
     resolver: zodResolver(CustomerSchema),
@@ -166,34 +165,54 @@ export const CustomerForm = ({
       JSON.parse(JSON.stringify(values))
     );
 
-    setError("");
-    setSuccess("");
     console.log(form);
     startTransition(() => {
       if (customer) {
         updateCustomer(customer.id, data)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Użytkownik został zaktualizowany",
+              variant: ToastVariants.success,
+            });
             resetForm();
             setOpen(false);
             setIsConfirmDialogOpen(false);
+          })
+          .catch((error) => {
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
           })
           .finally(() => setIsLoading(false));
       } else {
         createCustomer(data)
           .then((response) => {
             if (response?.error) {
-              setError(response?.error.message);
-              setIsError(true);
+              toast({
+                title: "Wystąpił błąd!",
+                description: response.error.message,
+                variant: ToastVariants.error,
+              });
               throw new Error(response.error.message);
             }
-            setSuccess(response?.success);
+            toast({
+              title: "Sukces!",
+              description: "Nowy użytkownik został utworzony",
+              variant: ToastVariants.success,
+            });
             resetForm();
             setOpen(false);
             setIsConfirmDialogOpen(false);
           })
           .catch((error) => {
-            setError(error.message);
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
           })
           .finally(() => setIsLoading(false));
       }
@@ -1035,18 +1054,6 @@ export const CustomerForm = ({
           </div>
           <DialogFooter>
             <Button onClick={() => setIsSuccessDialogOpen(false)}>OK</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isError} onOpenChange={setIsError}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Błąd</DialogTitle>
-          </DialogHeader>
-          <div>{error}</div>
-          <DialogFooter>
-            <Button onClick={() => setIsError(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
