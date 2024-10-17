@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { Suspense } from "react";
 
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/toaster";
 
 const objectivity = localFont({
   src: "../../public/fonts/objectivity.regular.otf",
@@ -29,6 +30,7 @@ export default function RootLayout({
         <Suspense fallback={<div>Loading...</div>}>
           <body className={`${objectivity.variable} font-sans`}>
             {children}
+            <Toaster />
           </body>
         </Suspense>
       </SessionProvider>
