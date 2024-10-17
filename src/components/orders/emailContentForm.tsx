@@ -22,6 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { OrderSchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { updateOrderEmail } from "@/actions/orders";
+import { ToastVariants } from "../ui/toast";
+import { useToast } from "@/hooks/useToast";
 
 export interface EmailContentFormProps {
   order?: z.infer<typeof OrderSchema>;
@@ -30,8 +32,8 @@ export interface EmailContentFormProps {
 export const EmailContentForm = ({ order }: EmailContentFormProps) => {
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof OrderSchema>>({
     resolver: zodResolver(OrderSchema),
@@ -68,10 +70,22 @@ export const EmailContentForm = ({ order }: EmailContentFormProps) => {
     };
 
     startTransition(() => {
-      updateOrderEmail(data, formData).then((response) => {
-        setSuccess(response?.success);
-        setOpen(false);
-      });
+      updateOrderEmail(data, formData)
+        .then((response) => {
+          toast({
+            title: "Sukces!",
+            description: response.success,
+            variant: ToastVariants.success,
+          });
+          setOpen(false);
+        })
+        .catch((error) => {
+          toast({
+            title: "Wystąpił błąd!",
+            description: error.message,
+            variant: ToastVariants.error,
+          });
+        });
     });
     setEditMode(false);
     setOpen(false);

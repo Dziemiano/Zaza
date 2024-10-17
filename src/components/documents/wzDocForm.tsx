@@ -60,6 +60,8 @@ import { createWz } from "@/actions/documents";
 import { WzCheckPdf } from "./wznCheckPdf";
 import WzLineItemsComponent from "./wzLineItemElement";
 import { he } from "date-fns/locale";
+import { useToast } from "@/hooks/useToast";
+import { ToastVariants } from "../ui/toast";
 
 type WzDocFormProps = {
   editMode?: boolean;
@@ -68,11 +70,10 @@ type WzDocFormProps = {
 
 export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
   //TODO: add form validation, error handling
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
 
   const userId = useCurrentUser()?.id;
 
@@ -176,11 +177,19 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
       createWz(wzData)
         .then((response) => {
           if (response.success) {
-            setSuccess(response.success);
+            toast({
+              title: "Sukces!",
+              description: "Utworzono dokument WZ",
+              variant: ToastVariants.success,
+            });
             setOpen(false);
             resetForm();
           } else {
-            setError("Failed to create WZ document");
+            toast({
+              title: "Wystąpił błąd!",
+              description: "Nie udało się utworzyć dokumentu WZ",
+              variant: ToastVariants.error,
+            });
           }
         })
         .finally(() => setIsLoading(false));
