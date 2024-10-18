@@ -66,7 +66,7 @@ export const CommentSectionView = ({
           }
         >
           {categories.map(([key, val]) => (
-            <AccordionItem value={key}>
+            <AccordionItem value={key} key={key}>
               <AccordionTrigger>{val}</AccordionTrigger>
               <AccordionContent>
                 {renderComments(key as CommentCategory)}

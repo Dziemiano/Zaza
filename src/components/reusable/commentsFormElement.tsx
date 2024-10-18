@@ -98,7 +98,7 @@ export const CommentSection = ({ name, isProduct }: CommentSectionProps) => {
       }
     });
     return grouped;
-  }, [watchedComments]);
+  }, [watchedComments, commentSuggestions]);
 
   useEffect(() => {
     if (lastAddedCategory) {
@@ -173,7 +173,7 @@ export const CommentSection = ({ name, isProduct }: CommentSectionProps) => {
           className="basis-2/5"
         >
           {categories.map(([key, val]) => (
-            <AccordionItem value={key}>
+            <AccordionItem value={key} key={key}>
               <AccordionTrigger>{val}</AccordionTrigger>
               <AccordionContent>
                 {renderComments(key as CommentCategory)}
@@ -196,7 +196,9 @@ export const CommentSection = ({ name, isProduct }: CommentSectionProps) => {
               </SelectTrigger>
               <SelectContent>
                 {categories.map(([key, val]) => (
-                  <SelectItem value={key}>{val}</SelectItem>
+                  <SelectItem value={key} key={key}>
+                    {val}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
