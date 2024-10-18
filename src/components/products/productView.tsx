@@ -8,9 +8,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CommentSectionView } from "../reusable/commentsViewElement";
 import { ProductForm } from "./productsForm";
 import Link from "next/link";
 import { formatNumber } from "@/lib/utils";
+import { Comment } from "@/types/orders.types";
 
 interface Product {
   id: string;
@@ -308,6 +310,10 @@ export const ProductView = ({
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="comments">
+            <CommentSectionView comments={product?.comments} isProduct={true} />
           </TabsContent>
         </Tabs>
       </DialogContent>

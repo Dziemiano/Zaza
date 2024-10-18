@@ -10,8 +10,6 @@ import { randomUUID } from "crypto";
 import { logEvent } from "@/actions/logs";
 import { Status } from "@/types/orders.types";
 
-type CommentCategory = "general" | "transport" | "warehouse";
-
 export const createOrder = async (
   data: {
     transport_cost: string;
