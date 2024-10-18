@@ -55,43 +55,10 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     });
   };
 
-  const handleQuantityChange = (originalIndex, value) => {
-    const originalQuantity = parseFloat(fields[originalIndex].quantity);
-    const newQuantity = parseFloat(value);
-
-    if (newQuantity > originalQuantity) {
-      update(originalIndex, {
-        ...fields[originalIndex],
-        wz_quantity: originalQuantity.toString(),
-      });
-    } else {
-      update(originalIndex, { ...fields[originalIndex], wz_quantity: value });
-    }
-  };
-
   const handleUnitChange = (originalIndex, value) => {
     update(originalIndex, { ...fields[originalIndex], wz_unit: value });
   };
 
-  // New helper handlers
-  const handleHelpQuantityChange = (originalIndex, value) => {
-    const originalHelperQuantity = parseFloat(
-      fields[originalIndex].original_helper_quantity
-    );
-    let newValue = value;
-
-    if (value !== "" && !isNaN(parseFloat(value))) {
-      const newQuantity = parseFloat(value);
-      if (newQuantity > originalHelperQuantity) {
-        newValue = originalHelperQuantity.toString();
-      }
-    }
-
-    update(originalIndex, {
-      ...fields[originalIndex],
-      helper_quantity: newValue,
-    });
-  };
   const handleHelpUnitChange = (originalIndex, value) => {
     update(originalIndex, { ...fields[originalIndex], help_quant_unit: value });
   };
@@ -131,14 +98,7 @@ export const WzLineItemsComponent = ({ lineItems }) => {
                 <TableCell>{formatNumber(item.quantity)}</TableCell>
                 <TableCell>{item.quant_unit}</TableCell>
                 <TableCell>
-                  <Input
-                    value={item.wz_quantity || ""}
-                    onChange={(e) =>
-                      handleQuantityChange(originalIndex, e.target.value)
-                    }
-                    disabled={!item.included_in_wz}
-                    className="w-20"
-                  />
+                  <QuantityChange index={originalIndex} />
                 </TableCell>
                 <TableCell>
                   <Select
@@ -161,14 +121,7 @@ export const WzLineItemsComponent = ({ lineItems }) => {
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <Input
-                    value={item.helper_quantity || ""}
-                    onChange={(e) =>
-                      handleHelpQuantityChange(originalIndex, e.target.value)
-                    }
-                    disabled={!item.included_in_wz}
-                    className="w-20"
-                  />
+                  <HelpQuantityChange index={originalIndex} />
                 </TableCell>
                 <TableCell>
                   <Select
@@ -200,3 +153,72 @@ export const WzLineItemsComponent = ({ lineItems }) => {
 };
 
 export default WzLineItemsComponent;
+
+export const HelpQuantityChange = ({ index }) => {
+  const { control } = useFormContext();
+  const { fields, update } = useFieldArray({
+    control,
+    name: "line_items",
+    keyName: "key",
+  });
+
+  const handleHelpQuantityChange = (originalIndex, value) => {
+    const originalHelperQuantity = parseFloat(
+      fields[originalIndex].original_helper_quantity
+    );
+    let newValue = value;
+
+    if (value !== "" && !isNaN(parseFloat(value))) {
+      const newQuantity = parseFloat(value);
+      if (newQuantity > originalHelperQuantity) {
+        newValue = originalHelperQuantity.toString();
+      }
+    }
+
+    update(originalIndex, {
+      ...fields[originalIndex],
+      helper_quantity: newValue,
+    });
+  };
+
+  return (
+    <Input
+      value={fields[index].helper_quantity || ""}
+      onChange={(e) => handleHelpQuantityChange(index, e.target.value)}
+      disabled={!fields[index].included_in_wz}
+      className="w-20"
+    />
+  );
+};
+
+export const QuantityChange = ({ index }) => {
+  const { control } = useFormContext();
+  const { fields, update } = useFieldArray({
+    control,
+    name: "line_items",
+    keyName: "key",
+  });
+
+  const handleQuantityChange = (originalIndex, value) => {
+    const originalQuantity = parseFloat(fields[originalIndex].quantity);
+    const newQuantity = parseFloat(value);
+
+    if (newQuantity > originalQuantity) {
+      update(originalIndex, {
+        ...fields[originalIndex],
+        wz_quantity: originalQuantity.toString(),
+      });
+    } else {
+      update(originalIndex, { ...fields[originalIndex], wz_quantity: value });
+    }
+  };
+
+  return (
+    <Input
+      value={fields[index].wz_quantity || ""}
+      onChange={(e) => handleQuantityChange(index, e.target.value)}
+      disabled={!fields[index].included_in_wz}
+      className="w-20"
+    />
+  );
+};
