@@ -38,11 +38,7 @@ type CommentSectionProps = {
 };
 
 const predefinedOrderComments: Record<CommentOrderCategory, string[]> = {
-  general: [
-    "Uwaga zawiera styropian",
-    "Pocieranie niewskazane",
-    "Gotówka do odbioru [kwota]",
-  ],
+  general: ["Gotówka do odbioru [kwota]"],
   transport: [
     "Ostrożnie przy transporcie",
     "Towar na solówce",
