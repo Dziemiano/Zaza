@@ -153,10 +153,11 @@ export const OrderSchema = z.object({
     .optional()
     .nullable(),
   comments: z.array(CommentSchema).optional().nullable(),
+  //LINE ITEMS TO BE REWORKED
   line_items: z
     .array(LineItemSchema)
     .min(1, { message: "Wybierz przynajmniej jeden produkt" }),
-  lineItems: z.array(LineItemSchema).optional().nullable(),
+  lineItems: z.any().optional().nullable(),
   user: z.any().optional().nullable(),
   customer: z.any().optional().nullable(),
 });

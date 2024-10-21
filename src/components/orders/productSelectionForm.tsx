@@ -202,6 +202,29 @@ export default function ProductSelectionForm({
     [append]
   );
 
+  const calculateM3Total = useCallback(() => {
+    return fields
+      .reduce((total, item) => {
+        // Handle items with m3 as main unit
+        if (item.quant_unit === "m3") {
+          return total + (parseFloat(item.quantity) || 0);
+        }
+        // Calculate m3 from dimensions for other items
+        const product = products.find((p) => p.id === item.product_id);
+        if (product && product.height && product.length && product.width) {
+          const quantity = parseFloat(item.quantity) || 0;
+          const m3PerUnit = calculateM3(
+            product.height,
+            product.length,
+            product.width
+          );
+          return total + quantity * m3PerUnit;
+        }
+        return total;
+      }, 0)
+      .toFixed(3);
+  }, [fields, products, calculateM3]);
+
   const calculateNettoTotal = useCallback(() => {
     return fields
       .reduce((total, item) => {
@@ -268,10 +291,16 @@ export default function ProductSelectionForm({
             products={products}
             onProductsSelected={handleProductsSelected}
           />
-          <div className="font-semibold">
-            Suma netto: {formatNumber(calculateNettoTotal(), true)} zł
-            <br />
-            Suma brutto: {formatNumber(calculateBruttoTotal(), true)} zł
+          <div className="font-semibold flex flex-row">
+            <div className="mr-5">
+              Suma m³: {formatNumber(calculateM3Total(), true)} m³
+            </div>
+            <div className="mr-5">
+              Suma netto: {formatNumber(calculateNettoTotal(), true)} zł
+            </div>
+            <div>
+              Suma brutto: {formatNumber(calculateBruttoTotal(), true)} zł
+            </div>
           </div>
         </div>
         <div className="max-h-[300px] overflow-auto">
