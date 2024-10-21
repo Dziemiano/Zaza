@@ -8,6 +8,7 @@ export enum Category {
   Granulate = "Granulat",
   Wool = "Wełna",
   Slant = "Skos",
+  Inthermo = "Inthermo",
   Others = "Inne",
 }
 
