@@ -97,6 +97,8 @@ export type Payment = {
   status: "pending" | "processing" | "success" | "failed";
   email: string;
 };
+const shouldUseHelperQuantity = (category: string) =>
+  category === "Formatki" || category === "Kształtki";
 
 export const columns: ColumnDef<unknown, any>[] = [
   {
@@ -146,7 +148,6 @@ export const columns: ColumnDef<unknown, any>[] = [
       <div className="capitalize">{row.getValue("product_name")}</div>
     ),
   },
-
   {
     accessorKey: "quantity",
     id: "quantity",
@@ -161,23 +162,27 @@ export const columns: ColumnDef<unknown, any>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => (
-      <div className="lowercase">
-        {row.getValue("quantity")} {row.original.quant_unit}
-      </div>
-    ),
+    cell: ({ row }) => {
+      return (
+        <div className="lowercase">
+          {row.getValue("quantity")} {row.original.quant_unit}
+        </div>
+      );
+    },
   },
-  {
-    accessorKey: "is_help_quantity",
-    header: "Przeliczenie objętości",
-    cell: ({ row }) => <Switch checked={row.getValue("is_help_quantity")} />,
-  },
+  //PART OF TABLE TO BE DISCUSSED
+  // {
+  //   accessorKey: "is_help_quantity",
+  //   header: "Przeliczenie objętości",
+  //   cell: ({ row }) => <Switch checked={row.getValue("is_help_quantity")} />,
+  // },
   {
     accessorKey: "helper_quantity",
     header: "Ilość pomocnicza",
     cell: ({ row }) => (
       <div className="capitalize">
-        {formatNumber(row.getValue("helper_quantity"))} {row.original.help_quant_unit}
+        {formatNumber(row.getValue("helper_quantity"))}{" "}
+        {row.original.help_quant_unit}
       </div>
     ),
   },
@@ -205,9 +210,16 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "wartosc_netto",
     header: "Wartość Netto",
     cell: ({ row }) => {
-      const quantity = parseFloat(row.getValue("quantity"));
-      const nettoCost = parseFloat(row.getValue("netto_cost"));
+      const category = row.original?.product?.category;
+      const useHelper = shouldUseHelperQuantity(category);
+
+      const quantity = useHelper
+        ? parseFloat(row.original.helper_quantity || "0")
+        : parseFloat(row.getValue("quantity") || "0");
+
+      const nettoCost = parseFloat(row.getValue("netto_cost") || "0");
       const wartoscNetto = quantity * nettoCost;
+
       return (
         <div className="text-right">{formatNumber(wartoscNetto, true)}</div>
       );
@@ -217,9 +229,16 @@ export const columns: ColumnDef<unknown, any>[] = [
     id: "wartosc_brutto",
     header: "Wartość Brutto",
     cell: ({ row }) => {
-      const quantity = parseFloat(row.getValue("quantity"));
-      const bruttoCost = parseFloat(row.getValue("brutto_cost"));
+      const category = row.original?.product?.category;
+      const useHelper = shouldUseHelperQuantity(category);
+
+      const quantity = useHelper
+        ? parseFloat(row.original.helper_quantity || "0")
+        : parseFloat(row.getValue("quantity") || "0");
+
+      const bruttoCost = parseFloat(row.getValue("brutto_cost") || "0");
       const wartoscBrutto = quantity * bruttoCost;
+
       return (
         <div className="text-right">{formatNumber(wartoscBrutto, true)}</div>
       );
@@ -313,37 +332,38 @@ export function OrderProductsTable({ orders }: OrdersTableProps) {
     },
   });
 
-  const {
-    totalQuantity,
-    totalCenaNetto,
-    totalCenaBrutto,
-    totalWartoscNetto,
-    totalWartoscBrutto,
-  } = useMemo(() => {
-    return table.getRowModel().rows.reduce(
-      (totals, row) => {
-        const quantity = parseFloat(row.getValue("quantity") || "0");
-        const cenaNetto = parseFloat(row.getValue("netto_cost") || "0");
-        const cenaBrutto = parseFloat(row.getValue("brutto_cost") || "0");
-        const wartoscNetto = quantity * cenaNetto;
-        const wartoscBrutto = quantity * cenaBrutto;
-        return {
-          totalQuantity: totals.totalQuantity + quantity,
-          totalCenaNetto: totals.totalCenaNetto + cenaNetto,
-          totalCenaBrutto: totals.totalCenaBrutto + cenaBrutto,
-          totalWartoscNetto: totals.totalWartoscNetto + wartoscNetto,
-          totalWartoscBrutto: totals.totalWartoscBrutto + wartoscBrutto,
-        };
-      },
-      {
-        totalQuantity: 0,
-        totalCenaNetto: 0,
-        totalCenaBrutto: 0,
-        totalWartoscNetto: 0,
-        totalWartoscBrutto: 0,
-      }
-    );
-  }, [table.getRowModel().rows]);
+  const { totalQuantity, totalWartoscNetto, totalWartoscBrutto } =
+    useMemo(() => {
+      return table.getRowModel().rows.reduce(
+        (totals, row) => {
+          // Always use main quantity for m³ total
+          const mainQuantity = parseFloat(row.getValue("quantity") || "0");
+
+          // Use helper quantity for value calculations when appropriate
+          const category = row.original?.product?.category;
+          const useHelper = shouldUseHelperQuantity(category);
+          const calculationQuantity = useHelper
+            ? parseFloat(row.original.helper_quantity || "0")
+            : mainQuantity;
+
+          const cenaNetto = parseFloat(row.getValue("netto_cost") || "0");
+          const cenaBrutto = parseFloat(row.getValue("brutto_cost") || "0");
+          const wartoscNetto = calculationQuantity * cenaNetto;
+          const wartoscBrutto = calculationQuantity * cenaBrutto;
+
+          return {
+            totalQuantity: totals.totalQuantity + mainQuantity,
+            totalWartoscNetto: totals.totalWartoscNetto + wartoscNetto,
+            totalWartoscBrutto: totals.totalWartoscBrutto + wartoscBrutto,
+          };
+        },
+        {
+          totalQuantity: 0,
+          totalWartoscNetto: 0,
+          totalWartoscBrutto: 0,
+        }
+      );
+    }, [table.getRowModel().rows]);
 
   return (
     <div className="relative">
@@ -407,7 +427,7 @@ export function OrderProductsTable({ orders }: OrdersTableProps) {
               <TableCell></TableCell> {/* Lp. */}
               <TableCell></TableCell> {/* Nazwa pozycji */}
               <TableCell className="text-right">
-                {totalQuantity.toFixed(2)} m3
+                {totalQuantity > 0 && `${totalQuantity.toFixed(4)} m³`}
               </TableCell>{" "}
               {/* Ilość */}
               <TableCell></TableCell> {/* Przeliczenie objętości */}

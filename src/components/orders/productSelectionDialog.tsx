@@ -104,7 +104,7 @@ export default function ProductSelectionDialog({
             />
             <ScrollArea className="h-[300px]">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-white">
                   <TableRow>
                     <TableHead>Nr.</TableHead>
                     <TableHead>Grupa</TableHead>
@@ -139,7 +139,7 @@ export default function ProductSelectionDialog({
             />
             <ScrollArea className="h-[300px]">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-white">
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
                     <TableHead>Nr.</TableHead>
@@ -168,7 +168,8 @@ export default function ProductSelectionDialog({
                       </TableCell>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>
-                        {formatNumber(product.actual_volume)} {product.primary_unit}
+                        {formatNumber(product.actual_volume)}{" "}
+                        {product.primary_unit}
                       </TableCell>
                       <TableCell>
                         {formatNumber(product.price, true)} zł

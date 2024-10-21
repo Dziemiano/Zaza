@@ -61,6 +61,8 @@ import { ProductSchema } from "@/schemas";
 import { createProduct, updateProduct } from "@/actions/products";
 import SelectFormElement from "../reusable/selectFormElement";
 import Link from "next/link";
+import { useToast } from "@/hooks/useToast";
+import { ToastVariants } from "../ui/toast";
 
 type ProductFormProps = {
   editMode?: boolean;
@@ -122,14 +124,12 @@ export const ProductForm = ({
   onProductCreated,
   id,
 }: ProductFormProps) => {
-  //TODO: add form validation, error handling
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const userId = useCurrentUser()?.id;
 
@@ -219,31 +219,63 @@ export const ProductForm = ({
     startTransition(() => {
       if (product && product.id) {
         updateProduct(product.id, data, formData)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Produkt został zaktualizowany",
+              variant: ToastVariants.success,
+            });
             setOpen(false);
             setIsConfirmDialogOpen(false);
             resetForm();
           })
+          .catch((error) => {
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
+          })
           .finally(() => setIsLoading(false));
-        console.log("Order updated successfully");
       } else if (oneTime) {
         createProduct(data, formData)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Utworzono nowy produkt",
+              variant: ToastVariants.success,
+            });
             setOpen(false);
             setIsConfirmDialogOpen(false);
             resetForm();
             onProductCreated(data);
           })
+          .catch((error) => {
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
+          })
           .finally(() => setIsLoading(false));
       } else {
         createProduct(data, formData)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Utworzono nowy produkt",
+              variant: ToastVariants.success,
+            });
             setOpen(false);
             setIsConfirmDialogOpen(false);
             resetForm();
+          })
+          .catch((error) => {
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
           })
           .finally(() => setIsLoading(false));
       }
@@ -358,6 +390,7 @@ export const ProductForm = ({
     { label: Category.Granulate, value: "granulate" },
     { label: Category.Wool, value: "wool" },
     { label: Category.Slant, value: "slant" },
+    { label: Category.Inthermo, value: "inthermo" },
     { label: Category.Others, value: "others" },
   ];
 
@@ -1139,11 +1172,7 @@ export const ProductForm = ({
 
                   <TabsContent value="comments">
                     <div className="flex flex-row mt-10">
-                      <CommentSection
-                        control={form.control}
-                        setValue={form.setValue}
-                        name="comments"
-                      />
+                      <CommentSection name="comments" isProduct={true} />
                     </div>
                   </TabsContent>
                 </Tabs>

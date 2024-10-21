@@ -79,6 +79,8 @@ import { ProductForm } from "../products/productsForm";
 import { FixedSizeList as List } from "react-window";
 import { CustomerForm } from "../customers/customerForm";
 import ProductSelectionForm from "./productSelectionForm";
+import { useToast } from "@/hooks/useToast";
+import { ToastVariants } from "../ui/toast";
 
 export type OrderFormProps = {
   customers: any[];
@@ -131,8 +133,6 @@ export const OrderForm = ({
   copyMode,
 }: OrderFormProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -140,12 +140,13 @@ export const OrderForm = ({
   const [nipStatus, setNipStatus] = useState<string | undefined>("");
   const [tempProducts, setTempProducts] = useState([]);
 
-  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [product_id, setProduct_id] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(undefined);
+
+  const { toast } = useToast();
 
   const customerList = customers.map((customer) => {
     return {
@@ -339,51 +340,68 @@ export const OrderForm = ({
       JSON.parse(JSON.stringify(values))
     );
 
-    setError("");
-    setSuccess("");
-
     startTransition(() => {
       if (editMode) {
         updateOrder(data, formData)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Zamówienie zostało zaktualizowane",
+              variant: ToastVariants.success,
+            });
             setTempProducts([]);
             setOpen(false);
             setIsConfirmDialogOpen(false);
             resetForm();
-            setIsSuccessDialogOpen(true);
           })
           .catch((error) => {
-            setError(error.message);
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
           })
           .finally(() => setIsLoading(false));
       } else if (copyMode) {
         createOrder(data, formData)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Nowe zamówienie zostało utworzone",
+              variant: ToastVariants.success,
+            });
             setTempProducts([]);
             setOpen(false);
             setIsConfirmDialogOpen(false);
             resetForm();
-            setIsSuccessDialogOpen(true);
           })
           .catch((error) => {
-            setError(error.message);
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
           })
           .finally(() => setIsLoading(false));
       } else {
         createOrder(data, formData)
-          .then((response) => {
-            setSuccess(response?.success);
+          .then(() => {
+            toast({
+              title: "Sukces!",
+              description: "Nowe zamówienie zostało utworzone",
+              variant: ToastVariants.success,
+            });
             setTempProducts([]);
             setOpen(false);
             setIsConfirmDialogOpen(false);
             resetForm();
-            setIsSuccessDialogOpen(true);
           })
           .catch((error) => {
-            setError(error.message);
-            console.log(error);
+            toast({
+              title: "Wystąpił błąd!",
+              description: error.message,
+              variant: ToastVariants.error,
+            });
           })
           .finally(() => setIsLoading(false));
       }
@@ -428,6 +446,11 @@ export const OrderForm = ({
       setNipOpen(true);
       setNipStatus(data.subject.statusVat);
     } catch (err) {
+      toast({
+        title: "Error checking NIP",
+        description: err?.message,
+        variant: ToastVariants.error,
+      });
       console.error("Error checking NIP:", err);
     }
     const matchingCustomer = customerList.find(
@@ -1261,11 +1284,7 @@ export const OrderForm = ({
 
                   <TabsContent value="comments" className="p-5">
                     <div className="flex flex-row mt-10">
-                      <CommentSection
-                        control={form.control}
-                        setValue={form.setValue}
-                        name="comments"
-                      />
+                      <CommentSection name="comments" />
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -1311,22 +1330,6 @@ export const OrderForm = ({
             >
               Zamknij
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sukces!</DialogTitle>
-          </DialogHeader>
-          <div>
-            {order
-              ? "Zamówienie zostało zaktualizowane pomyślnie."
-              : "Nowe zamówienie zostało utworzone pomyślnie."}
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setIsSuccessDialogOpen(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

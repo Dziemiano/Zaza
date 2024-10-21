@@ -68,6 +68,27 @@ export default function ProductSelectionForm({
     return (height * length * width) / 1000000000;
   }, []);
 
+  const shouldUseHelperQuantity = useCallback(
+    (productId) => {
+      const product = products.find((p) => p.id === productId);
+      return (
+        product &&
+        (product.category === "Kształtki" || product.category === "Formatki")
+      );
+    },
+    [products]
+  );
+
+  const getEffectiveQuantity = useCallback(
+    (item) => {
+      if (shouldUseHelperQuantity(item.product_id) && item.helper_quantity) {
+        return parseFloat(item.helper_quantity) || 0;
+      }
+      return parseFloat(item.quantity) || 0;
+    },
+    [shouldUseHelperQuantity]
+  );
+
   const handleInputChange = useCallback(
     (index, field, value) => {
       const updatedItem = { ...fields[index], [field]: value };
@@ -111,7 +132,6 @@ export default function ProductSelectionForm({
           );
           setM3FirstProvided((prev) => ({ ...prev, [index]: true }));
         } else if (updatedItem.quant_unit !== "m3") {
-          // Reset helper fields and m3FirstProvided flag when main unit is not m3
           updatedItem.help_quant_unit = "";
           updatedItem.helper_quantity = "";
           setM3FirstProvided((prev) => ({ ...prev, [index]: false }));
@@ -129,11 +149,41 @@ export default function ProductSelectionForm({
     [fields, update, calculateM3, products, m3FirstProvided]
   );
 
+  const calculateItemValues = useCallback(
+    (item) => {
+      const quantity = getEffectiveQuantity(item);
+      const nettoPrice = parseFloat(item.netto_cost) || 0;
+      const discount = parseFloat(item.discount) || 0;
+      const vatPercentage = parseFloat(item.vat_percentage) || 0;
+
+      // Calculate discounted netto price
+      const discountedNettoPrice = nettoPrice * ((100 - discount) / 100);
+
+      // Calculate total netto value (quantity * discounted price)
+      const nettoValue = quantity * discountedNettoPrice;
+
+      // Calculate brutto price (single unit with VAT)
+      const bruttoCost = discountedNettoPrice * (1 + vatPercentage / 100);
+
+      // Calculate total brutto value
+      const bruttoValue = nettoValue * (1 + vatPercentage / 100);
+
+      return {
+        nettoValue: nettoValue.toFixed(2),
+        bruttoCost: bruttoCost.toFixed(2),
+        bruttoValue: bruttoValue.toFixed(2),
+        discountedNettoPrice: discountedNettoPrice.toFixed(2),
+      };
+    },
+    [getEffectiveQuantity]
+  );
+
   const handleProductsSelected = useCallback(
     (selectedProducts) => {
       const newLineItems = selectedProducts.map((product) => ({
         product_id: product.id,
         product_name: product.name,
+        product_category: product.category,
         quantity: "0",
         quant_unit: product.primary_unit,
         helper_quantity: "",
@@ -152,27 +202,46 @@ export default function ProductSelectionForm({
     [append]
   );
 
+  const calculateM3Total = useCallback(() => {
+    return fields
+      .reduce((total, item) => {
+        // Handle items with m3 as main unit
+        if (item.quant_unit === "m3") {
+          return total + (parseFloat(item.quantity) || 0);
+        }
+        // Calculate m3 from dimensions for other items
+        const product = products.find((p) => p.id === item.product_id);
+        if (product && product.height && product.length && product.width) {
+          const quantity = parseFloat(item.quantity) || 0;
+          const m3PerUnit = calculateM3(
+            product.height,
+            product.length,
+            product.width
+          );
+          return total + quantity * m3PerUnit;
+        }
+        return total;
+      }, 0)
+      .toFixed(3);
+  }, [fields, products, calculateM3]);
+
   const calculateNettoTotal = useCallback(() => {
     return fields
       .reduce((total, item) => {
-        const quantity = parseFloat(item.quantity) || 0;
-        const nettoPrice = parseFloat(item.netto_cost) || 0;
-        return total + quantity * nettoPrice;
+        const { nettoValue } = calculateItemValues(item);
+        return total + parseFloat(nettoValue);
       }, 0)
       .toFixed(2);
-  }, [fields]);
+  }, [fields, calculateItemValues]);
 
   const calculateBruttoTotal = useCallback(() => {
     return fields
       .reduce((total, item) => {
-        const quantity = parseFloat(item.quantity) || 0;
-        const nettoPrice = parseFloat(item.netto_cost) || 0;
-        const vatPercentage = parseFloat(item.vat_percentage) || 0;
-        const bruttoPrice = nettoPrice * (1 + vatPercentage / 100);
-        return total + quantity * bruttoPrice;
+        const { bruttoValue } = calculateItemValues(item);
+        return total + parseFloat(bruttoValue);
       }, 0)
       .toFixed(2);
-  }, [fields]);
+  }, [fields, calculateItemValues]);
 
   const renderQuantitySelect = useCallback(
     (item, index, field) => (
@@ -222,10 +291,16 @@ export default function ProductSelectionForm({
             products={products}
             onProductsSelected={handleProductsSelected}
           />
-          <div className="font-semibold">
-            Suma netto: {formatNumber(calculateNettoTotal(), true)} zł
-            <br />
-            Suma brutto: {formatNumber(calculateBruttoTotal(), true)} zł
+          <div className="font-semibold flex flex-row">
+            <div className="mr-5">
+              Suma m³: {formatNumber(calculateM3Total(), true)} m³
+            </div>
+            <div className="mr-5">
+              Suma netto: {formatNumber(calculateNettoTotal(), true)} zł
+            </div>
+            <div>
+              Suma brutto: {formatNumber(calculateBruttoTotal(), true)} zł
+            </div>
           </div>
         </div>
         <div className="max-h-[300px] overflow-auto">
@@ -243,34 +318,19 @@ export default function ProductSelectionForm({
                 <TableHead>Rabat</TableHead>
                 <TableHead>Wartość netto</TableHead>
                 <TableHead>VAT</TableHead>
-                <TableHead>Cena netto</TableHead>
+                <TableHead>Cena brutto</TableHead>
                 <TableHead>Wartość brutto</TableHead>
                 <TableHead>Akcje</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {fields.map((item, index) => {
-                const nettoValue = (
-                  item.discount
-                    ? (parseFloat(item.quantity) *
-                        parseFloat(item.netto_cost) *
-                        parseFloat(100 - item.discount)) /
-                      100
-                    : parseFloat(item.quantity) * parseFloat(item.netto_cost)
-                ).toFixed(2);
-                const bruttoValue = (
-                  parseFloat(nettoValue) *
-                  (1 + parseFloat(item.vat_percentage) / 100)
-                ).toFixed(2);
-                const bruttoCost = (
-                  item.discount
-                    ? (parseFloat(item.netto_cost) *
-                        (1 + parseFloat(item.vat_percentage) / 100) *
-                        parseFloat(100 - item.discount)) /
-                      100
-                    : parseFloat(item.netto_cost) *
-                      (1 + parseFloat(item.vat_percentage) / 100)
-                ).toFixed(2);
+                const {
+                  nettoValue,
+                  bruttoCost,
+                  bruttoValue,
+                  discountedNettoPrice,
+                } = calculateItemValues(item);
 
                 const itemErrors =
                   errors.line_items &&
