@@ -2,7 +2,11 @@ import { auth } from "@/auth";
 import { OrdersTable } from "@/components/orders/ordersTable";
 
 import { Button } from "@/components/ui/button";
-import { getAllOrders, getOrdersByUserId } from "@/data/orders";
+import {
+  getAllOrders,
+  getOrdersByUserId,
+  getOrdersByCustomerSalesman,
+} from "@/data/orders";
 import { Suspense } from "react";
 import { OrderForm } from "@/components/orders/ordersForm";
 import { getAllCustomers } from "@/data/customers";
@@ -23,17 +27,18 @@ const OrderPage = async () => {
   };
 
   const orders =
-    user.role === "SALESMAN"
-      ? await getOrdersByUserId(user.id)
-      : await getAllOrders();
+    user.role === "SALESMAN" && user.id
+      ? [
+          ...((await getOrdersByUserId(user.id)) ?? []),
+          ...((await getOrdersByCustomerSalesman(user.id)) ?? []),
+        ]
+      : (await getAllOrders()) ?? [];
 
   const customers = await getAllCustomers();
 
   const products = await getAllProducts();
 
   const salesmem = await getAllSalesmen();
-
-  const userOrders = orders?.filter((order) => order.created_by === user.id);
 
   return (
     <div className="m-5">

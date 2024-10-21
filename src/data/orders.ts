@@ -78,3 +78,25 @@ export const getOrdersByUserId = async (userId: string) => {
     return null;
   }
 };
+
+export const getOrdersByCustomerSalesman = async (userId: string) => {
+  try {
+    const orders = await db.order.findMany({
+      where: {
+        customer: {
+          salesman_id: userId,
+        },
+      },
+      include: {
+        customer: true,
+        lineItems: true,
+        user: true,
+        wz: true,
+        comments: true,
+      },
+    });
+    return orders;
+  } catch (error) {
+    return null;
+  }
+};
