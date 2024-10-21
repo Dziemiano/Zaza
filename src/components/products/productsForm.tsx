@@ -390,8 +390,8 @@ export const ProductForm = ({
     { label: Category.Granulate, value: "granulate" },
     { label: Category.Wool, value: "wool" },
     { label: Category.Slant, value: "slant" },
+    { label: Category.Inthermo, value: "inthermo" },
     { label: Category.Others, value: "others" },
-    { Label: Category.Inthermo, value: "inthermo" },
   ];
 
   const eps_types = [
