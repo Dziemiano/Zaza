@@ -85,12 +85,14 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
       order_id: order?.id,
       created_at: new Date(),
       type: order?.wz_type,
-      line_items: order?.lineItems?.map((item) => ({
-        ...item,
-        included_in_wz: false,
-        wz_quantity: "",
-        wz_unit: item.quant_unit,
-      })),
+      line_items: order?.lineItems
+        ?.filter((item) => !item.is_used && item.wz === null)
+        .map((item) => ({
+          ...item,
+          included_in_wz: false,
+          wz_quantity: "",
+          wz_unit: item.quant_unit,
+        })),
     },
   });
 
@@ -203,7 +205,7 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
           {"Wystaw dokument WZ"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-[70%] h-[70vh] flex flex-col overflow-auto">
+      <DialogContent className="min-w-[85%] h-[80vh] flex flex-col overflow-auto">
         <DialogHeader className="flex-shrink-0">
           <div className="flex flex-col justify-center">
             <div className="flex gap-4 items-center text-black">

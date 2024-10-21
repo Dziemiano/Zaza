@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import {
   Table,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatNumber } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const quantityUnits = [
   { value: "m3", label: "m3" },
@@ -38,29 +39,44 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     keyName: "key",
   });
 
-  const filteredFields = useMemo(() => {
-    return fields.filter(
-      (item) =>
-        item?.included_in_wz !== null && !item.is_used && item.wz === null
-    );
-  }, [fields]);
+  const [selectAllCheckbox, setSelectAllCheckbox] = useState(false);
+  const [checkIfAllSelected, setCheckIfAllSelected] = useState(false);
 
-  const handleCheckboxChange = (originalIndex, checked) => {
-    update(originalIndex, {
-      ...fields[originalIndex],
-      included_in_wz: checked,
-      wz_quantity: checked ? fields[originalIndex].quantity : "",
-      helper_quantity: checked ? fields[originalIndex].helper_quantity : "",
-      original_helper_quantity: fields[originalIndex].helper_quantity,
+  useEffect(() => {
+    const selected = fields.filter((item) => item.included_in_wz);
+    if (selected.length === fields.length) {
+      !selectAllCheckbox && setSelectAllCheckbox(true);
+    } else {
+      selectAllCheckbox && setSelectAllCheckbox(false);
+    }
+    setCheckIfAllSelected(false);
+  }, [checkIfAllSelected]);
+
+  const toggleSelectAll = (value: boolean) => {
+    fields.forEach((_item, index) => {
+      handleCheckboxChange(index, value);
     });
+    setSelectAllCheckbox(value);
   };
 
-  const handleUnitChange = (originalIndex, value) => {
-    update(originalIndex, { ...fields[originalIndex], wz_unit: value });
+  const handleCheckboxChange = (index, checked) => {
+    const field = fields[index];
+    update(index, {
+      ...field,
+      included_in_wz: checked,
+      wz_quantity: checked ? field.quantity : "",
+      helper_quantity: checked ? field.helper_quantity : "",
+      original_helper_quantity: field.helper_quantity,
+    });
+    setCheckIfAllSelected(true);
   };
 
-  const handleHelpUnitChange = (originalIndex, value) => {
-    update(originalIndex, { ...fields[originalIndex], help_quant_unit: value });
+  const handleUnitChange = (index, value) => {
+    update(index, { ...fields[index], wz_unit: value });
+  };
+
+  const handleHelpUnitChange = (index, value) => {
+    update(index, { ...fields[index], help_quant_unit: value });
   };
 
   return (
@@ -69,7 +85,21 @@ export const WzLineItemsComponent = ({ lineItems }) => {
       <Table>
         <TableHeader>
           <TableRow className="bg-white">
-            <TableHead className="w-[50px]">Uwzględnij</TableHead>
+            <TableHead className="flex items-center">
+              <Tooltip>
+                <TooltipTrigger>
+                  <Checkbox
+                    checked={selectAllCheckbox}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                    className="mr-2 mb-1"
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  Uwzględnij wszystkie
+                </TooltipContent>
+              </Tooltip>
+            </TableHead>
             <TableHead>Nazwa produktu</TableHead>
             <TableHead>Ilość pozostała w zamówieniu</TableHead>
             <TableHead>Jednostka</TableHead>
@@ -80,72 +110,63 @@ export const WzLineItemsComponent = ({ lineItems }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredFields.map((item) => {
-            const originalIndex = fields.findIndex(
-              (field) => field.key === item.key
-            );
-            return (
-              <TableRow key={item.key}>
-                <TableCell>
-                  <Checkbox
-                    checked={item.included_in_wz}
-                    onCheckedChange={(checked) =>
-                      handleCheckboxChange(originalIndex, checked)
-                    }
-                  />
-                </TableCell>
-                <TableCell>{item.product_name}</TableCell>
-                <TableCell>{formatNumber(item.quantity)}</TableCell>
-                <TableCell>{item.quant_unit}</TableCell>
-                <TableCell>
-                  <QuantityChange index={originalIndex} />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={item.wz_unit || ""}
-                    onValueChange={(value) =>
-                      handleUnitChange(originalIndex, value)
-                    }
-                    disabled={!item.included_in_wz}
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {quantityUnits.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <HelpQuantityChange index={originalIndex} />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={item.help_quant_unit || ""}
-                    onValueChange={(value) =>
-                      handleHelpUnitChange(originalIndex, value)
-                    }
-                    disabled={!item.included_in_wz}
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {quantityUnits.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {fields.map((item, index) => (
+            <TableRow key={item.key}>
+              <TableCell>
+                <Checkbox
+                  checked={item.included_in_wz}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange(index, checked)
+                  }
+                />
+              </TableCell>
+              <TableCell>{item.product_name}</TableCell>
+              <TableCell>{formatNumber(item.quantity)}</TableCell>
+              <TableCell>{item.quant_unit}</TableCell>
+              <TableCell>
+                <QuantityChange index={index} />
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={item.wz_unit || ""}
+                  onValueChange={(value) => handleUnitChange(index, value)}
+                  disabled={!item.included_in_wz}
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quantityUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <HelpQuantityChange index={index} />
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={item.help_quant_unit || ""}
+                  onValueChange={(value) => handleHelpUnitChange(index, value)}
+                  disabled={!item.included_in_wz}
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quantityUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
@@ -162,9 +183,9 @@ export const HelpQuantityChange = ({ index }) => {
     keyName: "key",
   });
 
-  const handleHelpQuantityChange = (originalIndex, value) => {
+  const handleHelpQuantityChange = (index, value) => {
     const originalHelperQuantity = parseFloat(
-      fields[originalIndex].original_helper_quantity
+      fields[index].original_helper_quantity
     );
     let newValue = value;
 
@@ -175,8 +196,8 @@ export const HelpQuantityChange = ({ index }) => {
       }
     }
 
-    update(originalIndex, {
-      ...fields[originalIndex],
+    update(index, {
+      ...fields[index],
       helper_quantity: newValue,
     });
   };
@@ -199,17 +220,17 @@ export const QuantityChange = ({ index }) => {
     keyName: "key",
   });
 
-  const handleQuantityChange = (originalIndex, value) => {
-    const originalQuantity = parseFloat(fields[originalIndex].quantity);
+  const handleQuantityChange = (index, value) => {
+    const originalQuantity = parseFloat(fields[index].quantity);
     const newQuantity = parseFloat(value);
 
     if (newQuantity > originalQuantity) {
-      update(originalIndex, {
-        ...fields[originalIndex],
+      update(index, {
+        ...fields[index],
         wz_quantity: originalQuantity.toString(),
       });
     } else {
-      update(originalIndex, { ...fields[originalIndex], wz_quantity: value });
+      update(index, { ...fields[index], wz_quantity: value });
     }
   };
 
