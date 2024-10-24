@@ -614,7 +614,9 @@ export const OrderForm = ({
                         />
                         <div className="flex flex-row">
                           <Button
-                            onClick={fetchVatStatus}
+                            onClick={(e) => {
+                              e.preventDefault(), fetchVatStatus();
+                            }}
                             variant={"zazaGrey"}
                             className="w-max font-normal mr-4"
                           >
