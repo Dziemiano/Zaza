@@ -51,12 +51,17 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     }
     setCheckIfAllSelected(false);
   }, [checkIfAllSelected]);
-
   const toggleSelectAll = (value: boolean) => {
-    fields.forEach((_item, index) => {
-      handleCheckboxChange(index, value);
-    });
-    setSelectAllCheckbox(value);
+    // Prevent form submission
+    const handleSelectAll = (e) => {
+      e.preventDefault();
+      fields.forEach((_item, index) => {
+        handleCheckboxChange(index, value);
+      });
+      setSelectAllCheckbox(value);
+    };
+
+    handleSelectAll({ preventDefault: () => {} });
   };
 
   const handleCheckboxChange = (index, checked) => {
@@ -87,13 +92,16 @@ export const WzLineItemsComponent = ({ lineItems }) => {
           <TableRow className="bg-white">
             <TableHead className="flex items-center">
               <Tooltip>
-                <TooltipTrigger>
-                  <Checkbox
-                    checked={selectAllCheckbox}
-                    onCheckedChange={toggleSelectAll}
-                    aria-label="Select all"
-                    className="mr-2 mb-1"
-                  />
+                <TooltipTrigger asChild>
+                  <div onClick={(e) => e.preventDefault()}>
+                    <Checkbox
+                      checked={selectAllCheckbox}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                      className="mr-2 mb-1"
+                      type="button"
+                    />
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent side="right">
                   Uwzględnij wszystkie
@@ -113,12 +121,15 @@ export const WzLineItemsComponent = ({ lineItems }) => {
           {fields.map((item, index) => (
             <TableRow key={item.key}>
               <TableCell>
-                <Checkbox
-                  checked={item.included_in_wz}
-                  onCheckedChange={(checked) =>
-                    handleCheckboxChange(index, checked)
-                  }
-                />
+                <div onClick={(e) => e.preventDefault()}>
+                  <Checkbox
+                    checked={item.included_in_wz}
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange(index, checked)
+                    }
+                    type="button"
+                  />
+                </div>
               </TableCell>
               <TableCell>{item.product_name}</TableCell>
               <TableCell>{formatNumber(item.quantity)}</TableCell>
