@@ -272,7 +272,9 @@ export const OrderForm = ({
             value={searchTerm}
             key={data[index].id}
             onSelect={() => {
-              form.setValue(`customer_id`, data[index].value);
+              form.setValue("customer_id", data[index].value);
+              form.setValue("nip", data[index].nip); // Add this line to set NIP
+              setSelectedCustomer(data[index]);
               setIsCustomerDropdownOpen(false);
             }}
             style={style}
@@ -280,7 +282,7 @@ export const OrderForm = ({
             <Check
               className={cn(
                 "mr-2 h-4 w-4",
-                data[index].id === form.getValues(`customer_id`)
+                data[index].id === form.getValues("customer_id")
                   ? "opacity-100"
                   : "opacity-0"
               )}
@@ -439,12 +441,35 @@ export const OrderForm = ({
     },
   ];
 
+  // Update NIP when customer is selected from dropdown
+  const handleCustomerSelect = (customerId: string) => {
+    const selectedCustomer = customerList.find(
+      (customer) => customer.value === customerId
+    );
+    if (selectedCustomer) {
+      form.setValue("customer_id", customerId);
+      form.setValue("nip", selectedCustomer.nip);
+      setSelectedCustomer(selectedCustomer);
+      setIsCustomerDropdownOpen(false);
+    }
+  };
+
   const fetchVatStatus = async () => {
-    const nip = copyMode ? order?.customer.nip : form.getValues("nip");
+    const nip = form.getValues("nip");
     try {
       const data = await checkNIP(nip);
       setNipOpen(true);
       setNipStatus(data.subject.statusVat);
+
+      // Find customer with matching NIP
+      const matchingCustomer = customerList.find(
+        (customer) => customer.nip === nip
+      );
+      if (matchingCustomer) {
+        form.setValue("customer_id", matchingCustomer.value);
+        setSelectedCustomer(matchingCustomer);
+        setIsCustomerDropdownOpen(false);
+      }
     } catch (err) {
       toast({
         title: "Error checking NIP",
@@ -452,14 +477,6 @@ export const OrderForm = ({
         variant: ToastVariants.error,
       });
       console.error("Error checking NIP:", err);
-    }
-    const matchingCustomer = customerList.find(
-      (customer) => customer.nip === nip
-    );
-    if (matchingCustomer) {
-      form.setValue("customer_id", matchingCustomer.value);
-      setSelectedCustomer(matchingCustomer);
-      setIsCustomerDropdownOpen(false);
     }
   };
 
@@ -572,16 +589,22 @@ export const OrderForm = ({
                             <FormItem className="flex flex-col mb-10">
                               <FormControl>
                                 <Input
-                                  defaultValue={order?.customer.nip}
+                                  defaultValue={order?.customer?.nip}
                                   className="w-full"
                                   disabled={isPending}
                                   {...field}
                                   onChange={(e) => {
                                     field.onChange(e);
-                                    form.setValue(
-                                      "customer.nip",
-                                      e.target.value
-                                    );
+                                    // Clear customer selection if NIP is manually changed
+                                    if (
+                                      !customerList.some(
+                                        (customer) =>
+                                          customer.nip === e.target.value
+                                      )
+                                    ) {
+                                      form.setValue("customer_id", undefined);
+                                      setSelectedCustomer(undefined);
+                                    }
                                   }}
                                 />
                               </FormControl>
@@ -663,6 +686,7 @@ export const OrderForm = ({
                                           height={250}
                                           itemSize={30}
                                           width={"full"}
+                                          onSelect={handleCustomerSelect}
                                         />
                                       </CommandGroup>
                                     </CommandList>
