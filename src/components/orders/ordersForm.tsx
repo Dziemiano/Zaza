@@ -228,18 +228,20 @@ export const OrderForm = ({
     }
   }, [defaultValues, form]);
 
-  useEffect(() =>
-    console.log(
-      "ORDER",
-      order,
-      "FORM",
-      form,
-      "EDIT",
-      editMode,
-      "COPY",
-      copyMode
-    )
-  );
+  // FOR TESTING
+  // useEffect(() =>
+  //   console.log(
+  //     "ORDER",
+  //     order,
+  //     "FORM",
+  //     form,
+  //     "EDIT",
+  //     editMode,
+  //     "COPY",
+  //     copyMode
+  //   )
+  // );
+
   const isPersonalCollect = form.watch("personal_collect");
 
   const handleSearch = (value: string) => {
@@ -694,12 +696,6 @@ export const OrderForm = ({
                           id={product_id}
                         />
                       </div>
-                      {/* <OrderProductsTable orders={[]} /> */}
-                      {/* <LineItemFormElement
-                        name="line_items"
-                        products={allProducts}
-                        line_items={order?.lineItems}
-                      /> */}
                       <ProductSelectionForm
                         name="line_items"
                         products={allProducts}
