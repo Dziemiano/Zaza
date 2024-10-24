@@ -737,7 +737,8 @@ export default function ProductSelectionForm({
 
   const handleProductsSelected = useCallback(
     (selectedProducts) => {
-      const newLineItems = selectedProducts.map((product) => ({
+      const newLineItems = selectedProducts.map((product, index) => ({
+        ordinal_number: index + 1,
         product_id: product.id,
         product_name: product.name,
         product_category: product.category,
