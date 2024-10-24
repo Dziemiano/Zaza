@@ -98,6 +98,10 @@ export const createOrder = async (
     };
   });
 
+  console.log(processedData.line_items);
+
+  console.log(line_items_with_ids);
+
   // const mapComments = (comments: { [key in CommentCategory]: string[] }) => {
   //   return Object.entries(comments).flatMap(([category, categoryComments]) => {
   //     return categoryComments.map((commentBody) => ({
