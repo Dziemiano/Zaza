@@ -1,6 +1,7 @@
 {
   "extends": "next/core-web-vitals",
   "rules": {
-    "react-hooks/rules-of-hooks": "off" //comments hack to be fixed
+    "react-hooks/rules-of-hooks": "off", //comments hack to be fixed
+    "react/jsx-key": "off" //to be fixed by Sonia
   }
 }

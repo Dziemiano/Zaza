@@ -18,6 +18,11 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto",
     fontSize: 10,
     padding: 30,
+    display: "flex",
+    flexDirection: "column",
+  },
+  contentWrapper: {
+    flex: 1,
   },
   header: {
     fontSize: 14,
@@ -27,6 +32,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
+    flexGrow: 1,
     marginBottom: 10,
   },
   column: {
@@ -36,14 +42,13 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: "bold",
     marginRight: 5,
+    marginBottom: 2,
   },
   value: {
-    marginBottom: 3,
+    marginBottom: 2,
   },
   table: {
-    display: "table",
     width: "auto",
-    height: "auto",
     borderStyle: "solid",
     borderWidth: 1,
     borderRightWidth: 0,
@@ -69,14 +74,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
   },
   footer: {
-    position: "absolute",
-    bottom: 60,
-    left: 30,
-    right: 30,
+    marginTop: "auto",
+    paddingTop: 20,
   },
   signatureLine: {
     width: 120,
-    textOverflow: "ellipsis",
     borderTopWidth: 1,
     borderColor: "black",
     marginTop: 50,
@@ -273,108 +275,111 @@ const DeliveryNote = (wzData: any, index: number) => {
   return (
     <Document title="WZ">
       <Page size="A4" style={styles.page}>
-        <View style={styles.row}>
-          <Text style={styles.header}>
-            Wydanie {currentWz.type || ""} nr{" "}
-            {currentWz.doc_number || "****/**/****"}
-          </Text>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.column}>
-            <Text style={styles.label}>Sprzedawca:</Text>
-            <Text style={styles.value}>Amitec</Text>
-            <Text style={styles.value}>Agnieszka Misiek</Text>
-            <Text style={styles.value}>98-405 Galewice</Text>
-            <Text style={styles.value}>ul. Stefana Żeromskiego 1A</Text>
-            <Text style={styles.value}>NIP: 9970089494</Text>
-            <Text style={styles.value}>BDO: 000137095</Text>
-          </View>
-          <View style={styles.column}>
-            <Text>
-              <Text style={styles.label}>Data wystawienia:</Text>{" "}
-              {formatDate(currentWz.issue_date)}
-            </Text>
-            <Text>
-              <Text style={styles.label}>Data wydania:</Text>{" "}
-              {formatDate(currentWz.out_date)}
-            </Text>
-            <Text>
-              <Text style={styles.label}>Data transportu:</Text>{" "}
-              {formatDate(wzData.wzData.delivery_date)}
-            </Text>
-            <Text>
-              <Text style={styles.label}>Samochód:</Text> {currentWz.car}
-            </Text>
-            <Text>
-              <Text style={styles.label}>Kierowca:</Text> {currentWz.driver}
-            </Text>
-            <Text>
-              <Text style={styles.label}>Załadunek:</Text>{" "}
-              {currentWz.cargo_person}
-            </Text>
-            <Text>
-              <Text style={styles.label}>Odbiór osobisty:</Text>{" "}
-              {booleanToYesNo(wzData.wzData.personal_collect)}
+        {/* Header Section */}
+        <View>
+          <View style={styles.row}>
+            <Text style={styles.header}>
+              Wydanie {currentWz.type || ""} nr{" "}
+              {currentWz.doc_number || "****/**/****"}
             </Text>
           </View>
-        </View>
 
-        <View style={styles.row}>
-          <View style={styles.column}>
-            <Text style={styles.label}>Nabywca:</Text>
-            <Text style={styles.value}>{wzData.wzData.customer.name}</Text>
-            <Text style={styles.value}>
-              {wzData.wzData.customer.street} {wzData.wzData.customer.building}
-              {wzData.wzData.customer.premises}
-            </Text>
-            <Text style={styles.value}>
-              {wzData.wzData.customer.postal_code} {wzData.wzData.customer.city}
-            </Text>
-            <Text style={styles.value}>NIP: {wzData.wzData.customer.nip}</Text>
+          {/* Seller and Date Info */}
+          <View style={styles.row}>
+            <View style={styles.column}>
+              <Text style={styles.label}>Sprzedawca:</Text>
+              <Text style={styles.value}>Amitec</Text>
+              <Text style={styles.value}>Agnieszka Misiek</Text>
+              <Text style={styles.value}>98-405 Galewice</Text>
+              <Text style={styles.value}>ul. Stefana Żeromskiego 1A</Text>
+              <Text style={styles.value}>NIP: 9970089494</Text>
+              <Text style={styles.value}>BDO: 000137095</Text>
+            </View>
+            <View style={styles.column}>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Data wystawienia:</Text>{" "}
+                {formatDate(currentWz.issue_date)}
+              </Text>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Data wydania:</Text>{" "}
+                {formatDate(currentWz.out_date)}
+              </Text>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Data transportu:</Text>{" "}
+                {formatDate(wzData.wzData.delivery_date)}
+              </Text>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Samochód:</Text> {currentWz.car}
+              </Text>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Kierowca:</Text> {currentWz.driver}
+              </Text>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Załadunek:</Text>{" "}
+                {currentWz.cargo_person}
+              </Text>
+              <Text style={styles.value}>
+                <Text style={styles.label}>Odbiór osobisty:</Text>{" "}
+                {booleanToYesNo(wzData.wzData.personal_collect)}
+              </Text>
+            </View>
           </View>
-          <View style={styles.column}>
-            <Text style={styles.label}>Adres dostawy</Text>
-            <Text style={styles.value}>
-              {wzData.wzData.delivery_city} {wzData.wzData.delivery_street}{" "}
-              {wzData.wzData.delivery_building}{" "}
-              {wzData.wzData.delivery_premises}
+
+          {/* Customer Info */}
+          <View style={styles.row}>
+            <View style={styles.column}>
+              <Text style={styles.label}>Nabywca:</Text>
+              <Text style={styles.value}>{wzData.wzData.customer.name}</Text>
+              <Text style={styles.value}>
+                {wzData.wzData.customer.street}{" "}
+                {wzData.wzData.customer.building}
+                {wzData.wzData.customer.premises}
+              </Text>
+              <Text style={styles.value}>
+                {wzData.wzData.customer.postal_code}{" "}
+                {wzData.wzData.customer.city}
+              </Text>
+              <Text style={styles.value}>
+                NIP: {wzData.wzData.customer.nip}
+              </Text>
+            </View>
+            <View style={styles.column}>
+              <Text style={styles.label}>Adres dostawy</Text>
+              <Text style={styles.value}>
+                {wzData.wzData.delivery_city} {wzData.wzData.delivery_street}{" "}
+                {wzData.wzData.delivery_building}{" "}
+                {wzData.wzData.delivery_premises}
+              </Text>
+              <Text style={styles.value}>
+                {wzData.wzData.delivery_contact_number}
+              </Text>
+              <Text style={styles.label}>Informacje dodatkowe</Text>
+              <Text style={styles.value}>{currentWz.additional_info}</Text>
+            </View>
+          </View>
+
+          {/* Order Numbers */}
+          <View style={styles.row}>
+            <Text>
+              <Text style={styles.label}>Numer zamówienia:</Text>{" "}
+              {wzData.wzData.id}
             </Text>
-            <Text style={styles.value}>
-              {wzData.wzData.delivery_contact_number}
+          </View>
+          <View style={styles.row}>
+            <Text>
+              <Text style={styles.label}>Numer obcy:</Text>{" "}
+              {wzData.wzData.foreign_id}
             </Text>
-            <Text style={styles.label}>Informacje dodatkowe</Text>
-            <Text style={styles.value}>{currentWz.additional_info}</Text>
           </View>
         </View>
 
-        <View style={styles.row}>
-          <Text>
-            <Text style={styles.label}>Numer zamówienia:</Text>{" "}
-            {wzData.wzData.id}
-            {"  "}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text>
-            <Text style={styles.label}>Numer obcy:</Text>{" "}
-            {wzData.wzData.foreign_id}
-          </Text>
-        </View>
+        {/* Table Section - Fixed Height */}
+        <View>{renderTable(currentWz.unit_type, currentWz.line_items)}</View>
 
-        {renderTable(currentWz.unit_type, currentWz.line_items)}
-
-        <View style={styles.footer}>
-          <View
-            style={[
-              styles.row,
-              {
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              },
-            ]}
-          >
+        {/* Footer Section */}
+        <View style={styles.bottomSection}>
+          {/* Signatures */}
+          <View style={[styles.row, { justifyContent: "space-between" }]}>
             <View style={styles.column}>
               <View style={styles.signatureLine} />
               <Text>Podpis osoby uprawnionej</Text>
@@ -391,6 +396,8 @@ const DeliveryNote = (wzData: any, index: number) => {
               <Text>do odbioru dokumentu</Text>
             </View>
           </View>
+
+          {/* Contact Info */}
           <View style={styles.row}>
             <Text>Biuro: +48 531 581 109, Księgowość: +48 883 004 444</Text>
           </View>
@@ -398,7 +405,8 @@ const DeliveryNote = (wzData: any, index: number) => {
             <Text>Email: biuro@amitec.com.pl, amisiek@amitec.com.pl</Text>
           </View>
 
-          <View style={[styles.column, { marginTop: 5 }]}>
+          {/* Pallet Info */}
+          <View style={styles.column}>
             <Text style={[styles.label, { fontSize: 15 }]}>
               AMITEC - Palety zwrotne:
             </Text>

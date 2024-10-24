@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import {
   Table,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatNumber } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const quantityUnits = [
   { value: "m3", label: "m3" },
@@ -38,62 +39,49 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     keyName: "key",
   });
 
-  const filteredFields = useMemo(() => {
-    return fields.filter(
-      (item) =>
-        item?.included_in_wz !== null && !item.is_used && item.wz === null
-    );
-  }, [fields]);
+  const [selectAllCheckbox, setSelectAllCheckbox] = useState(false);
+  const [checkIfAllSelected, setCheckIfAllSelected] = useState(false);
 
-  const handleCheckboxChange = (originalIndex, checked) => {
-    update(originalIndex, {
-      ...fields[originalIndex],
-      included_in_wz: checked,
-      wz_quantity: checked ? fields[originalIndex].quantity : "",
-      helper_quantity: checked ? fields[originalIndex].helper_quantity : "",
-      original_helper_quantity: fields[originalIndex].helper_quantity,
-    });
-  };
-
-  const handleQuantityChange = (originalIndex, value) => {
-    const originalQuantity = parseFloat(fields[originalIndex].quantity);
-    const newQuantity = parseFloat(value);
-
-    if (newQuantity > originalQuantity) {
-      update(originalIndex, {
-        ...fields[originalIndex],
-        wz_quantity: originalQuantity.toString(),
-      });
+  useEffect(() => {
+    const selected = fields.filter((item) => item.included_in_wz);
+    if (selected.length === fields.length) {
+      !selectAllCheckbox && setSelectAllCheckbox(true);
     } else {
-      update(originalIndex, { ...fields[originalIndex], wz_quantity: value });
+      selectAllCheckbox && setSelectAllCheckbox(false);
     }
+    setCheckIfAllSelected(false);
+  }, [checkIfAllSelected]);
+  const toggleSelectAll = (value: boolean) => {
+    // Prevent form submission
+    const handleSelectAll = (e) => {
+      e.preventDefault();
+      fields.forEach((_item, index) => {
+        handleCheckboxChange(index, value);
+      });
+      setSelectAllCheckbox(value);
+    };
+
+    handleSelectAll({ preventDefault: () => {} });
   };
 
-  const handleUnitChange = (originalIndex, value) => {
-    update(originalIndex, { ...fields[originalIndex], wz_unit: value });
-  };
-
-  // New helper handlers
-  const handleHelpQuantityChange = (originalIndex, value) => {
-    const originalHelperQuantity = parseFloat(
-      fields[originalIndex].original_helper_quantity
-    );
-    let newValue = value;
-
-    if (value !== "" && !isNaN(parseFloat(value))) {
-      const newQuantity = parseFloat(value);
-      if (newQuantity > originalHelperQuantity) {
-        newValue = originalHelperQuantity.toString();
-      }
-    }
-
-    update(originalIndex, {
-      ...fields[originalIndex],
-      helper_quantity: newValue,
+  const handleCheckboxChange = (index, checked) => {
+    const field = fields[index];
+    update(index, {
+      ...field,
+      included_in_wz: checked,
+      wz_quantity: checked ? field.quantity : "",
+      helper_quantity: checked ? field.helper_quantity : "",
+      original_helper_quantity: field.helper_quantity,
     });
+    setCheckIfAllSelected(true);
   };
-  const handleHelpUnitChange = (originalIndex, value) => {
-    update(originalIndex, { ...fields[originalIndex], help_quant_unit: value });
+
+  const handleUnitChange = (index, value) => {
+    update(index, { ...fields[index], wz_unit: value });
+  };
+
+  const handleHelpUnitChange = (index, value) => {
+    update(index, { ...fields[index], help_quant_unit: value });
   };
 
   return (
@@ -102,7 +90,24 @@ export const WzLineItemsComponent = ({ lineItems }) => {
       <Table>
         <TableHeader>
           <TableRow className="bg-white">
-            <TableHead className="w-[50px]">Uwzględnij</TableHead>
+            <TableHead className="flex items-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div onClick={(e) => e.preventDefault()}>
+                    <Checkbox
+                      checked={selectAllCheckbox}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                      className="mr-2 mb-1"
+                      type="button"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  Uwzględnij wszystkie
+                </TooltipContent>
+              </Tooltip>
+            </TableHead>
             <TableHead>Nazwa produktu</TableHead>
             <TableHead>Ilość pozostała w zamówieniu</TableHead>
             <TableHead>Jednostka</TableHead>
@@ -113,86 +118,66 @@ export const WzLineItemsComponent = ({ lineItems }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredFields.map((item) => {
-            const originalIndex = fields.findIndex(
-              (field) => field.key === item.key
-            );
-            return (
-              <TableRow key={item.key}>
-                <TableCell>
+          {fields.map((item, index) => (
+            <TableRow key={item.key}>
+              <TableCell>
+                <div onClick={(e) => e.preventDefault()}>
                   <Checkbox
                     checked={item.included_in_wz}
                     onCheckedChange={(checked) =>
-                      handleCheckboxChange(originalIndex, checked)
+                      handleCheckboxChange(index, checked)
                     }
+                    type="button"
                   />
-                </TableCell>
-                <TableCell>{item.product_name}</TableCell>
-                <TableCell>{formatNumber(item.quantity)}</TableCell>
-                <TableCell>{item.quant_unit}</TableCell>
-                <TableCell>
-                  <Input
-                    value={item.wz_quantity || ""}
-                    onChange={(e) =>
-                      handleQuantityChange(originalIndex, e.target.value)
-                    }
-                    disabled={!item.included_in_wz}
-                    className="w-20"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={item.wz_unit || ""}
-                    onValueChange={(value) =>
-                      handleUnitChange(originalIndex, value)
-                    }
-                    disabled={!item.included_in_wz}
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {quantityUnits.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Input
-                    value={item.helper_quantity || ""}
-                    onChange={(e) =>
-                      handleHelpQuantityChange(originalIndex, e.target.value)
-                    }
-                    disabled={!item.included_in_wz}
-                    className="w-20"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={item.help_quant_unit || ""}
-                    onValueChange={(value) =>
-                      handleHelpUnitChange(originalIndex, value)
-                    }
-                    disabled={!item.included_in_wz}
-                  >
-                    <SelectTrigger className="w-[80px]">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {quantityUnits.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                </div>
+              </TableCell>
+              <TableCell>{item.product_name}</TableCell>
+              <TableCell>{formatNumber(item.quantity)}</TableCell>
+              <TableCell>{item.quant_unit}</TableCell>
+              <TableCell>
+                <QuantityChange index={index} />
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={item.wz_unit || ""}
+                  onValueChange={(value) => handleUnitChange(index, value)}
+                  disabled={!item.included_in_wz}
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quantityUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <HelpQuantityChange index={index} />
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={item.help_quant_unit || ""}
+                  onValueChange={(value) => handleHelpUnitChange(index, value)}
+                  disabled={!item.included_in_wz}
+                >
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quantityUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
@@ -200,3 +185,72 @@ export const WzLineItemsComponent = ({ lineItems }) => {
 };
 
 export default WzLineItemsComponent;
+
+export const HelpQuantityChange = ({ index }) => {
+  const { control } = useFormContext();
+  const { fields, update } = useFieldArray({
+    control,
+    name: "line_items",
+    keyName: "key",
+  });
+
+  const handleHelpQuantityChange = (index, value) => {
+    const originalHelperQuantity = parseFloat(
+      fields[index].original_helper_quantity
+    );
+    let newValue = value;
+
+    if (value !== "" && !isNaN(parseFloat(value))) {
+      const newQuantity = parseFloat(value);
+      if (newQuantity > originalHelperQuantity) {
+        newValue = originalHelperQuantity.toString();
+      }
+    }
+
+    update(index, {
+      ...fields[index],
+      helper_quantity: newValue,
+    });
+  };
+
+  return (
+    <Input
+      value={fields[index].helper_quantity || ""}
+      onChange={(e) => handleHelpQuantityChange(index, e.target.value)}
+      disabled={!fields[index].included_in_wz}
+      className="w-20"
+    />
+  );
+};
+
+export const QuantityChange = ({ index }) => {
+  const { control } = useFormContext();
+  const { fields, update } = useFieldArray({
+    control,
+    name: "line_items",
+    keyName: "key",
+  });
+
+  const handleQuantityChange = (index, value) => {
+    const originalQuantity = parseFloat(fields[index].quantity);
+    const newQuantity = parseFloat(value);
+
+    if (newQuantity > originalQuantity) {
+      update(index, {
+        ...fields[index],
+        wz_quantity: originalQuantity.toString(),
+      });
+    } else {
+      update(index, { ...fields[index], wz_quantity: value });
+    }
+  };
+
+  return (
+    <Input
+      value={fields[index].wz_quantity || ""}
+      onChange={(e) => handleQuantityChange(index, e.target.value)}
+      disabled={!fields[index].included_in_wz}
+      className="w-20"
+    />
+  );
+};

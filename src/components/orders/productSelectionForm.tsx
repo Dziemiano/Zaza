@@ -52,6 +52,12 @@ export default function ProductSelectionForm({
 
   const [test, setTest] = useState(true);
   const [m3FirstProvided, setM3FirstProvided] = useState({});
+  const [lastUpdatedField, setLastUpdatedField] = useState({
+    index: null,
+    field: null,
+  });
+
+  const independentUnits = ["kpl", "t", "mb"];
 
   useEffect(() => {
     if (lineItems.length > 0 && fields.length === 0 && test) {
@@ -80,17 +86,295 @@ export default function ProductSelectionForm({
   );
 
   const getEffectiveQuantity = useCallback(
-    (item) => {
-      if (shouldUseHelperQuantity(item.product_id) && item.helper_quantity) {
+    (item, product) => {
+      const isSpecialCategory =
+        product.category === "Kształtki" || product.category === "Formatki";
+
+      if (!isSpecialCategory) {
+        return parseFloat(item.quantity) || 0;
+      }
+
+      // For special categories, always use szt quantity
+      if (item.quant_unit === "szt") {
+        return parseFloat(item.quantity) || 0;
+      }
+
+      if (item.help_quant_unit === "szt") {
         return parseFloat(item.helper_quantity) || 0;
       }
+
+      // If main unit is m3 and no szt helper, calculate pieces
+      if (item.quant_unit === "m3") {
+        const m3Value = parseFloat(item.quantity) || 0;
+        const m3PerPiece = calculateM3(
+          product.height,
+          product.length,
+          product.width
+        );
+        return Math.floor(m3Value / m3PerPiece);
+      }
+
+      // If main unit is opak, calculate pieces from packages
+      if (item.quant_unit === "opak") {
+        const packages = parseFloat(item.quantity) || 0;
+        return packages * product.quantity_in_package;
+      }
+
       return parseFloat(item.quantity) || 0;
     },
-    [shouldUseHelperQuantity]
+    [calculateM3]
+  );
+
+  const calculateM2 = useCallback((length, width) => {
+    return (length * width) / 1000000;
+  }, []);
+
+  const calculateConversion = useCallback(
+    (value, fromUnit, toUnit, product) => {
+      if (!product || !value) return "";
+
+      const m3PerProduct = calculateM3(
+        product.height,
+        product.length,
+        product.width
+      );
+      const m2PerProduct = calculateM2(product.length, product.width);
+      const m3PerPackage = m3PerProduct * product.quantity_in_package;
+      const m2PerPackage = m2PerProduct * product.quantity_in_package;
+
+      const conversions = {
+        // Existing conversions
+        m3_to_opak: (val) => Math.ceil(val / m3PerPackage).toString(),
+        opak_to_m3: (val) => (val * m3PerPackage).toFixed(3),
+        szt_to_opak: (val) =>
+          Math.ceil(val / product.quantity_in_package).toString(),
+        opak_to_szt: (val) => (val * product.quantity_in_package).toString(),
+        m2_to_opak: (val) => Math.ceil(val / m2PerPackage).toString(),
+        opak_to_m2: (val) => (val * m2PerPackage).toFixed(3),
+
+        // New conversions
+        m3_to_m2: (val) => {
+          // Convert m3 to m2 based on product height
+          // m2 = m3 / height(in meters)
+          const heightInMeters = product.height / 1000; // Convert mm to m
+          return (parseFloat(val) / heightInMeters).toFixed(3);
+        },
+        m2_to_m3: (val) => {
+          // Convert m2 to m3 based on product height
+          const heightInMeters = product.height / 1000;
+          return (parseFloat(val) * heightInMeters).toFixed(3);
+        },
+        m3_to_kg: (val) => {
+          if (!product.weight) {
+            console.warn("Weight per m3 not specified for product");
+            return val;
+          }
+          // Convert m3 to kg using weight
+          return (parseFloat(val) * product.weight).toFixed(3);
+        },
+        kg_to_m3: (val) => {
+          if (!product.weight) {
+            console.warn("Weight per m3 not specified for product");
+            return val;
+          }
+          // Convert kg to m3 using weight
+          return (parseFloat(val) / product.weight).toFixed(3);
+        },
+        m2_to_kg: (val) => {
+          if (!product.weight) {
+            console.warn("Weight per m3 not specified for product");
+            return val;
+          }
+          // First convert m2 to m3, then to kg
+          const heightInMeters = product.height / 1000;
+          const m3Value = parseFloat(val) * heightInMeters;
+          return (m3Value * product.weight).toFixed(3);
+        },
+        kg_to_m2: (val) => {
+          if (!product.weight) {
+            console.warn("Weight per m3 not specified for product");
+            return val;
+          }
+          // First convert kg to m3, then to m2
+          const heightInMeters = product.height / 1000;
+          const m3Value = parseFloat(val) / product.weight;
+          return (m3Value / heightInMeters).toFixed(3);
+        },
+      };
+
+      const conversionKey = `${fromUnit}_to_${toUnit}`;
+      return conversions[conversionKey]
+        ? conversions[conversionKey](parseFloat(value))
+        : value;
+    },
+    [calculateM3, calculateM2]
+  );
+
+  const adjustQuantities = useCallback(
+    (item, product, shouldAdjustMain = false) => {
+      if (!item.quantity || !item.quant_unit || !item.help_quant_unit)
+        return item;
+
+      // Calculate helper quantity based on current main quantity
+      const helperQty = calculateConversion(
+        item.quantity,
+        item.quant_unit,
+        item.help_quant_unit,
+        product
+      );
+
+      if (!shouldAdjustMain) {
+        return {
+          ...item,
+          helper_quantity: helperQty,
+        };
+      }
+
+      // Calculate back to main quantity for package-based adjustments
+      const adjustedMainQty = calculateConversion(
+        helperQty,
+        item.help_quant_unit,
+        item.quant_unit,
+        product
+      );
+
+      return {
+        ...item,
+        quantity: adjustedMainQty,
+        helper_quantity: helperQty,
+      };
+    },
+    [calculateConversion]
+  );
+
+  const calculateSztFromM3 = useCallback(
+    (m3Value, product) => {
+      const m3PerPiece = calculateM3(
+        product.height,
+        product.length,
+        product.width
+      );
+      if (m3PerPiece <= 0) return "0";
+      return Math.ceil(parseFloat(m3Value) / m3PerPiece).toString();
+    },
+    [calculateM3]
+  );
+
+  const calculateM3FromSzt = useCallback(
+    (sztValue, product) => {
+      const m3PerPiece = calculateM3(
+        product.height,
+        product.length,
+        product.width
+      );
+      // Always return volume for whole pieces
+      return (Math.ceil(parseFloat(sztValue)) * m3PerPiece).toFixed(3);
+    },
+    [calculateM3]
+  );
+
+  const calculateM3FromOpak = useCallback(
+    (opakValue, product) => {
+      const m3PerProduct = calculateM3(
+        product.height,
+        product.length,
+        product.width
+      );
+      const m3PerPackage = m3PerProduct * product.quantity_in_package;
+      return (Math.ceil(parseFloat(opakValue)) * m3PerPackage).toFixed(3);
+    },
+    [calculateM3]
+  );
+
+  const calculateOpakFromM3 = useCallback(
+    (m3Value, product) => {
+      const m3PerProduct = calculateM3(
+        product.height,
+        product.length,
+        product.width
+      );
+      const m3PerPackage = m3PerProduct * product.quantity_in_package;
+      if (m3PerPackage <= 0) return "0";
+      return Math.ceil(parseFloat(m3Value) / m3PerPackage).toString();
+    },
+    [calculateM3]
+  );
+
+  const handleQuantityBlur = useCallback(
+    (index) => {
+      const item = fields[index];
+      const product = products.find((p) => p.id === item.product_id);
+
+      if (!product || !item.help_quant_unit) return;
+
+      if (item.quant_unit === "szt" && item.help_quant_unit === "m3") {
+        // When main unit is szt and helper is m3
+        const helperQty = calculateM3FromSzt(item.quantity || "0", product);
+        if (helperQty !== item.helper_quantity) {
+          update(index, {
+            ...item,
+            helper_quantity: helperQty,
+          });
+        }
+      } else if (item.quant_unit === "opak" && item.help_quant_unit === "m3") {
+        // When main unit is opak and helper is m3
+        const helperQty = calculateM3FromOpak(item.quantity || "0", product);
+        if (helperQty !== item.helper_quantity) {
+          update(index, {
+            ...item,
+            helper_quantity: helperQty,
+          });
+        }
+      } else if (item.help_quant_unit === "szt" && item.quant_unit === "m3") {
+        // When helper is szt and main is m3
+        const helperQty = calculateSztFromM3(item.quantity || "0", product);
+        const adjustedM3 = calculateM3FromSzt(helperQty, product);
+
+        if (
+          helperQty !== item.helper_quantity ||
+          adjustedM3 !== item.quantity
+        ) {
+          update(index, {
+            ...item,
+            quantity: adjustedM3,
+            helper_quantity: helperQty,
+          });
+        }
+      } else if (item.help_quant_unit === "opak" && item.quant_unit === "m3") {
+        // When helper is opak and main is m3
+        const helperQty = calculateOpakFromM3(item.quantity || "0", product);
+        const adjustedM3 = calculateM3FromOpak(helperQty, product);
+
+        if (
+          helperQty !== item.helper_quantity ||
+          adjustedM3 !== item.quantity
+        ) {
+          update(index, {
+            ...item,
+            quantity: adjustedM3,
+            helper_quantity: helperQty,
+          });
+        }
+      } else if (!independentUnits.includes(item.help_quant_unit)) {
+        const adjusted = adjustQuantities(item, product, true);
+        update(index, adjusted);
+      }
+    },
+    [
+      fields,
+      products,
+      update,
+      adjustQuantities,
+      calculateSztFromM3,
+      calculateM3FromSzt,
+      calculateM3FromOpak,
+      calculateOpakFromM3,
+      independentUnits,
+    ]
   );
 
   const handleInputChange = useCallback(
-    (index, field, value) => {
+    (index, field, value, isBlur = false) => {
       const updatedItem = { ...fields[index], [field]: value };
       const product = products.find((p) => p.id === updatedItem.product_id);
 
@@ -99,45 +383,230 @@ export default function ProductSelectionForm({
         return;
       }
 
-      const m3PerProduct = calculateM3(
-        product.height,
-        product.length,
-        product.width
-      );
-      const m3PerPackage = m3PerProduct * product.quantity_in_package;
+      setLastUpdatedField({ index, field });
 
-      const calculateHelperQuantity = (mainQuantity) => {
-        return mainQuantity && m3PerPackage
-          ? Math.ceil(parseFloat(mainQuantity) / m3PerPackage).toString()
-          : "";
-      };
+      switch (field) {
+        case "help_quant_unit":
+          // When helper unit is selected
+          updatedItem.help_quant_unit = value;
 
-      if (field === "quantity" && updatedItem.quant_unit === "m3") {
-        if (!m3FirstProvided[index]) {
-          updatedItem.help_quant_unit = "opak";
-          updatedItem.helper_quantity = calculateHelperQuantity(
-            updatedItem.quantity
-          );
-          setM3FirstProvided((prev) => ({ ...prev, [index]: true }));
-        }
-      } else if (field === "quant_unit") {
-        if (
-          updatedItem.quant_unit === "m3" &&
-          updatedItem.quantity !== "" &&
-          !m3FirstProvided[index]
-        ) {
-          updatedItem.help_quant_unit = "opak";
-          updatedItem.helper_quantity = calculateHelperQuantity(
-            updatedItem.quantity
-          );
-          setM3FirstProvided((prev) => ({ ...prev, [index]: true }));
-        } else if (updatedItem.quant_unit !== "m3") {
-          updatedItem.help_quant_unit = "";
-          updatedItem.helper_quantity = "";
-          setM3FirstProvided((prev) => ({ ...prev, [index]: false }));
-        }
+          if (updatedItem.quantity) {
+            if (independentUnits.includes(value)) {
+              // For independent units, keep existing helper quantity
+            } else if (updatedItem.quant_unit === "m3") {
+              // When main unit is m3
+              if (value === "szt") {
+                const helperQty = calculateSztFromM3(
+                  updatedItem.quantity,
+                  product
+                );
+                const adjustedM3 = calculateM3FromSzt(helperQty, product);
+                updatedItem.quantity = adjustedM3;
+                updatedItem.helper_quantity = helperQty;
+              } else if (value === "opak") {
+                const helperQty = calculateOpakFromM3(
+                  updatedItem.quantity,
+                  product
+                );
+                const adjustedM3 = calculateM3FromOpak(helperQty, product);
+                updatedItem.quantity = adjustedM3;
+                updatedItem.helper_quantity = helperQty;
+              }
+            } else if (updatedItem.quant_unit === "szt" && value === "m3") {
+              // When main unit is szt and helper is m3
+              updatedItem.helper_quantity = calculateM3FromSzt(
+                updatedItem.quantity,
+                product
+              );
+            } else if (updatedItem.quant_unit === "opak" && value === "m3") {
+              // When main unit is opak and helper is m3
+              updatedItem.helper_quantity = calculateM3FromOpak(
+                updatedItem.quantity,
+                product
+              );
+            }
+          }
+          break;
+
+        case "quantity":
+          // For manual quantity changes
+          if (updatedItem.help_quant_unit) {
+            if (independentUnits.includes(updatedItem.help_quant_unit)) {
+              // For independent units, don't calculate any conversion
+            } else if (updatedItem.quant_unit === "szt") {
+              // When main unit is szt
+              if (updatedItem.help_quant_unit === "m3") {
+                updatedItem.helper_quantity = calculateM3FromSzt(
+                  value || "0",
+                  product
+                );
+              }
+            } else if (updatedItem.quant_unit === "opak") {
+              // When main unit is opak
+              if (updatedItem.help_quant_unit === "m3") {
+                updatedItem.helper_quantity = calculateM3FromOpak(
+                  value || "0",
+                  product
+                );
+              }
+            } else if (updatedItem.quant_unit === "m3") {
+              // When main unit is m3
+              if (updatedItem.help_quant_unit === "szt") {
+                const helperQty = calculateSztFromM3(value || "0", product);
+                if (!isBlur) {
+                  updatedItem.helper_quantity = helperQty;
+                } else {
+                  const adjustedM3 = calculateM3FromSzt(helperQty, product);
+                  updatedItem.quantity = adjustedM3;
+                  updatedItem.helper_quantity = helperQty;
+                }
+              } else if (updatedItem.help_quant_unit === "opak") {
+                const helperQty = calculateOpakFromM3(value || "0", product);
+                if (!isBlur) {
+                  updatedItem.helper_quantity = helperQty;
+                } else {
+                  const adjustedM3 = calculateM3FromOpak(helperQty, product);
+                  updatedItem.quantity = adjustedM3;
+                  updatedItem.helper_quantity = helperQty;
+                }
+              }
+            }
+          }
+          break;
+
+        case "helper_quantity":
+          // When helper quantity changes
+          if (updatedItem.help_quant_unit && updatedItem.quant_unit) {
+            if (independentUnits.includes(updatedItem.help_quant_unit)) {
+              // For independent units, don't calculate any conversion
+            } else if (
+              updatedItem.help_quant_unit === "szt" &&
+              updatedItem.quant_unit === "m3"
+            ) {
+              // When helper is szt and main is m3
+              updatedItem.quantity = calculateM3FromSzt(value || "0", product);
+            } else if (
+              updatedItem.help_quant_unit === "opak" &&
+              updatedItem.quant_unit === "m3"
+            ) {
+              // When helper is opak and main is m3
+              updatedItem.quantity = calculateM3FromOpak(value || "0", product);
+            } else if (updatedItem.help_quant_unit === "m3") {
+              // When helper is m3
+              updatedItem.helper_quantity = value;
+              if (updatedItem.quant_unit === "szt") {
+                // Calculate szt from m3
+                const pieces = calculateSztFromM3(value || "0", product);
+                updatedItem.quantity = pieces;
+              } else if (updatedItem.quant_unit === "opak") {
+                // Calculate opak from m3
+                const packages = calculateOpakFromM3(value || "0", product);
+                updatedItem.quantity = packages;
+              }
+            }
+          }
+          break;
+
+        case "quant_unit":
+          const previousUnit = fields[index].quant_unit;
+          updatedItem.quant_unit = value;
+
+          // Handle unit changes
+          if (
+            value === "szt" ||
+            previousUnit === "szt" ||
+            value === "opak" ||
+            previousUnit === "opak"
+          ) {
+            if (value === "szt" && previousUnit === "m3") {
+              // m3 to szt
+              const pieces = Math.ceil(
+                parseFloat(updatedItem.quantity || 0) /
+                  calculateM3(product.height, product.length, product.width)
+              );
+              updatedItem.quantity = pieces.toString();
+              if (updatedItem.help_quant_unit === "m3") {
+                updatedItem.helper_quantity = calculateM3FromSzt(
+                  pieces.toString(),
+                  product
+                );
+              }
+            } else if (value === "m3" && previousUnit === "szt") {
+              // szt to m3
+              const pieces = Math.ceil(parseFloat(updatedItem.quantity || 0));
+              updatedItem.quantity = calculateM3FromSzt(
+                pieces.toString(),
+                product
+              );
+            } else if (value === "opak" && previousUnit === "m3") {
+              // m3 to opak
+              const packages = calculateOpakFromM3(
+                updatedItem.quantity || "0",
+                product
+              );
+              updatedItem.quantity = packages;
+              if (updatedItem.help_quant_unit === "m3") {
+                updatedItem.helper_quantity = calculateM3FromOpak(
+                  packages,
+                  product
+                );
+              }
+            } else if (value === "m3" && previousUnit === "opak") {
+              // opak to m3
+              const packages = Math.ceil(parseFloat(updatedItem.quantity || 0));
+              updatedItem.quantity = calculateM3FromOpak(
+                packages.toString(),
+                product
+              );
+            }
+          }
+
+          // Handle helper unit setup and calculations
+          switch (value) {
+            case "m3":
+              if (!updatedItem.help_quant_unit) {
+                updatedItem.help_quant_unit = "opak";
+                if (updatedItem.quantity) {
+                  updatedItem.helper_quantity = calculateOpakFromM3(
+                    updatedItem.quantity,
+                    product
+                  );
+                }
+              }
+              break;
+            case "m2":
+              if (!updatedItem.help_quant_unit) {
+                updatedItem.help_quant_unit = "opak";
+              }
+              break;
+            case "szt":
+            case "opak":
+              // When switching to szt/opak as main unit, possibly set m3 as helper
+              if (!updatedItem.help_quant_unit) {
+                updatedItem.help_quant_unit = "m3";
+                if (updatedItem.quantity) {
+                  updatedItem.helper_quantity =
+                    value === "szt"
+                      ? calculateM3FromSzt(updatedItem.quantity, product)
+                      : calculateM3FromOpak(updatedItem.quantity, product);
+                }
+              } else if (updatedItem.help_quant_unit === "m3") {
+                updatedItem.helper_quantity =
+                  value === "szt"
+                    ? calculateM3FromSzt(updatedItem.quantity, product)
+                    : calculateM3FromOpak(updatedItem.quantity, product);
+              }
+              break;
+            default:
+              if (!updatedItem.help_quant_unit) {
+                updatedItem.help_quant_unit = "";
+                updatedItem.helper_quantity = "";
+              }
+          }
+          break;
       }
 
+      // Calculate brutto cost
       const nettoCost = parseFloat(updatedItem.netto_cost) || 0;
       const vatPercentage = parseFloat(updatedItem.vat_percentage) || 0;
       updatedItem.brutto_cost = (nettoCost * (1 + vatPercentage / 100)).toFixed(
@@ -146,12 +615,100 @@ export default function ProductSelectionForm({
 
       update(index, updatedItem);
     },
-    [fields, update, calculateM3, products, m3FirstProvided]
+    [
+      fields,
+      update,
+      calculateSztFromM3,
+      calculateM3FromSzt,
+      calculateM3FromOpak,
+      calculateOpakFromM3,
+      calculateM3,
+      independentUnits,
+    ]
+  );
+
+  const handleHelperQuantityBlur = useCallback(
+    (index) => {
+      const item = fields[index];
+      const product = products.find((p) => p.id === item.product_id);
+
+      if (!product || !item.help_quant_unit) return;
+
+      if (item.help_quant_unit === "m3") {
+        if (item.quant_unit === "szt") {
+          // On blur, adjust m3 to match whole pieces
+          const pieces = item.quantity;
+          const adjustedM3 = calculateM3FromSzt(pieces, product);
+          if (adjustedM3 !== item.helper_quantity) {
+            update(index, {
+              ...item,
+              helper_quantity: adjustedM3,
+            });
+          }
+        } else if (item.quant_unit === "opak") {
+          // On blur, adjust m3 to match whole packages
+          const packages = item.quantity;
+          const adjustedM3 = calculateM3FromOpak(packages, product);
+          if (adjustedM3 !== item.helper_quantity) {
+            update(index, {
+              ...item,
+              helper_quantity: adjustedM3,
+            });
+          }
+        }
+      }
+    },
+    [fields, products, update, calculateM3FromSzt, calculateM3FromOpak]
+  );
+
+  // In the render, update the helper quantity input to include onBlur:
+  const renderHelperQuantityInput = (item, index) => (
+    <Input
+      value={item.helper_quantity?.toString()}
+      onChange={(e) =>
+        handleInputChange(index, "helper_quantity", e.target.value)
+      }
+      onBlur={() => handleHelperQuantityBlur(index)}
+      className={`w-20 ${
+        errors.line_items?.[index]?.helper_quantity
+          ? "text-red-500 border-red-500"
+          : ""
+      }`}
+      type="number"
+      step=".0001"
+      min="0"
+    />
+  );
+
+  // Make sure to pass the blur handler to the quantity input:
+  const renderQuantityInput = (item, index) => (
+    <Input
+      value={item.quantity?.toString()}
+      onChange={(e) => handleInputChange(index, "quantity", e.target.value)}
+      onBlur={() => handleQuantityBlur(index)}
+      className={`w-20 ${
+        errors.line_items?.[index]?.quantity
+          ? "text-red-500 border-red-500"
+          : ""
+      }`}
+      type="number"
+      step=".0001"
+      min="0"
+    />
   );
 
   const calculateItemValues = useCallback(
     (item) => {
-      const quantity = getEffectiveQuantity(item);
+      const product = products.find((p) => p.id === item.product_id);
+      if (!product)
+        return {
+          nettoValue: "0.00",
+          bruttoCost: "0.00",
+          bruttoValue: "0.00",
+          discountedNettoPrice: "0.00",
+        };
+
+      const quantity = getEffectiveQuantity(item, product);
       const nettoPrice = parseFloat(item.netto_cost) || 0;
       const discount = parseFloat(item.discount) || 0;
       const vatPercentage = parseFloat(item.vat_percentage) || 0;
@@ -159,10 +716,10 @@ export default function ProductSelectionForm({
       // Calculate discounted netto price
       const discountedNettoPrice = nettoPrice * ((100 - discount) / 100);
 
-      // Calculate total netto value (quantity * discounted price)
+      // Calculate total netto value
       const nettoValue = quantity * discountedNettoPrice;
 
-      // Calculate brutto price (single unit with VAT)
+      // Calculate brutto price
       const bruttoCost = discountedNettoPrice * (1 + vatPercentage / 100);
 
       // Calculate total brutto value
@@ -175,7 +732,7 @@ export default function ProductSelectionForm({
         discountedNettoPrice: discountedNettoPrice.toFixed(2),
       };
     },
-    [getEffectiveQuantity]
+    [products, getEffectiveQuantity]
   );
 
   const handleProductsSelected = useCallback(
@@ -342,44 +899,14 @@ export default function ProductSelectionForm({
                     <TableCell>{String(index + 1).padStart(2, "0")}</TableCell>
                     <TableCell>{item.product_name}</TableCell>
                     <TableCell>
-                      <Input
-                        value={item.quantity?.toString()}
-                        onChange={(e) =>
-                          handleInputChange(index, "quantity", e.target.value)
-                        }
-                        className={`w-20 ${
-                          itemErrors?.quantity
-                            ? "text-red-500 border-red-500"
-                            : ""
-                        }`}
-                        type="number"
-                        step=".0001"
-                        min="0"
-                      />
+                      {renderQuantityInput(item, index)}
                       {displayCellError(itemErrors?.quantity)}
                     </TableCell>
                     <TableCell>
                       {renderQuantitySelect(item, index, "quant_unit")}
                     </TableCell>
                     <TableCell>
-                      <Input
-                        value={item.helper_quantity}
-                        onChange={(e) =>
-                          handleInputChange(
-                            index,
-                            "helper_quantity",
-                            e.target.value
-                          )
-                        }
-                        className={`w-20 ${
-                          itemErrors?.helper_quantity
-                            ? "text-red-500 border-red-500"
-                            : ""
-                        }`}
-                        type="number"
-                        step=".0001"
-                        min="0"
-                      />
+                      {renderHelperQuantityInput(item, index)}
                       {displayCellError(itemErrors?.helper_quantity)}
                     </TableCell>
                     <TableCell>
