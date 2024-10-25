@@ -337,27 +337,6 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     [fields, lineItems, independentUnits, updateField]
   );
 
-  // Custom input components to prevent re-renders
-  const QuantityInput = React.memo(({ index, value, onChange, disabled }) => (
-    <Input
-      value={value || ""}
-      onChange={(e) => onChange(index, e.target.value)}
-      disabled={disabled}
-      className="w-20"
-    />
-  ));
-
-  const HelperQuantityInput = React.memo(
-    ({ index, value, onChange, disabled }) => (
-      <Input
-        value={value || ""}
-        onChange={(e) => onChange(index, e.target.value)}
-        disabled={disabled}
-        className="w-20"
-      />
-    )
-  );
-
   return (
     <div className="mt-6">
       <h3 className="text-lg font-semibold mb-4">Pozycje dokumentu WZ</h3>
