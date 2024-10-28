@@ -21,9 +21,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     padding: 30,
   },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  headerImage: {
+    width: 150,
+    height: 70,
+    objectFit: "contain",
+  },
   header: {
     fontSize: 14,
-    marginBottom: 20,
+    marginBottom: 5,
+    marginLeft: 50,
     textAlign: "center",
     fontWeight: "bold",
   },
@@ -36,6 +47,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   label: {
+    fontWeight: "bold",
+    marginRight: 5,
+  },
+  main_label: {
     fontWeight: "bold",
     marginRight: 5,
   },
@@ -56,6 +71,11 @@ const styles = StyleSheet.create({
   tableRow: {
     margin: "auto",
     flexDirection: "row",
+  },
+  sumRow: {
+    flexDirection: "row",
+    borderColor: "black",
+    fontWeight: "bold",
   },
   tableCol: {
     width: "25%",
@@ -84,6 +104,10 @@ const styles = StyleSheet.create({
     marginTop: 50,
     marginBottom: 5,
   },
+  images: {
+    width: "100px",
+    height: "50px",
+  },
 });
 
 const booleanToYesNo = (value: boolean): string => {
@@ -95,6 +119,24 @@ const formatDate = (dateString: string): string => {
 };
 
 const date = new Date().toLocaleDateString("pl-PL");
+
+const calculateTotalM3 = (lineItems) => {
+  console.log("Calculating total m3");
+  let total = 0;
+
+  lineItems.forEach((item, index) => {
+    if (item.quant_unit === "m3") {
+      const quantity = parseFloat(item.quantity);
+      if (isNaN(quantity)) {
+        console.warn(`Invalid quantity for item ${index + 1}:`, item.quantity);
+      } else {
+        total += quantity;
+      }
+    }
+  });
+  const roundedTotal = parseFloat(total.toFixed(4));
+  return roundedTotal;
+};
 
 // const renderTable = (unitType, lineItems) => {
 //   if (unitType === "main") {
@@ -175,11 +217,26 @@ const date = new Date().toLocaleDateString("pl-PL");
 // };
 
 const OrderPdf = (wzData: any) => {
+  const filteredLineItems = wzData.wzData.lineItems.filter(
+    (item) =>
+      (item.included_in_wz === false || item.included_in_wz === null) &&
+      item.is_used === null
+  );
+  const totalM3 = calculateTotalM3(filteredLineItems);
   return (
     <Document title="Zamówienie">
       <Page size="A4" style={styles.page}>
-        <View style={styles.row}>
+        <View style={styles.headerContainer}>
+          <Image
+            style={styles.headerImage}
+            src="https://res.cloudinary.com/dng31aime/image/upload/v1728654269/Amitec_Logo_RGB_MAIN_Dark_owawdj.png"
+          />
           <Text style={styles.header}>Zamówienie nr {wzData.wzData.id}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.main_label}>
+            Nr obcy: {wzData.wzData.foreign_id}
+          </Text>
         </View>
 
         <View style={styles.row}>
@@ -195,6 +252,47 @@ const OrderPdf = (wzData: any) => {
             </Text>
             <Text style={styles.value}>NIP: {wzData.wzData.customer.nip}</Text>
           </View>
+          <View style={styles.column}>
+            <Text style={styles.value}>
+              <Text style={styles.label}>Data wystawienia:</Text>{" "}
+              {formatDate(wzData.wzData.issue_date)}
+            </Text>
+            <Text style={styles.value}>
+              <Text style={styles.label}>Data wydania:</Text>{" "}
+              {formatDate(wzData.wzData.out_date)}
+            </Text>
+            <Text style={styles.value}>
+              <Text style={styles.label}>Data transportu:</Text>{" "}
+              {formatDate(wzData.wzData.delivery_date)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <Text>
+            <Text style={styles.label}>Uwagi dla produkcji:</Text>{" "}
+            {wzData.wzData.comments
+              .filter((item) => item.type === "production")
+              .map((item, i, array) => (
+                <Text style={styles.value}>
+                  {item.body}
+                  {i < array.length - 1 ? ", " : ""}
+                </Text>
+              ))}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Text>
+            <Text style={styles.label}>Uwagi dla magazynu:</Text>{" "}
+            {wzData.wzData.comments
+              .filter((item) => item.type === "warehouse")
+              .map((item, i, array) => (
+                <Text style={styles.value}>
+                  {item.body}
+                  {i < array.length - 1 ? ", " : ""}
+                </Text>
+              ))}
+          </Text>
         </View>
 
         <View style={[styles.breakable, styles.table]}>
@@ -218,32 +316,47 @@ const OrderPdf = (wzData: any) => {
               <Text style={styles.tableCell}>J.m.</Text>
             </View>
           </View>
-          {wzData.wzData.lineItems.map((item, i) => (
-            <View key={i} style={styles.tableRow}>
-              <View style={[styles.tableCol, { width: "3%" }]}>
-                <Text style={styles.tableCell}>{i + 1}</Text>
+          {wzData.wzData.lineItems
+            .filter(
+              (item) =>
+                (item.included_in_wz === false ||
+                  item.included_in_wz === null) &&
+                item.is_used === null
+            )
+            .map((item, i) => (
+              <View key={i} style={styles.tableRow}>
+                <View style={[styles.tableCol, { width: "3%" }]}>
+                  <Text style={styles.tableCell}>{i + 1}</Text>
+                </View>
+                <View style={[styles.tableCol, { width: "50%" }]}>
+                  <Text style={styles.tableCell}>{item.product_name}</Text>
+                </View>
+                <View style={[styles.tableCol, { width: "17%" }]}>
+                  <Text style={styles.tableCell}>
+                    {formatNumber(item.quantity)}
+                  </Text>
+                </View>
+                <View style={[styles.tableCol, { width: "7%" }]}>
+                  <Text style={styles.tableCell}>{item.quant_unit}</Text>
+                </View>
+                <View style={[styles.tableCol, { width: "17%" }]}>
+                  <Text style={styles.tableCell}>
+                    {formatNumber(item.helper_quantity)}
+                  </Text>
+                </View>
+                <View style={[styles.tableCol, { width: "6%" }]}>
+                  <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
+                </View>
               </View>
-              <View style={[styles.tableCol, { width: "50%" }]}>
-                <Text style={styles.tableCell}>{item.product_name}</Text>
-              </View>
-              <View style={[styles.tableCol, { width: "17%" }]}>
-                <Text style={styles.tableCell}>
-                  {formatNumber(item.quantity)}
-                </Text>
-              </View>
-              <View style={[styles.tableCol, { width: "7%" }]}>
-                <Text style={styles.tableCell}>{item.quant_unit}</Text>
-              </View>
-              <View style={[styles.tableCol, { width: "17%" }]}>
-                <Text style={styles.tableCell}>
-                  {formatNumber(item.helper_quantity)}
-                </Text>
-              </View>
-              <View style={[styles.tableCol, { width: "6%" }]}>
-                <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
-              </View>
+            ))}
+          <View style={styles.sumRow}>
+            <View style={[styles.tableCol, { width: "53%" }]}>
+              <Text style={styles.tableCell}>Suma m³</Text>
             </View>
-          ))}
+            <View style={[styles.tableCol, { width: "47%" }]}>
+              <Text style={styles.tableCell}>{totalM3}</Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.footer}>
