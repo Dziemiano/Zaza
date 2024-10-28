@@ -6,6 +6,7 @@ import {
   Document,
   StyleSheet,
   Font,
+  Image,
 } from "@react-pdf/renderer";
 
 Font.register({
@@ -24,9 +25,20 @@ const styles = StyleSheet.create({
   contentWrapper: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  headerImage: {
+    width: 150,
+    height: 70,
+    objectFit: "contain",
+  },
   header: {
     fontSize: 14,
     marginBottom: 20,
+    marginLeft: 30,
     textAlign: "center",
     fontWeight: "bold",
   },
@@ -280,7 +292,11 @@ const DeliveryNote = (wzData: any, index: number) => {
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
         <View>
-          <View style={styles.row}>
+          <View style={styles.headerContainer}>
+            <Image
+              style={styles.headerImage}
+              src="https://res.cloudinary.com/dng31aime/image/upload/v1728654269/Amitec_Logo_RGB_MAIN_Dark_owawdj.png"
+            />
             <Text style={styles.header}>
               Wydanie {currentWz.type || ""} nr{" "}
               {currentWz.doc_number || "****/**/****"}
