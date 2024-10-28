@@ -32,7 +32,6 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    flexGrow: 1,
     marginBottom: 10,
   },
   column: {
@@ -66,6 +65,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderLeftWidth: 0,
     borderTopWidth: 0,
+  },
+  customerColumn: {
+    flexDirection: "column",
+    width: "50%",
   },
   tableCell: {
     margin: "auto",
@@ -273,7 +276,7 @@ const DeliveryNote = (wzData: any, index: number) => {
 
   const currentWz = wzData.wzData.wz[wzData.index];
   return (
-    <Document title="WZ">
+    <Document title="Dokument WZ">
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
         <View>
@@ -327,7 +330,7 @@ const DeliveryNote = (wzData: any, index: number) => {
 
           {/* Customer Info */}
           <View style={styles.row}>
-            <View style={styles.column}>
+            <View style={styles.customerColumn}>
               <Text style={styles.label}>Nabywca:</Text>
               <Text style={styles.value}>{wzData.wzData.customer.name}</Text>
               <Text style={styles.value}>
@@ -343,17 +346,18 @@ const DeliveryNote = (wzData: any, index: number) => {
                 NIP: {wzData.wzData.customer.nip}
               </Text>
             </View>
-            <View style={styles.column}>
-              <Text style={styles.label}>Adres dostawy</Text>
+            <View style={styles.customerColumn}>
+              <Text style={styles.label}>Adres dostawy:</Text>
               <Text style={styles.value}>
-                {wzData.wzData.delivery_city} {wzData.wzData.delivery_street}{" "}
+                {wzData.wzData.delivery_street}{" "}
                 {wzData.wzData.delivery_building}{" "}
                 {wzData.wzData.delivery_premises}
               </Text>
               <Text style={styles.value}>
-                {wzData.wzData.delivery_contact_number}
+                {wzData.wzData.delivery_city} {wzData.wzData.delivery_zipcode}
               </Text>
-              <Text style={styles.label}>Informacje dodatkowe</Text>
+              <Text style={styles.value}>{wzData.wzData.delivery_contact}</Text>
+              <Text style={styles.label}>Informacje dodatkowe:</Text>
               <Text style={styles.value}>{currentWz.additional_info}</Text>
             </View>
           </View>
@@ -371,6 +375,33 @@ const DeliveryNote = (wzData: any, index: number) => {
               {wzData.wzData.foreign_id}
             </Text>
           </View>
+        </View>
+
+        <View style={styles.row}>
+          <Text>
+            <Text style={styles.label}>Uwagi ogólne:</Text>{" "}
+            {wzData.wzData.comments
+              .filter((item) => item.type === "general")
+              .map((item, i, array) => (
+                <Text style={styles.value}>
+                  {item.body}
+                  {i < array.length - 1 ? ", " : ""}
+                </Text>
+              ))}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Text>
+            <Text style={styles.label}>Uwagi dla transportu:</Text>{" "}
+            {wzData.wzData.comments
+              .filter((item) => item.type === "transport")
+              .map((item, i, array) => (
+                <Text style={styles.value}>
+                  {item.body}
+                  {i < array.length - 1 ? ", " : ""}
+                </Text>
+              ))}
+          </Text>
         </View>
 
         {/* Table Section - Fixed Height */}

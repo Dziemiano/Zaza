@@ -14,6 +14,7 @@ const PDFViewer = dynamic(
 type WznCheckPdfProps = { wzData: any; index: any };
 
 export const WzCheckPdf = ({ wzData, index }: WznCheckPdfProps) => {
+  console.log(wzData);
   return (
     <Dialog>
       <DialogTrigger asChild>
