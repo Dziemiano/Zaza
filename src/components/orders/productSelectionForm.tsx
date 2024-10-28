@@ -411,15 +411,20 @@ export default function ProductSelectionForm({
                 const adjustedM3 = calculateM3FromOpak(helperQty, product);
                 updatedItem.quantity = adjustedM3;
                 updatedItem.helper_quantity = helperQty;
+              } else if (value === "m2") {
+                // Convert m3 to m2 based on product height
+                const heightInMeters = product.height / 1000; // Convert mm to m
+                const m2Value = (
+                  parseFloat(updatedItem.quantity) / heightInMeters
+                ).toFixed(3);
+                updatedItem.helper_quantity = m2Value;
               }
             } else if (updatedItem.quant_unit === "szt" && value === "m3") {
-              // When main unit is szt and helper is m3
               updatedItem.helper_quantity = calculateM3FromSzt(
                 updatedItem.quantity,
                 product
               );
             } else if (updatedItem.quant_unit === "opak" && value === "m3") {
-              // When main unit is opak and helper is m3
               updatedItem.helper_quantity = calculateM3FromOpak(
                 updatedItem.quantity,
                 product
@@ -483,23 +488,28 @@ export default function ProductSelectionForm({
               updatedItem.help_quant_unit === "szt" &&
               updatedItem.quant_unit === "m3"
             ) {
-              // When helper is szt and main is m3
               updatedItem.quantity = calculateM3FromSzt(value || "0", product);
             } else if (
               updatedItem.help_quant_unit === "opak" &&
               updatedItem.quant_unit === "m3"
             ) {
-              // When helper is opak and main is m3
               updatedItem.quantity = calculateM3FromOpak(value || "0", product);
+            } else if (
+              updatedItem.help_quant_unit === "m2" &&
+              updatedItem.quant_unit === "m3"
+            ) {
+              // Convert m2 to m3
+              const heightInMeters = product.height / 1000; // Convert mm to m
+              const m3Value = (
+                parseFloat(value || "0") * heightInMeters
+              ).toFixed(3);
+              updatedItem.quantity = m3Value;
             } else if (updatedItem.help_quant_unit === "m3") {
-              // When helper is m3
               updatedItem.helper_quantity = value;
               if (updatedItem.quant_unit === "szt") {
-                // Calculate szt from m3
                 const pieces = calculateSztFromM3(value || "0", product);
                 updatedItem.quantity = pieces;
               } else if (updatedItem.quant_unit === "opak") {
-                // Calculate opak from m3
                 const packages = calculateOpakFromM3(value || "0", product);
                 updatedItem.quantity = packages;
               }
