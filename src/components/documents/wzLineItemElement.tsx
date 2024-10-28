@@ -76,6 +76,18 @@ const calculateOpakFromM3 = (m3Value, product) => {
   return Math.ceil(parseFloat(m3Value) / m3PerPackage).toString();
 };
 
+const calculateM2FromM3 = (m3Value, product) => {
+  if (!product.height || product.height <= 0) return "0";
+  const heightInMeters = product.height / 1000;
+  return (parseFloat(m3Value) / heightInMeters).toFixed(3);
+};
+
+const calculateM3FromM2 = (m2Value, product) => {
+  if (!product.height || product.height <= 0) return "0";
+  const heightInMeters = product.height / 1000;
+  return (parseFloat(m2Value) * heightInMeters).toFixed(3);
+};
+
 export const WzLineItemsComponent = ({ lineItems }) => {
   const { control } = useFormContext();
   const { fields, update } = useFieldArray({
@@ -290,53 +302,6 @@ export const WzLineItemsComponent = ({ lineItems }) => {
     [fields, update]
   );
 
-  // Memoized input handlers
-  const handleQuantityChange = useCallback(
-    (index, value) => {
-      const item = fields[index];
-      const product = lineItems[index].product;
-      let updates = { wz_quantity: value };
-
-      if (item.help_quant_unit && value !== "") {
-        if (item.wz_unit === "m3" && item.help_quant_unit === "szt") {
-          updates.helper_quantity = calculateSztFromM3(value, product);
-        } else if (item.wz_unit === "szt" && item.help_quant_unit === "m3") {
-          updates.helper_quantity = calculateM3FromSzt(value, product);
-        } else if (item.wz_unit === "opak" && item.help_quant_unit === "m3") {
-          updates.helper_quantity = calculateM3FromOpak(value, product);
-        } else if (item.wz_unit === "m3" && item.help_quant_unit === "opak") {
-          updates.helper_quantity = calculateOpakFromM3(value, product);
-        }
-      }
-
-      updateField(index, updates);
-    },
-    [fields, lineItems, updateField]
-  );
-
-  const handleHelperQuantityChange = useCallback(
-    (index, value) => {
-      const item = fields[index];
-      const product = lineItems[index].product;
-      let updates = { helper_quantity: value };
-
-      if (!independentUnits.includes(item.help_quant_unit) && value !== "") {
-        if (item.help_quant_unit === "szt" && item.wz_unit === "m3") {
-          updates.wz_quantity = calculateM3FromSzt(value, product);
-        } else if (item.help_quant_unit === "m3" && item.wz_unit === "szt") {
-          updates.wz_quantity = calculateSztFromM3(value, product);
-        } else if (item.help_quant_unit === "m3" && item.wz_unit === "opak") {
-          updates.wz_quantity = calculateOpakFromM3(value, product);
-        } else if (item.help_quant_unit === "opak" && item.wz_unit === "m3") {
-          updates.wz_quantity = calculateM3FromOpak(value, product);
-        }
-      }
-
-      updateField(index, updates);
-    },
-    [fields, lineItems, independentUnits, updateField]
-  );
-
   return (
     <div className="mt-6">
       <h3 className="text-lg font-semibold mb-4">Pozycje dokumentu WZ</h3>
@@ -479,6 +444,14 @@ export const QuantityChange = ({ index }) => {
           maxQuantity = parseFloat(
             calculateM3FromOpak(originalQuantity.toString(), product)
           );
+        } else if (item.quant_unit === "m3" && item.wz_unit === "m2") {
+          maxQuantity = parseFloat(
+            calculateM2FromM3(originalQuantity.toString(), product)
+          );
+        } else if (item.quant_unit === "m2" && item.wz_unit === "m3") {
+          maxQuantity = parseFloat(
+            calculateM3FromM2(originalQuantity.toString(), product)
+          );
         }
       }
 
@@ -507,6 +480,8 @@ export const QuantityChange = ({ index }) => {
         helperQuantity = calculateM3FromSzt(value, product);
       } else if (item.wz_unit === "opak" && item.help_quant_unit === "m3") {
         helperQuantity = calculateM3FromOpak(value, product);
+      } else if (item.wz_unit === "m2" && item.help_quant_unit === "m3") {
+        helperQuantity = calculateM3FromM2(value, product);
       }
 
       if (helperQuantity) {
@@ -619,6 +594,10 @@ export const HelpQuantityChange = ({ index }) => {
         mainQuantity = calculateOpakFromM3(value, product);
       } else if (item.help_quant_unit === "opak" && item.wz_unit === "m3") {
         mainQuantity = calculateM3FromOpak(value, product);
+      } else if (item.help_quant_unit === "m3" && item.wz_unit === "m2") {
+        mainQuantity = calculateM2FromM3(value, product);
+      } else if (item.help_quant_unit === "m2" && item.wz_unit === "m3") {
+        mainQuantity = calculateM3FromM2(value, product);
       }
 
       if (mainQuantity) {
