@@ -59,9 +59,10 @@ import { OrderSchema, WzSchema } from "@/schemas";
 import { createWz } from "@/actions/documents";
 import { WzCheckPdf } from "./wznCheckPdf";
 import WzLineItemsComponent from "./wzLineItemElement";
-import { he } from "date-fns/locale";
 import { useToast } from "@/hooks/useToast";
 import { ToastVariants } from "../ui/toast";
+
+import { PalletManagement } from "./palletManagementElement";
 
 type WzDocFormProps = {
   editMode?: boolean;
@@ -489,54 +490,16 @@ export const WzDocForm = ({ editMode, order }: WzDocFormProps) => {
                   </div>
                 </div>
                 <div className="flex flex-row mt-5">
-                  <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label>Rodzaj palety</Label>
+                  <div className="grid w-full items-center gap-1.5">
                     <FormField
                       control={form.control}
-                      name="pallet_type"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={order?.wz_type}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Wybierz" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectItem value="Jednorazowa">
-                                  Jednorazowa
-                                </SelectItem>
-                                <SelectItem value="EURO 1200x800">
-                                  EURO 1200x800
-                                </SelectItem>
-                                <SelectItem value="LEMAR 1200x800">
-                                  LEMAR 1200x800
-                                </SelectItem>
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid w-full mr-5 items-center gap-1.5">
-                    <Label>Ilość palet</Label>
-                    <FormField
-                      control={form.control}
-                      name="pallet_count"
+                      name="pallets"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormControl>
-                            <Input
-                              className="w-full"
-                              disabled={isPending}
-                              type="number"
-                              {...field}
+                            <PalletManagement
+                              value={field.value}
+                              onChange={field.onChange}
                             />
                           </FormControl>
                           <FormMessage />

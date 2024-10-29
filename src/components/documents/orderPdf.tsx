@@ -134,87 +134,9 @@ const calculateTotalM3 = (lineItems) => {
       }
     }
   });
-  const roundedTotal = parseFloat(total.toFixed(4));
+  const roundedTotal = formatNumber(total);
   return roundedTotal;
 };
-
-// const renderTable = (unitType, lineItems) => {
-//   if (unitType === "main") {
-//     return (
-//       <View style={[styles.breakable, styles.table]}>
-//         <View style={[styles.tableRow, { fontWeight: "bold" }]}>
-//           <View style={[styles.tableCol, { width: "3%" }]}>
-//             <Text style={styles.tableCell}>Lp.</Text>
-//           </View>
-//           <View style={[styles.tableCol, { width: "50%" }]}>
-//             <Text style={styles.tableCell}>Nazwa towaru lub usługi</Text>
-//           </View>
-//           <View style={[styles.tableCol, { width: "33%" }]}>
-//             <Text style={styles.tableCell}>Ilość</Text>
-//           </View>
-//           <View style={[styles.tableCol, { width: "14%" }]}>
-//             <Text style={styles.tableCell}>J.m.</Text>
-//           </View>
-//         </View>
-//         {lineItems.map((item, i) => (
-//           <View key={i} style={styles.tableRow}>
-//             <View style={[styles.tableCol, { width: "3%" }]}>
-//               <Text style={styles.tableCell}>{i + 1}</Text>
-//             </View>
-//             <View style={[styles.tableCol, { width: "50%" }]}>
-//               <Text style={styles.tableCell}>{item.product_name}</Text>
-//             </View>
-//             <View style={[styles.tableCol, { width: "33%" }]}>
-//               <Text style={styles.tableCell}>{item.quantity}</Text>
-//             </View>
-//             <View style={[styles.tableCol, { width: "14%" }]}>
-//               <Text style={styles.tableCell}>{item.quant_unit}</Text>
-//             </View>
-//           </View>
-//         ))}
-//       </View>
-//     );
-//   } else if (unitType === "helper") {
-//     return (
-//       <View style={[styles.breakable, styles.table]}>
-//         <View style={[styles.tableRow, { fontWeight: "bold" }]}>
-//           <View style={[styles.tableCol, { width: "3%" }]}>
-//             <Text style={styles.tableCell}>Lp.</Text>
-//           </View>
-//           <View style={[styles.tableCol, { width: "50%" }]}>
-//             <Text style={styles.tableCell}>Nazwa towaru lub usługi</Text>
-//           </View>
-//           <View style={[styles.tableCol, { width: "33%" }]}>
-//             <Text style={styles.tableCell}>Ilość</Text>
-//           </View>
-//           <View style={[styles.tableCol, { width: "14%" }]}>
-//             <Text style={styles.tableCell}>J.m.</Text>
-//           </View>
-//         </View>
-//         {lineItems.map((item, i) => (
-//           <View key={i} style={styles.tableRow}>
-//             <View style={[styles.tableCol, { width: "3%" }]}>
-//               <Text style={styles.tableCell}>{i + 1}</Text>
-//             </View>
-//             <View style={[styles.tableCol, { width: "50%" }]}>
-//               <Text style={styles.tableCell}>{item.product_name}</Text>
-//             </View>
-//             <View style={[styles.tableCol, { width: "33%" }]}>
-//               <Text style={styles.tableCell}>{item.helper_quantity}</Text>
-//             </View>
-//             <View style={[styles.tableCol, { width: "14%" }]}>
-//               <Text style={styles.tableCell}>{item.help_quant_unit}</Text>
-//             </View>
-//           </View>
-//         ))}
-//       </View>
-//     );
-//   } else {
-//     return (
-
-//     );
-//   }
-// };
 
 const OrderPdf = (wzData: any) => {
   const filteredLineItems = wzData.wzData.lineItems.filter(

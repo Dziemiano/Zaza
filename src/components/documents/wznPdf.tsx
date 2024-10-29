@@ -372,9 +372,8 @@ const DeliveryNote = (wzData: any, index: number) => {
               <Text style={styles.value}>
                 {wzData.wzData.delivery_city} {wzData.wzData.delivery_zipcode}
               </Text>
+              <Text style={styles.label}>Kontakt do dostawy:</Text>
               <Text style={styles.value}>{wzData.wzData.delivery_contact}</Text>
-              <Text style={styles.label}>Informacje dodatkowe:</Text>
-              <Text style={styles.value}>{currentWz.additional_info}</Text>
             </View>
           </View>
 
@@ -394,10 +393,14 @@ const DeliveryNote = (wzData: any, index: number) => {
         </View>
 
         <View style={styles.row}>
+          <Text style={styles.label}>Informacje dodatkowe:</Text>
+          <Text style={styles.value}>{currentWz.additional_info}</Text>
+        </View>
+        <View style={styles.row}>
           <Text>
             <Text style={styles.label}>Uwagi ogólne:</Text>{" "}
             {wzData.wzData.comments
-              .filter((item) => item.type === "general")
+              ?.filter((item) => item.type === "general")
               .map((item, i, array) => (
                 <Text style={styles.value}>
                   {item.body}
@@ -410,7 +413,7 @@ const DeliveryNote = (wzData: any, index: number) => {
           <Text>
             <Text style={styles.label}>Uwagi dla transportu:</Text>{" "}
             {wzData.wzData.comments
-              .filter((item) => item.type === "transport")
+              ?.filter((item) => item.type === "transport")
               .map((item, i, array) => (
                 <Text style={styles.value}>
                   {item.body}
@@ -424,7 +427,7 @@ const DeliveryNote = (wzData: any, index: number) => {
         <View>{renderTable(currentWz.unit_type, currentWz.line_items)}</View>
 
         {/* Footer Section */}
-        <View style={styles.bottomSection}>
+        <View style={styles.bottomSection} wrap={false}>
           {/* Signatures */}
           <View style={[styles.row, { justifyContent: "space-between" }]}>
             <View style={styles.column}>
@@ -457,10 +460,14 @@ const DeliveryNote = (wzData: any, index: number) => {
             <Text style={[styles.label, { fontSize: 15 }]}>
               AMITEC - Palety zwrotne:
             </Text>
-            <Text style={{ fontSize: 15, marginTop: 10 }}>
-              Wydano {currentWz.pallet_type} {currentWz.pallet_count} szt. Zwrot
-              ............ szt.
-            </Text>
+
+            {currentWz.pallets?.map((item) => (
+              <Text style={{ fontSize: 15, marginTop: 10 }}>
+                Paleta {item.type} - wydano {item.count} szt. Zwrot ............
+                szt.
+              </Text>
+            ))}
+
             <Text style={{ fontSize: 15 }}>
               Nie rozliczenie palet spowoduje obciążenie fakturą VAT!
             </Text>
