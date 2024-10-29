@@ -6,6 +6,7 @@ import {
   Document,
   StyleSheet,
   Font,
+  Image,
 } from "@react-pdf/renderer";
 
 Font.register({
@@ -24,15 +25,25 @@ const styles = StyleSheet.create({
   contentWrapper: {
     flex: 1,
   },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  headerImage: {
+    width: 150,
+    height: 70,
+    objectFit: "contain",
+  },
   header: {
     fontSize: 14,
     marginBottom: 20,
+    marginLeft: 30,
     textAlign: "center",
     fontWeight: "bold",
   },
   row: {
     flexDirection: "row",
-    flexGrow: 1,
     marginBottom: 10,
   },
   column: {
@@ -66,6 +77,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderLeftWidth: 0,
     borderTopWidth: 0,
+  },
+  customerColumn: {
+    flexDirection: "column",
+    width: "50%",
   },
   tableCell: {
     margin: "auto",
@@ -273,11 +288,15 @@ const DeliveryNote = (wzData: any, index: number) => {
 
   const currentWz = wzData.wzData.wz[wzData.index];
   return (
-    <Document title="WZ">
+    <Document title="Dokument WZ">
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
         <View>
-          <View style={styles.row}>
+          <View style={styles.headerContainer}>
+            <Image
+              style={styles.headerImage}
+              src="https://res.cloudinary.com/dng31aime/image/upload/v1728654269/Amitec_Logo_RGB_MAIN_Dark_owawdj.png"
+            />
             <Text style={styles.header}>
               Wydanie {currentWz.type || ""} nr{" "}
               {currentWz.doc_number || "****/**/****"}
@@ -327,7 +346,7 @@ const DeliveryNote = (wzData: any, index: number) => {
 
           {/* Customer Info */}
           <View style={styles.row}>
-            <View style={styles.column}>
+            <View style={styles.customerColumn}>
               <Text style={styles.label}>Nabywca:</Text>
               <Text style={styles.value}>{wzData.wzData.customer.name}</Text>
               <Text style={styles.value}>
@@ -343,18 +362,18 @@ const DeliveryNote = (wzData: any, index: number) => {
                 NIP: {wzData.wzData.customer.nip}
               </Text>
             </View>
-            <View style={styles.column}>
-              <Text style={styles.label}>Adres dostawy</Text>
+            <View style={styles.customerColumn}>
+              <Text style={styles.label}>Adres dostawy:</Text>
               <Text style={styles.value}>
-                {wzData.wzData.delivery_city} {wzData.wzData.delivery_street}{" "}
+                {wzData.wzData.delivery_street}{" "}
                 {wzData.wzData.delivery_building}{" "}
                 {wzData.wzData.delivery_premises}
               </Text>
               <Text style={styles.value}>
-                {wzData.wzData.delivery_contact_number}
+                {wzData.wzData.delivery_city} {wzData.wzData.delivery_zipcode}
               </Text>
-              <Text style={styles.label}>Informacje dodatkowe</Text>
-              <Text style={styles.value}>{currentWz.additional_info}</Text>
+              <Text style={styles.label}>Kontakt do dostawy:</Text>
+              <Text style={styles.value}>{wzData.wzData.delivery_contact}</Text>
             </View>
           </View>
 
@@ -373,11 +392,42 @@ const DeliveryNote = (wzData: any, index: number) => {
           </View>
         </View>
 
+        <View style={styles.row}>
+          <Text style={styles.label}>Informacje dodatkowe:</Text>
+          <Text style={styles.value}>{currentWz.additional_info}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text>
+            <Text style={styles.label}>Uwagi ogólne:</Text>{" "}
+            {wzData.wzData.comments
+              ?.filter((item) => item.type === "general")
+              .map((item, i, array) => (
+                <Text style={styles.value}>
+                  {item.body}
+                  {i < array.length - 1 ? ", " : ""}
+                </Text>
+              ))}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Text>
+            <Text style={styles.label}>Uwagi dla transportu:</Text>{" "}
+            {wzData.wzData.comments
+              ?.filter((item) => item.type === "transport")
+              .map((item, i, array) => (
+                <Text style={styles.value}>
+                  {item.body}
+                  {i < array.length - 1 ? ", " : ""}
+                </Text>
+              ))}
+          </Text>
+        </View>
+
         {/* Table Section - Fixed Height */}
         <View>{renderTable(currentWz.unit_type, currentWz.line_items)}</View>
 
         {/* Footer Section */}
-        <View style={styles.bottomSection}>
+        <View style={styles.bottomSection} wrap={false}>
           {/* Signatures */}
           <View style={[styles.row, { justifyContent: "space-between" }]}>
             <View style={styles.column}>
@@ -410,10 +460,14 @@ const DeliveryNote = (wzData: any, index: number) => {
             <Text style={[styles.label, { fontSize: 15 }]}>
               AMITEC - Palety zwrotne:
             </Text>
-            <Text style={{ fontSize: 15, marginTop: 10 }}>
-              Wydano {currentWz.pallet_type} {currentWz.pallet_count} szt. Zwrot
-              ............ szt.
-            </Text>
+
+            {currentWz.pallets?.map((item) => (
+              <Text style={{ fontSize: 15, marginTop: 10 }}>
+                Paleta {item.type} - wydano {item.count} szt. Zwrot ............
+                szt.
+              </Text>
+            ))}
+
             <Text style={{ fontSize: 15 }}>
               Nie rozliczenie palet spowoduje obciążenie fakturą VAT!
             </Text>

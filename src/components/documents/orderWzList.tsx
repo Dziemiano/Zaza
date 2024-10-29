@@ -72,10 +72,7 @@ export const OrderWzList = ({ order }: OrderWzListProps) => {
             {order?.wz?.map((item, index) => {
               return (
                 <TableRow key={item.key}>
-                  <TableCell>
-                    {item.type}
-                    {item.doc_number}
-                  </TableCell>
+                  <TableCell>{item.type + " " + item.doc_number}</TableCell>
                   <TableCell>
                     <WzCheckPdf wzData={order} index={index} />
                   </TableCell>

@@ -228,6 +228,7 @@ model Wz {
   car             String?
   cargo_person    String?
   additional_info String?
+  pallets         Json?
   pallet_type     String?
   pallet_count    Int?
   User            User?       @relation(fields: [created_by], references: [id], onDelete: Cascade)

@@ -37,18 +37,29 @@ export const formatNumber = (
   let [integerPart, decimalPart] = numberAsNumber.split(".");
 
   if (isPrice) {
-    const fixed = parseFloat(`0.${decimalPart}`).toFixed(2);
+    const fixed = parseFloat(`0.${decimalPart || "0"}`).toFixed(2);
     let [_, fixedDecimalPart] = fixed.toString().split(".");
     decimalPart = fixedDecimalPart;
-  } else if (decimalPart && decimalPart.length > 4) {
-    const fixed = parseFloat(`0.${decimalPart}`).toFixed(4);
-    let [_, fixedDecimalPart] = fixed.toString().split(".");
-    decimalPart = fixedDecimalPart;
+  } else {
+    if (!decimalPart) {
+      // If there's no decimal part, add ".0"
+      decimalPart = "0";
+    } else {
+      // Remove trailing zeros and ensure at least one digit
+      decimalPart = decimalPart.replace(/0+$/, "") || "0";
+
+      if (decimalPart.length > 4) {
+        // If decimal part is longer than 4 digits, round it
+        const fixed = parseFloat(`0.${decimalPart}`).toFixed(4);
+        let [_, fixedDecimalPart] = fixed.toString().split(".");
+        decimalPart = fixedDecimalPart;
+      }
+    }
   }
 
   integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
-  return decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
+  return `${integerPart}.${decimalPart}`;
 };
 
 /*
@@ -64,7 +75,7 @@ export function parseNumbersForSubmit<T extends z.ZodTypeAny>(
     const [key, secondKey] = value.split(".");
 
     if (key === "line_items" && secondKey) {
-      parsedData[key].forEach((item, index) => {
+      parsedData[key].forEach((item: any, index: number) => {
         if (typeof item[secondKey] === "number") {
           parsedData[key][index][secondKey] = item[secondKey].toString();
         }
