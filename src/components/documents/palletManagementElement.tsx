@@ -38,13 +38,13 @@ export const PalletManagement = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <Label>Palety</Label>
         <Button
           type="button"
           variant="outline"
           onClick={() => append({ type: "", count: 0 })}
-          className="h-8 px-2"
+          className="h-8 px-2 ml-3"
           disabled={fields.length >= PALLET_TYPES.length}
         >
           <Plus className="h-4 w-4 mr-1" />
