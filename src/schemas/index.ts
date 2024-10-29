@@ -413,6 +413,11 @@ export const ProductSchema = z.object({
   created_at: z.date().optional().nullable(),
 });
 
+const PalletEntrySchema = z.object({
+  type: z.string(),
+  count: z.number().min(0),
+});
+
 export const WzSchema = z.object({
   id: z.string().optional().nullable(),
   doc_number: z.string().optional().nullable(),
@@ -434,6 +439,7 @@ export const WzSchema = z.object({
   driver: z.string().optional().nullable(),
   car: z.string().optional().nullable(),
   cargo_person: z.string().optional().nullable(),
+  pallets: z.array(PalletEntrySchema).default([]),
   pallet_type: z.nativeEnum(PalletType).optional().nullable().or(z.literal("")),
   pallet_count: nonNegNumber,
   additional_info: z.string().optional().nullable(),
