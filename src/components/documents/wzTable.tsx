@@ -135,6 +135,25 @@ const LineItemsTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => {
   );
 };
 
+const isM3Unit = (unit: string | null | undefined): boolean => {
+  if (!unit) return false;
+  const normalizedUnit = unit.toLowerCase().trim();
+  return normalizedUnit === "m3" || normalizedUnit === "m³";
+};
+
+const calculateM3Sum = (lineItems: LineItem[]): number => {
+  return lineItems.reduce((sum, item) => {
+    if (isM3Unit(item.quant_unit)) {
+      // If primary quantity is in m3
+      return sum + (parseFloat(item.quantity) || 0);
+    } else if (isM3Unit(item.help_quant_unit)) {
+      // If helper quantity is in m3
+      return sum + (parseFloat(item.helper_quantity) || 0);
+    }
+    return sum;
+  }, 0);
+};
+
 const columns: ColumnDef<Wz>[] = [
   {
     id: "expander",
@@ -223,6 +242,20 @@ const columns: ColumnDef<Wz>[] = [
     accessorKey: "car",
     header: "Samochód",
     cell: ({ row }) => <div>{row.getValue("car")}</div>,
+  },
+  {
+    accessorKey: "m3_sum",
+    header: ({ column }) => {
+      return <div>Suma m³</div>;
+    },
+    cell: ({ row }) => {
+      const m3Sum = calculateM3Sum(
+        row.original.Order.lineItems.filter(
+          (item) => item.wz_id === row.original.id
+        )
+      );
+      return <div>{formatNumber(m3Sum)}</div>;
+    },
   },
   {
     id: "actions",
@@ -421,7 +454,9 @@ export function WzTable({ wzs }: WzTableProps) {
                             Pozycje
                           </h3>
                           <LineItemsTable
-                            lineItems={row.original.Order.lineItems}
+                            lineItems={row.original.Order.lineItems.filter(
+                              (item) => item.wz_id === row.original.id
+                            )}
                           />
                         </div>
                       </TableCell>
