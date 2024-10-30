@@ -117,7 +117,7 @@ const LineItemsTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => {
             <TableCell>
               {isNaN(parseFloat(item.helper_quantity))
                 ? "NaN"
-                : formatNumber(item.helper_quantity)}
+                : formatNumber(item.helper_quantity)}{" "}
               {item.help_quant_unit}
             </TableCell>
             <TableCell>{formatNumber(item.netto_cost)}</TableCell>
