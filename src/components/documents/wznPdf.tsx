@@ -306,13 +306,25 @@ const DeliveryNote = (wzData: any, index: number) => {
           {/* Seller and Date Info */}
           <View style={styles.row}>
             <View style={styles.column}>
-              <Text style={styles.label}>Sprzedawca:</Text>
-              <Text style={styles.value}>Amitec</Text>
-              <Text style={styles.value}>Agnieszka Misiek</Text>
-              <Text style={styles.value}>98-405 Galewice</Text>
-              <Text style={styles.value}>ul. Stefana Żeromskiego 1A</Text>
-              <Text style={styles.value}>NIP: 9970089494</Text>
-              <Text style={styles.value}>BDO: 000137095</Text>
+              {currentWz.type === "WZN" ? (
+                <>
+                  <Text style={styles.label}>Sprzedawca:</Text>
+                  <Text style={styles.value}>Amitec</Text>
+                  <Text style={styles.value}>Agnieszka Misiek</Text>
+                  <Text style={styles.value}>98-405 Galewice</Text>
+                  <Text style={styles.value}>ul. Stefana Żeromskiego 1A</Text>
+                  <Text style={styles.value}>NIP: 9970089494</Text>
+                  <Text style={styles.value}>BDO: 000137095</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.label}>Sprzedawca:</Text>
+                  <Text style={styles.value}>Amitec Sp. z o.o.</Text>
+                  <Text style={styles.value}>98-405 Galewice</Text>
+                  <Text style={styles.value}>ul. Stefana Żeromskiego 1A</Text>
+                  <Text style={styles.value}>NIP: 99870160909</Text>
+                </>
+              )}
             </View>
             <View style={styles.column}>
               <Text style={styles.value}>
