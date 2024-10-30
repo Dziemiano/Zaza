@@ -70,6 +70,10 @@ export default function ProductSelectionForm({
     setValue(`${name}.new.vat_percentage`, "23");
   }, [setValue, name]);
 
+  const shouldSkipCalculations = useCallback((product) => {
+    return product?.category === "Skos";
+  }, []);
+
   const calculateM3 = useCallback((height, length, width) => {
     return (height * length * width) / 1000000000;
   }, []);
@@ -131,7 +135,7 @@ export default function ProductSelectionForm({
 
   const calculateConversion = useCallback(
     (value, fromUnit, toUnit, product) => {
-      if (!product || !value) return "";
+      if (!product || !value || shouldSkipCalculations(product)) return value;
 
       const m3PerProduct = calculateM3(
         product.height,
@@ -305,7 +309,8 @@ export default function ProductSelectionForm({
       const item = fields[index];
       const product = products.find((p) => p.id === item.product_id);
 
-      if (!product || !item.help_quant_unit) return;
+      if (!product || !item.help_quant_unit || shouldSkipCalculations(product))
+        return;
 
       if (item.quant_unit === "szt" && item.help_quant_unit === "m3") {
         // When main unit is szt and helper is m3
@@ -384,6 +389,19 @@ export default function ProductSelectionForm({
       }
 
       setLastUpdatedField({ index, field });
+
+      // Skip calculations for Skos category
+      if (shouldSkipCalculations(product)) {
+        // Only update the directly changed field and calculate brutto cost
+        const nettoCost = parseFloat(updatedItem.netto_cost) || 0;
+        const vatPercentage = parseFloat(updatedItem.vat_percentage) || 0;
+        updatedItem.brutto_cost = (
+          nettoCost *
+          (1 + vatPercentage / 100)
+        ).toFixed(2);
+        update(index, updatedItem);
+        return;
+      }
 
       switch (field) {
         case "help_quant_unit":
