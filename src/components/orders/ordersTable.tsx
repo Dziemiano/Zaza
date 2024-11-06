@@ -300,9 +300,16 @@ export const columns: ColumnDef<unknown, any>[] = [
     header: "Wystawiono WZ",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("wz")?.length > 0 ? "Tak" : "Nie"}
+        {(row.getValue("wz") as [])?.length > 0 ? "Tak" : "Nie"}
       </div>
     ),
+    filterFn: (row, id, value) => {
+      const wzArr = row.getValue(id) as [];
+      const filterValue = value.toLowerCase();
+      if (filterValue === "tak") return wzArr.length > 0;
+      if (filterValue === "nie") return wzArr.length <= 0;
+      return true;
+    },
   },
   {
     accessorKey: "lineItems",
@@ -426,6 +433,7 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
     payment_status: "Status płatnosci",
     payment_method: "Metoda płatnosci",
     wz_type: "Typ WZ",
+    wz: "Wystawiono WZ",
     salesman: "Handlowiec",
     nip: "NIP",
     customer: "Klient",
