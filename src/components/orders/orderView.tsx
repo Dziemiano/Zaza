@@ -23,6 +23,9 @@ import { LogDialog } from "../reusable/logsDialog";
 import OrderCompletionElement from "./orderCompletionElement";
 import { OrderWzList } from "../documents/orderWzList";
 import { Comment } from "@/types/orders.types";
+import { postOptimaDocument } from "@/lib/optima";
+import { getOptimaDocuments, getOptimaToken } from "@/lib/optima";
+import { WzCheckPdf } from "../documents/wznCheckPdf";
 
 interface OrderType {
   id: string;
@@ -74,8 +77,10 @@ export const OrderView: React.FC<OrderViewProps> = ({
 }) => {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
+  const [docCreated, setDocCreted] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
   const [isHistoryOpen, setHistoryOpen] = useState(false);
+
   const userId = useCurrentUser()?.id;
 
   const formatDate = (dateString: string): string => {
@@ -108,6 +113,42 @@ export const OrderView: React.FC<OrderViewProps> = ({
   const realization = isNaN(deliveredQuantities / totalQuantities)
     ? 0
     : Math.round((deliveredQuantities / totalQuantities) * 100);
+
+  const createOptimaDocument = async () => {
+    const data = {
+      type: 306,
+      foreignNumber: "API_TEST",
+      fullNumber: "WZ/01/01/01",
+      calculatedOn: 1,
+      paymentMethod: "przelew",
+      currency: "PLN",
+      elements: [],
+      description: "test",
+      status: 1,
+      sourceWarehouseId: 1,
+      documentSaleDate: "2021-08-31T00:00:00",
+      documentIssueDate: "2021-08-29T00:00:00",
+      documentPaymentDate: "2021-09-07T00:00:00",
+      series: "TEST",
+      number: 2,
+    };
+
+    try {
+      await postOptimaDocument(data);
+      setSuccess("Dokument został poprawnie utworzony w systemie Optima");
+      setDocCreted(true);
+      console.log("Dokument utworzony", data);
+    } catch (error) {
+      setError(error.message);
+      console.log("error", data);
+    }
+  };
+
+  const getDocs = async () => {
+    const token = await getOptimaToken("WZS");
+    const data = await getOptimaDocuments(token ?? "", "WZS");
+    console.log(data);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -169,11 +210,7 @@ export const OrderView: React.FC<OrderViewProps> = ({
                 copyMode={true}
                 order={order}
               />
-              {/* {order?.wz?.length ? (
-                <WzCheckPdf wzData={order} />
-              ) : ( */}
               <WzDocForm editMode={false} order={order} />
-              {/* )} */}
               <OrderWzList order={order} />
               <OrderCheckPdf wzData={order} />
               <EmailContentForm order={order} />
@@ -296,18 +333,27 @@ export const OrderView: React.FC<OrderViewProps> = ({
               </div>
             </TabsContent>
 
+            {/* <TabsContent value="email">
+              <div>
+                <h1 className="mt-5">Treść korespondencji</h1>
+                <div className="text-black text-justify text-[14px] font-small mr-4 mt-5">
+                  {order?.email_content}
+                </div>
+              </div>
+            </TabsContent> */}
+
+            <TabsContent value="documents">
+              <div>
+                <h1>Dokumenty</h1>
+              </div>
+            </TabsContent>
+
             <TabsContent value="completion">
               <div>
                 <h1 className="mt-5">Realizacja</h1>
                 <div className="text-black text-justify text-[14px] font-small mr-4 mt-5">
                   <OrderCompletionElement lineItems={documentsLineItems} />
                 </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="documents">
-              <div>
-                <h1>Dokumenty</h1>
               </div>
             </TabsContent>
 
@@ -327,6 +373,14 @@ export const OrderView: React.FC<OrderViewProps> = ({
           </DialogFooter>
         </div>
       </DialogContent>
+      <Dialog open={docCreated} onOpenChange={setDocCreted}>
+        <DialogContent>
+          <div>{success}</div>
+          <DialogFooter>
+            <Button onClick={() => setDocCreted(false)}>OK</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };

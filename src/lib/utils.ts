@@ -86,3 +86,57 @@ export function parseNumbersForSubmit<T extends z.ZodTypeAny>(
   });
   return parsedData;
 }
+
+export const splitCustomerName = (fullName) => {
+  const name = fullName.toUpperCase();
+  let name1 = "";
+  let name2 = "";
+  let name3 = "";
+
+  // Split the full name into words
+  const words = name.split(" ");
+
+  // Build name1 (first 50 chars)
+  let currentLength = 0;
+  let wordIndex = 0;
+
+  // Build name1
+  while (wordIndex < words.length) {
+    const word = words[wordIndex];
+    const wordWithSpace = wordIndex > 0 ? " " + word : word;
+
+    if (currentLength + wordWithSpace.length <= 50) {
+      name1 += wordWithSpace;
+      currentLength += wordWithSpace.length;
+      wordIndex++;
+    } else {
+      break;
+    }
+  }
+
+  // Build name2 (next 50 chars)
+  if (wordIndex < words.length) {
+    currentLength = 0;
+    const startIndex = wordIndex;
+
+    while (wordIndex < words.length) {
+      const word = words[wordIndex];
+      const wordWithSpace = wordIndex > startIndex ? " " + word : word;
+
+      if (currentLength + wordWithSpace.length <= 50) {
+        name2 += wordWithSpace;
+        currentLength += wordWithSpace.length;
+        wordIndex++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  // Build name3 (remaining words)
+  if (wordIndex < words.length) {
+    name3 = words.slice(wordIndex).join(" ");
+  }
+
+  return { name1, name2, name3 };
+};

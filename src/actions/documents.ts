@@ -31,8 +31,10 @@ export const createWz = async (data: {
     helper_quantity: string;
     help_quant_unit: string;
     wz_unit: string;
+    wz_netto_cost: string;
+    wz_brutto_cost: string;
     price: number;
-    vat: number;
+    vat: string;
     is_used: boolean;
   }>;
 }) => {
@@ -62,6 +64,37 @@ export const createWz = async (data: {
     adjustedIssueDate
   );
   console.log(data);
+
+  // const optimaDoc = {
+  //   type: 306,
+  //   foreignNumber: "numer_obcy",
+  //   calculatedOn: 1,
+  //   paymentMethod: "przelew",
+  //   currency: "PLN",
+  //   elements: data.line_items.map((item) => ({
+  //     code: item.product_name.toUpperCase(),
+  //     manufacturerCode: item.product_id || "",
+  //     unitNetPrice: parseFloat(item.netto_cost),
+  //     unitGrossPrice: parseFloat(item.brutto_cost),
+  //     totalNetValue: parseFloat(item.netto_cost) * parseFloat(item.wz_quantity),
+  //     totalGrossValue:
+  //       parseFloat(item.brutto_cost) * parseFloat(item.wz_quantity),
+  //     quantity: parseFloat(item.wz_quantity),
+  //     vatRate: parseFloat(item.vat_percentage),
+  //     setCustomValue: false,
+  //   })),
+  //   description: "",
+  //   status: 1,
+  //   sourceWarehouseId: 1,
+  //   documentSaleDate: data.out_date,
+  //   documentIssueDate: data.issue_date,
+  //   symbol: data.type,
+  //   series: "TEST1",
+  //   number: documentCount,
+  // };
+
+  // postOptimaDocument(optimaDoc);
+
   const result = await db.$transaction(async (tx) => {
     const wz = await tx.wz.create({
       data: {
@@ -94,6 +127,9 @@ export const createWz = async (data: {
           quant_unit: item.wz_unit,
           helper_quantity: item.helper_quantity,
           help_quant_unit: item.help_quant_unit,
+          netto_cost: item.wz_netto_cost,
+          brutto_cost: item.wz_brutto_cost,
+          vat_percentage: item.vat,
           included_in_wz: true,
         },
       });
@@ -106,6 +142,9 @@ export const createWz = async (data: {
             order_id: item.order_id,
             quantity: item.remaining_quantity,
             quant_unit: item.wz_unit,
+            netto_cost: item.wz_netto_cost,
+            brutto_cost: item.wz_brutto_cost,
+            vat_percentage: item.vat,
             included_in_wz: false,
           },
         });

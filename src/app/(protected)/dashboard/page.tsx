@@ -2,8 +2,6 @@ import { auth, signOut } from "@/auth";
 import { DashboardCard } from "@/components/dashboard/dashboardCard";
 
 const DashboardPage = async () => {
-  const session = await auth();
-
   return (
     <div className="flex flex-col pb-5 bg-white">
       <div className="flex flex-col px-5 mt-9 w-full max-md:max-w-full">

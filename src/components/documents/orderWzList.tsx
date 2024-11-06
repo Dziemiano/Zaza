@@ -25,7 +25,10 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { OrderSchema } from "@/schemas";
 import { WzCheckPdf } from "./wznCheckPdf";
 import { z } from "zod";
+import OptimaIntegrationButton from "./optimaButton";
 
+import { useCurrentRole } from "@/hooks/useCurrentRole";
+import { UserRole } from "@prisma/client";
 type OrderWzListProps = {
   order?: z.infer<typeof OrderSchema>;
 };
@@ -38,6 +41,9 @@ export const OrderWzList = ({ order }: OrderWzListProps) => {
   const [open, setOpen] = useState(false);
 
   const userId = useCurrentUser()?.id;
+  const user_role = useCurrentRole();
+  console.log(user_role);
+  console.log(useCurrentUser());
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -75,6 +81,11 @@ export const OrderWzList = ({ order }: OrderWzListProps) => {
                   <TableCell>{item.type + " " + item.doc_number}</TableCell>
                   <TableCell>
                     <WzCheckPdf wzData={order} index={index} />
+                    <OptimaIntegrationButton
+                      wz={item}
+                      order={order}
+                      type={item.type}
+                    />
                   </TableCell>
                 </TableRow>
               );

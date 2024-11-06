@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +13,7 @@ import { ProductForm } from "./productsForm";
 import Link from "next/link";
 import { formatNumber } from "@/lib/utils";
 import { Comment } from "@/types/orders.types";
+import { postOptimaItem } from "@/lib/optima";
 
 interface Product {
   id: string;
@@ -68,6 +69,9 @@ export const ProductView = ({
   isOpen,
   setIsOpen,
 }: ProductViewProps) => {
+  const [error, setError] = useState<string | undefined>();
+  const [success, setSuccess] = useState<string | undefined>();
+  const [productCreated, setProductCreated] = useState<boolean>(false);
   const volume = (product: Product) => {
     return product.length
       ? (parseInt(product.length) *
@@ -76,6 +80,41 @@ export const ProductView = ({
           parseInt(product.quantity_in_package || 1)) /
           1000000000
       : "";
+  };
+
+  console.log(product);
+
+  const createOptimaProduct = async () => {
+    const data = {
+      type: 1,
+      inactive: 0,
+      code: product.sku,
+      name: product.name,
+      manufacturerCode: product.sku,
+      vatRate: parseFloat(product.vat),
+      unit: "szt",
+      prices: [
+        {
+          number: 5,
+          type: 1,
+          name: "detaliczna",
+          value: parseInt(product.price),
+        },
+      ],
+      supplierCode: "amitec",
+      package_deposit: 0,
+      product: 0,
+    };
+
+    try {
+      await postOptimaItem(data);
+      setSuccess("Produkt został poprawnie utworzony w systemie Optima");
+      setProductCreated(true);
+      console.log("Produkt utworzony", data);
+    } catch (error) {
+      setError(error.message);
+      console.log("error", data);
+    }
   };
 
   return (
@@ -112,6 +151,9 @@ export const ProductView = ({
             <TabsTrigger value="recipes">Receptury</TabsTrigger>
             <TabsTrigger value="comments">Uwagi</TabsTrigger>
             <ProductForm product={product} editMode />
+            <Button onClick={createOptimaProduct}>
+              Dodaj produkt do Optima
+            </Button>
           </TabsList>
 
           <TabsContent value="product">
