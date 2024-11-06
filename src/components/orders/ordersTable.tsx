@@ -50,6 +50,7 @@ import { Label } from "../ui/label";
 
 import { OrderView } from "./orderView";
 import { MultiSelectDropdown } from "../ui/multiselect";
+import { Status } from "@/types/orders.types";
 
 // TODO: drag and drop colums
 // import {
@@ -132,6 +133,12 @@ const columnsFilterSelects: {
     { name: "Tak", value: "Tak" },
     { name: "Nie", value: "Nie" },
   ],
+  status: Object.values(Status).map((item) => {
+    return {
+      name: item,
+      value: item,
+    };
+  }),
 };
 
 export const columns: ColumnDef<unknown, any>[] = [
@@ -234,6 +241,9 @@ export const columns: ColumnDef<unknown, any>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => <div>{row.getValue("status")}</div>,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id) as string);
+    },
   },
   {
     accessorKey: "created_at",

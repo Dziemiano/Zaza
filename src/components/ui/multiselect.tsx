@@ -12,7 +12,9 @@ type Props = {
 export const MultiSelectDropdown = ({ options, values, onChange }: Props) => (
   <DropdownMenu.Root>
     <DropdownMenu.Trigger className="border p-2 rounded-md flex items-center justify-between w-48">
-      <span>{values?.length > 0 ? values.join(", ") : "Wybierz..."}</span>
+      <span className="max-w-36 whitespace-nowrap overflow-hidden text-ellipsis">
+        {values?.length > 0 ? values.join(", ") : ""}
+      </span>
       <ChevronDownIcon className="ml-2" />
     </DropdownMenu.Trigger>
 
@@ -31,7 +33,7 @@ export const MultiSelectDropdown = ({ options, values, onChange }: Props) => (
               checked={values?.includes(option.value)}
               className="w-4 h-4 bg-gray-100 border rounded"
             />
-            <label className="ml-2 text-sm">{option.name}</label>
+            <label className="ml-2 text-sm cursor-pointer">{option.name}</label>
           </DropdownMenu.Item>
         ))}
       </DropdownMenu.Content>
