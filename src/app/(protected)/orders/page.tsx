@@ -13,6 +13,9 @@ import { getAllCustomers } from "@/data/customers";
 import { getAllProducts } from "@/data/products";
 import Link from "next/link";
 import { getAllSalesmen } from "@/data/user";
+import { ro } from "date-fns/locale";
+import { getOptimaToken } from "@/lib/optima";
+import { getOptimaDocuments } from "@/lib/optima";
 
 const OrderPage = async () => {
   const session = await auth();
@@ -39,6 +42,12 @@ const OrderPage = async () => {
   const products = await getAllProducts();
 
   const salesmem = await getAllSalesmen();
+
+  const userOrders = orders?.filter((order) => order.created_by === user.id);
+
+  const optima_token = await getOptimaToken();
+
+  // const docs = await getOptimaDocuments();
 
   return (
     <div className="m-5">
@@ -85,6 +94,7 @@ const OrderPage = async () => {
           products={products || []}
         />
       </Suspense>
+      {/* <pre>{JSON.stringify(docs, null, 2)}</pre> */}
     </div>
   );
 };

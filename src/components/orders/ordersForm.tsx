@@ -1367,7 +1367,7 @@ export const OrderForm = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Spinner isLoading={isLoading} />
+      <Spinner isLoading={isLoading} spinnerSize="lg" />
     </>
   );
 };
