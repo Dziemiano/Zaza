@@ -49,6 +49,8 @@ import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 
 import { OrderView } from "./orderView";
+import { MultiSelectDropdown } from "../ui/multiselect";
+import { Status } from "@/types/orders.types";
 
 // TODO: drag and drop colums
 // import {
@@ -122,6 +124,21 @@ const sumQuantity = (lineItems: []): number => {
       .reduce((prev, current) => prev + Number(current.quantity), 0)
       .toFixed(4)
   );
+};
+
+const columnsFilterSelects: {
+  [key: string]: { name: string; value: string }[];
+} = {
+  wz: [
+    { name: "Tak", value: "Tak" },
+    { name: "Nie", value: "Nie" },
+  ],
+  status: Object.values(Status).map((item) => {
+    return {
+      name: item,
+      value: item,
+    };
+  }),
 };
 
 export const columns: ColumnDef<unknown, any>[] = [
@@ -224,6 +241,9 @@ export const columns: ColumnDef<unknown, any>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => <div>{row.getValue("status")}</div>,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id) as string);
+    },
   },
   {
     accessorKey: "created_at",
@@ -300,9 +320,17 @@ export const columns: ColumnDef<unknown, any>[] = [
     header: "Wystawiono WZ",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue("wz")?.length > 0 ? "Tak" : "Nie"}
+        {(row.getValue("wz") as [])?.length > 0 ? "Tak" : "Nie"}
       </div>
     ),
+    filterFn: (row, id, value) => {
+      const wzArr = row.getValue(id) as [];
+      if (value.length === 1) {
+        if (value[0] === "Tak") return wzArr.length > 0;
+        if (value[0] === "Nie") return wzArr.length <= 0;
+      }
+      return true;
+    },
   },
   {
     accessorKey: "lineItems",
@@ -426,6 +454,7 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
     payment_status: "Status płatnosci",
     payment_method: "Metoda płatnosci",
     wz_type: "Typ WZ",
+    wz: "Wystawiono WZ",
     salesman: "Handlowiec",
     nip: "NIP",
     customer: "Klient",
@@ -498,21 +527,40 @@ export function OrdersTable({ customers, orders, products }: OrdersTableProps) {
                     >
                       {names[column.id]}
                     </Label>
-
-                    <Input
-                      key={column.id}
-                      value={
-                        (table
-                          .getColumn(column.id)
-                          ?.getFilterValue() as string) ?? ""
-                      }
-                      onChange={(event) =>
-                        table
-                          .getColumn(column.id)
-                          ?.setFilterValue(event.target.value)
-                      }
-                      className="max-w-sm"
-                    />
+                    {columnsFilterSelects[column.id] ? (
+                      <MultiSelectDropdown
+                        options={columnsFilterSelects[column.id]}
+                        values={column.getFilterValue() as []}
+                        onChange={(value) => {
+                          let updatedValues = [
+                            ...((column?.getFilterValue() as string[]) || []),
+                          ];
+                          if (updatedValues.includes(value)) {
+                            updatedValues = updatedValues.filter(
+                              (v) => v !== value
+                            );
+                          } else {
+                            updatedValues.push(value);
+                          }
+                          column.setFilterValue(updatedValues);
+                        }}
+                      />
+                    ) : (
+                      <Input
+                        key={column.id}
+                        value={
+                          (table
+                            .getColumn(column.id)
+                            ?.getFilterValue() as string) ?? ""
+                        }
+                        onChange={(event) =>
+                          table
+                            .getColumn(column.id)
+                            ?.setFilterValue(event.target.value)
+                        }
+                        className="max-w-sm"
+                      />
+                    )}
                   </div>
                 );
               })}
